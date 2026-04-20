@@ -1,0 +1,230 @@
+#include "../include/Registers.h"
+#include "../include/Context.h"
+
+void Registers::log() {
+	std::cout << "A[" << Common::toHexStr(a) 
+		<< "], B[" << Common::toHexStr(b)
+		<< "], C[" << Common::toHexStr(c)
+		<< "], D[" << Common::toHexStr(d)
+		<< "], E[" << Common::toHexStr(e)
+		<< "], F[" << Common::toHexStr(f)
+		<< "], G[" << Common::toHexStr(g)
+		<< "], H[" << Common::toHexStr(h)
+		<< "], L[" << Common::toHexStr(l)
+		<< "], PC[" << Common::toHexStr(pc)
+		<< "], SP[" << Common::toHexStr(sp)
+		<< "]" << std::endl;
+}
+
+R8 Registers::getR8FromCode(u8 data) {
+	switch (data) {
+	case 0:
+		return R8::B;
+	case 1:
+		return R8::C;
+	case 2:
+		return R8::D;
+	case 3:
+		return R8::E;
+	case 4:
+		return R8::H;
+	case 5:
+		return R8::L;
+	case 6:
+		return R8::HL;
+	case 7:
+		return R8::A;
+	default: {
+		std::cerr << "Wrong R8 value " << data << std::endl;
+		return R8::UNKNOWN;
+	}
+	}
+}
+
+void Registers::setRegFromR8(R8 reg, u8 value) {
+	switch (reg) {
+	case R8::B: {
+		b = value;
+		break;
+	}
+	case R8::C: {
+		c = value;
+		break;
+	}
+	case R8::D: {
+		d = value;
+		break;
+	}
+	case R8::E: {
+		e = value;
+		break;
+	}
+	case R8::H: {
+		h = value;
+		break;
+	}
+	case R8::L: {
+		l = value;
+		break;
+	}
+	case R8::A: {
+		a = value;
+		break;
+	}
+	case R8::HL:
+	default: {
+		std::cerr << "Unknown R8 " << R8_STR[(int)reg] << ", ignoring" << std::endl;
+		break;
+	}
+	}
+}
+
+u8 Registers::getFromR8(R8 reg) {
+	switch (reg) {
+	case R8::B: {
+		return b;
+	}
+	case R8::C: {
+		return c;
+	}
+	case R8::D: {
+		return d;
+	}
+	case R8::E: {
+		return e;
+	}
+	case R8::H: {
+		return h;
+	}
+	case R8::L: {
+		return l;
+	}
+	case R8::A: {
+		return a;
+	}
+	case R8::HL:
+	default: {
+		std::cerr << "Unknown R8 " << R8_STR[(int)reg] << ", ignoring" << std::endl;
+		return -1;
+	}
+	}
+}
+
+R16 Registers::getR16FromCode(u8 data) {
+	switch (data) {
+	case 0:
+		return R16::BC;
+	case 1:
+		return R16::DE;
+	case 2:
+		return R16::HL;
+	case 3:
+		return R16::SP;
+	default: {
+		std::cerr << "Wrong R16 value " << data << std::endl;
+		return R16::UNKNOWN;
+	}
+	}
+}
+
+void Registers::setRegFromR16(R16 reg, u16 value) {
+	u8 first = value >> 8;
+	u8 second = value & 0xFF;
+
+	switch (reg) {
+	case R16::BC: {
+		b = first;
+		c = second;
+		break;
+	}
+	case R16::DE: {
+		d = first;
+		e = second;
+		break;
+	}
+	case R16::HL: {
+		h = first;
+		l = second;
+		break;
+	}
+	case R16::SP: {
+		sp = value;
+		break;
+	}
+	default: {
+		std::cerr << "Unknown R16 " << R16_STR[(int)reg] << ", ignoring" << std::endl;
+		break;
+	}
+	}
+}
+
+R16_MEM Registers::getR16MemFromCode(u8 data) {
+	switch (data) {
+	case 0:
+		return R16_MEM::BC;
+	case 1:
+		return R16_MEM::DE;
+	case 2:
+		return R16_MEM::HLI;
+	case 3:
+		return R16_MEM::HLD;
+	default: {
+		std::cerr << "Wrong R16_MEM value " << data << std::endl;
+		return R16_MEM::UNKNOWN;
+	}
+	}
+}
+
+u16 Registers::getPointerFromR16Mem(R16_MEM regMem){
+	switch (regMem) {
+	case R16_MEM::BC: {
+		return b*256 + c;
+	}
+	case R16_MEM::DE: {
+		return d*256+e;
+	}
+	case R16_MEM::HLI:
+	case R16_MEM::HLD: {
+		return h*256 + l;
+	}
+	default: {
+		std::cerr << "Unknown R16_MEM "<< R16_MEM_STR[(int)regMem] <<", ignoring" << std::endl;
+		return -1;
+	}
+	}
+}
+
+u8 Registers::imm8() {
+	std::vector<u8> memory = Context::get()->getMemory();
+	return memory.at(pc + 1);
+}
+
+u16 Registers::imm16() {
+	std::vector<u8> memory = Context::get()->getMemory();
+	std::string strData = Common::toHexStr(memory.at(pc + 2)).append(Common::toHexStr(memory.at(pc + 1)));
+	u16 data = std::stoi(strData, nullptr, 16);
+	return data;
+}
+
+void Registers::updateHLMem(R16_MEM r16Mem) {
+	if (r16Mem == R16_MEM::HLI) {
+		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) + 1);
+	}
+	else if (r16Mem == R16_MEM::HLD) {
+		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) - 1);
+	}
+}
+
+void Registers::setFlags(u8 z, u8 n, u8 h, u8 c) {
+	if (z == 1)	setZFlag();
+	else if (z == 0) resetZFlag();
+
+	if (n == 1)	setNFlag();
+	else if (n == 0) resetNFlag();
+
+	if (h == 1)	setHFlag();
+	else if (h == 0) resetHFlag();
+
+	if (c == 1)	setCFlag();
+	else if (c == 0) resetCFlag();
+}

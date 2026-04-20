@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="GBEmulator/GBEmulator.vcxproj" Id="c5c2e2c5-50f9-4de3-b1a9-0254ce5b7e93">
+    <BuildDependency Project="GLEmulatorCore/GLEmulatorCore.vcxproj" />
+  </Project>
+  <Project Path="GBEmulatorTests/GBEmulatorTests.vcxproj">
+    <BuildDependency Project="GLEmulatorCore/GLEmulatorCore.vcxproj" />
+  </Project>
+  <Project Path="GLEmulatorCore/GLEmulatorCore.vcxproj" Id="4f59d373-0f3b-48e0-aa53-93fb58b95c10" />
+</Solution>
