@@ -11,7 +11,7 @@ const std::string R16_STR[]{ "UNKOWN", "BC", "DE", "HL", "SP" };
 enum class R16_MEM { UNKNOWN, BC, DE, HLD, HLI };
 const std::string R16_MEM_STR[]{ "UNKOWN", "BC", "DE", "HL-", "HL+" };
 
-class Registers
+class CORE_API Registers
 {
 private:
 public:

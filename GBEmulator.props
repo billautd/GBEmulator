@@ -4,13 +4,13 @@
 	<ClCompile>
 	  <!-- SDL include directory -->
       <AdditionalIncludeDirectories>
-		C:\Users\dbill\Documents\WORKSPACES\workspace_GB_Emulator\GBEmulator\SDL\include;%(AdditionalIncludeDirectories)
+		$(SolutionDir)SDL\include;%(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
 	</ClCompile>
     <Link>
       <!-- SDL library directory -->
       <AdditionalLibraryDirectories>
-		C:\Users\dbill\Documents\WORKSPACES\workspace_GB_Emulator\GBEmulator\SDL\lib\x64;%(AdditionalLibraryDirectories)
+		$(SolutionDir)SDL\lib\x64;%(AdditionalLibraryDirectories)
       </AdditionalLibraryDirectories>
 
       <!-- SDL libraries to link -->

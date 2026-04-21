@@ -27,9 +27,6 @@
     <ClInclude Include="include\Emulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\framework.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Operations.h">
       <Filter>Header Files</Filter>
     </ClInclude>

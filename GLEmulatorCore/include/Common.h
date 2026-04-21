@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef CORE_EXPORTS
+#define CORE_API __declspec(dllexport)
+#else
+#define CORE_API __declspec(dllimport)
+#endif
+
 #include <array>
 #include <cstdint>
 #include <fstream>
@@ -11,6 +17,8 @@
 #include <vector>
 
 #include "SDL3/SDL.h"
+
+#pragma warning(disable: 4251)
 
 typedef uint8_t u8;
 typedef uint16_t u16;

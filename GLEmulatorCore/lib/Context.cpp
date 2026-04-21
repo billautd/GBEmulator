@@ -2,7 +2,7 @@
 
 Context* Context::INSTANCE = nullptr;
 
-Context::Context():currentOpCode(-1) {
+Context::Context():currentOpCode(-1), loadedCartridge(Cartridge()), registers(Registers()) {
 	memory.resize(0x10000);
 
 	registers.pc = 0x100;

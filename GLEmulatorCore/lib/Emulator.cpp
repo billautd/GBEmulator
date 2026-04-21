@@ -1,5 +1,6 @@
 #include "../include/Emulator.h"
 #include "../include/Context.h"
+#include "../include/Operations.h"
 
 Emulator::Emulator() {
 

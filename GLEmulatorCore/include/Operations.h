@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-class Operations
+class CORE_API Operations
 {
 public:
 	static void runOp();

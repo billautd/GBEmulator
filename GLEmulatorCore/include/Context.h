@@ -4,12 +4,12 @@
 #include "Cartridge.h"
 #include "Registers.h"
 
-class Context
+class CORE_API Context
 {
 private:
 	bool running = false;
-	Cartridge loadedCartridge = Cartridge();
-	Registers registers = Registers();
+	Cartridge loadedCartridge;
+	Registers registers;
 
 	u8 currentOpCode;
 

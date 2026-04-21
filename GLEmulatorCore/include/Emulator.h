@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-class Emulator
+class CORE_API Emulator
 {
 private:
 	void init();

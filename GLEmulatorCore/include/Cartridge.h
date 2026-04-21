@@ -1,10 +1,8 @@
 #pragma once
 
 #include "Common.h"
-#include "Operations.h"
 
-class Cartridge
-{
+class CORE_API Cartridge {
 private:
 	//0x0100 -> 0x0103
 	std::array<u8, 0x04> entryPoint;

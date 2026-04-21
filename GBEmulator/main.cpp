@@ -1,4 +1,4 @@
-#include "../../GBEmulator/GLEmulatorCore/include/Emulator.h"
+#include <Emulator.h>
 
 #include <iostream>
 #include <fstream>
