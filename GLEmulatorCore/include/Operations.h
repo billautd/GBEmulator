@@ -4,7 +4,9 @@
 
 class CORE_API Operations
 {
+private:
 public:
+	static void runOp(u8 code);
 	static void runOp();
 	//Block 0
 	static void nop();

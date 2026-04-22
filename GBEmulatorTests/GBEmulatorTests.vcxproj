@@ -18,6 +18,82 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lib\OperationsTests.cpp" />
+    <ClCompile Include="lib\OperationsTests_adc_a_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_adc_a_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_add_a_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_add_a_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_add_hl_r16.cpp" />
+    <ClCompile Include="lib\OperationsTests_add_sp_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_and_a_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_bit_b3_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_call_cond_imm16.cpp" />
+    <ClCompile Include="lib\OperationsTests_call_imm16.cpp" />
+    <ClCompile Include="lib\OperationsTests_ccf.cpp" />
+    <ClCompile Include="lib\OperationsTests_cpl.cpp" />
+    <ClCompile Include="lib\OperationsTests_cp_a_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_cp_a_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_daa.cpp" />
+    <ClCompile Include="lib\OperationsTests_dec_r16.cpp" />
+    <ClCompile Include="lib\OperationsTests_dec_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_di.cpp" />
+    <ClCompile Include="lib\OperationsTests_ei.cpp" />
+    <ClCompile Include="lib\OperationsTests_halt.cpp" />
+    <ClCompile Include="lib\OperationsTests_inc_r16.cpp" />
+    <ClCompile Include="lib\OperationsTests_inc_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_jp_cond_imm16.cpp" />
+    <ClCompile Include="lib\OperationsTests_jp_hl.cpp" />
+    <ClCompile Include="lib\OperationsTests_jp_imm16.cpp" />
+    <ClCompile Include="lib\OperationsTests_jr_cond_imm8 .cpp" />
+    <ClCompile Include="lib\OperationsTests_jr_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_ldh_a_c.cpp" />
+    <ClCompile Include="lib\OperationsTests_ldh_a_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_ldh_c_a.cpp" />
+    <ClCompile Include="lib\OperationsTests_ldh_imm8_a.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_a_imm16.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_a_r16mem.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_hl_sp_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_imm16_a.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_imm16_sp.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_r16mem_a.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_r16_imm16.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_r8_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_r8_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_ld_sp_hl.cpp" />
+    <ClCompile Include="lib\OperationsTests_nop.cpp" />
+    <ClCompile Include="lib\OperationsTests_or_a_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_or_a_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_pop_r16stk.cpp" />
+    <ClCompile Include="lib\OperationsTests_prefix.cpp" />
+    <ClCompile Include="lib\OperationsTests_push_r16stk.cpp" />
+    <ClCompile Include="lib\OperationsTests_res_b3_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_ret.cpp" />
+    <ClCompile Include="lib\OperationsTests_reti.cpp" />
+    <ClCompile Include="lib\OperationsTests_ret_cond.cpp" />
+    <ClCompile Include="lib\OperationsTests_rla.cpp" />
+    <ClCompile Include="lib\OperationsTests_rlca.cpp" />
+    <ClCompile Include="lib\OperationsTests_rlc_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_rl_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_rra.cpp" />
+    <ClCompile Include="lib\OperationsTests_rrca.cpp" />
+    <ClCompile Include="lib\OperationsTests_rrc_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_rr_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_rst_tgt3.cpp" />
+    <ClCompile Include="lib\OperationsTests_sbc_a_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_sbc_a_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_scf.cpp" />
+    <ClCompile Include="lib\OperationsTests_set_b3_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_sla_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_sra_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_srl_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_stop.cpp" />
+    <ClCompile Include="lib\OperationsTests_sub_a_imm8.cpp" />
+    <ClCompile Include="lib\OperationsTests_sub_a_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_swap_r8.cpp" />
+    <ClCompile Include="lib\OperationsTests_xor_a_r8.cpp" />
+    <ClCompile Include="lib\RegistersTests.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <ProjectGuid>{965ED3F9-A14D-0381-326A-596AF5FF736D}</ProjectGuid>
@@ -161,9 +237,6 @@
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="OperationsTests.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

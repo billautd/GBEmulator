@@ -40,5 +40,6 @@ public:
 	Cartridge& getLoadedCartridge() { return loadedCartridge; }
 
 	std::vector<u8>& getMemory() { return memory; }
+	void initMemory();
 };
 

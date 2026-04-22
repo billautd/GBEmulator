@@ -34,11 +34,8 @@ R8 Registers::getR8FromCode(u8 data) {
 		return R8::HL;
 	case 7:
 		return R8::A;
-	default: {
-		std::cerr << "Wrong R8 value " << data << std::endl;
-		return R8::UNKNOWN;
 	}
-	}
+	throw std::invalid_argument(std::string("Registers::getR8FromCode -> Invalid R8 code " + data));
 }
 
 void Registers::setRegFromR8(R8 reg, u8 value) {
@@ -71,43 +68,27 @@ void Registers::setRegFromR8(R8 reg, u8 value) {
 		a = value;
 		break;
 	}
-	case R8::HL:
-	default: {
-		std::cerr << "Unknown R8 " << R8_STR[(int)reg] << ", ignoring" << std::endl;
-		break;
-	}
+	//TODO
+	case R8::HL: 
+	default:
+		throw std::invalid_argument(std::string("Registers::setRegFromR8 -> Invalid R8 reg " + R8_STR[(int)reg]));
 	}
 }
 
 u8 Registers::getFromR8(R8 reg) {
 	switch (reg) {
-	case R8::B: {
-		return b;
-	}
-	case R8::C: {
-		return c;
-	}
-	case R8::D: {
-		return d;
-	}
-	case R8::E: {
-		return e;
-	}
-	case R8::H: {
-		return h;
-	}
-	case R8::L: {
-		return l;
-	}
-	case R8::A: {
-		return a;
-	}
-	case R8::HL:
-	default: {
-		std::cerr << "Unknown R8 " << R8_STR[(int)reg] << ", ignoring" << std::endl;
-		return -1;
+	case R8::B: return b;
+	case R8::C:	return c;
+	case R8::D:	return d;
+	case R8::E:	return e;
+	case R8::H:	return h;
+	case R8::L:	return l;
+	case R8::A:	return a;
+	case R8::HL: {
+		//TODO
 	}
 	}
+	throw std::invalid_argument(std::string("Registers::getFromR8 -> Invalid R8 reg " + R8_STR[(int)reg]));
 }
 
 R16 Registers::getR16FromCode(u8 data) {
@@ -120,11 +101,8 @@ R16 Registers::getR16FromCode(u8 data) {
 		return R16::HL;
 	case 3:
 		return R16::SP;
-	default: {
-		std::cerr << "Wrong R16 value " << data << std::endl;
-		return R16::UNKNOWN;
 	}
-	}
+    throw std::invalid_argument(std::string("Registers::getR16FromCode -> Invalid R16 code " + data));
 }
 
 void Registers::setRegFromR16(R16 reg, u16 value) {
@@ -151,10 +129,8 @@ void Registers::setRegFromR16(R16 reg, u16 value) {
 		sp = value;
 		break;
 	}
-	default: {
-		std::cerr << "Unknown R16 " << R16_STR[(int)reg] << ", ignoring" << std::endl;
-		break;
-	}
+	default:
+		throw std::invalid_argument(std::string("Registers::setRegFromR16 -> Invalid R16 reg " + R16_STR[(int)reg]));
 	}
 }
 
@@ -168,11 +144,8 @@ R16_MEM Registers::getR16MemFromCode(u8 data) {
 		return R16_MEM::HLI;
 	case 3:
 		return R16_MEM::HLD;
-	default: {
-		std::cerr << "Wrong R16_MEM value " << data << std::endl;
-		return R16_MEM::UNKNOWN;
 	}
-	}
+	throw std::invalid_argument(std::string("Registers::getR16MemFromCode -> Invalid R16 mem code " + data));
 }
 
 u16 Registers::getPointerFromR16Mem(R16_MEM regMem){
@@ -187,11 +160,8 @@ u16 Registers::getPointerFromR16Mem(R16_MEM regMem){
 	case R16_MEM::HLD: {
 		return h*256 + l;
 	}
-	default: {
-		std::cerr << "Unknown R16_MEM "<< R16_MEM_STR[(int)regMem] <<", ignoring" << std::endl;
-		return -1;
 	}
-	}
+	throw std::invalid_argument(std::string("Registers::getPointerFromR16Mem -> Invalid R16 mem reg " + R16_MEM_STR[(int) regMem]));
 }
 
 u8 Registers::imm8() {
@@ -207,11 +177,15 @@ u16 Registers::imm16() {
 }
 
 void Registers::updateHLMem(R16_MEM r16Mem) {
+	//If using HLI, value in HL should be incremented. We get value present in HL and set it back as itself + 1
 	if (r16Mem == R16_MEM::HLI) {
 		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) + 1);
+		std::cout << "Incremented HL to " << Common::toHexStr(l) << Common::toHexStr(h) << std::endl;
 	}
+	//If using HLD, value in HL should be decremented. We get value present in HL and set it back as itself - 1
 	else if (r16Mem == R16_MEM::HLD) {
 		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) - 1);
+		std::cout << "Decrement HL to " << Common::toHexStr(l) << Common::toHexStr(h) << std::endl;
 	}
 }
 
