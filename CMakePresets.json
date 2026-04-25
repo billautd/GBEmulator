@@ -1,0 +1,15 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "GBEmulator",
+      "description": "Preset to use for GBEmulator",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_TOOLCHAIN_FILE": "C:/Users/dbill/vcpkg-2026.03.18/scripts/buildsystems/vcpkg.cmake"
+      }
+    }
+  ]
+}
