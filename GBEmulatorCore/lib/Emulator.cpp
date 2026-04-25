@@ -34,27 +34,27 @@ void Emulator::runEmulator()
 		}
 		catch (std::runtime_error &e)
 		{
-			std::cerr << e.what() << std::endl;
+			std::cerr << "Exception : " << e.what() << std::endl;
 			destroy();
 		}
 
 		// Listen to process exit
 		while (SDL_PollEvent(&evt))
 		{
-
 			if (evt.type == SDL_EVENT_QUIT)
 			{
 				std::cout << "Exiting" << std::endl;
 				destroy();
 			}
 		}
-		SDL_Delay(10);
+		// SDL_Delay(1);
 	}
 	return;
 }
 
 void Emulator::destroy()
 {
+	ctx.logMemory();
 	ctx.setRunning(false);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

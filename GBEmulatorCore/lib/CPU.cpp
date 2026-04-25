@@ -1,6 +1,7 @@
 #include <CPU.h>
 #include <Context.h>
-#define CPU_DEBUG true
+
+#define CPU_DEBUG false
 
 CPU::CPU(Context &ctx) : ctx(ctx)
 {
@@ -13,6 +14,7 @@ CPU::~CPU()
 void CPU::runOp()
 {
 #if CPU_DEBUG
+	std::cout << std::endl;
 	ctx.regs().log();
 #endif
 
@@ -22,7 +24,7 @@ void CPU::runOp()
 	setCurrentOpCode(code);
 
 #if CPU_DEBUG
-	std::cout << std::format("\nCurrent op code : {}\n", Common::toHexStr(code));
+	std::cout << std::format("Current op code : {}\n", Common::toHexStr(code));
 #endif
 
 	// Block 0
@@ -203,7 +205,7 @@ void CPU::runOp()
 	// 0xE0
 	else if (code == 0b11100000)
 		ldh_imm8_a();
-	// 0xE6
+	// 0xEA
 	else if (code == 0b11101010)
 		ld_imm16_a();
 	// 0xF2
@@ -276,37 +278,51 @@ void CPU::ld_r16mem_a()
 	ctx.regs().updateHLMem(r16Mem);
 
 #if CPU_DEBUG
-	std::cout << std::format("ld_r16mem_a : {} set to address {} from register {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(address), R16_STR[(int)r16Mem]);
+	std::cout << std::format("ld_a_r16mem : Address {} set to {}from register {}\n", Common::toHexStr(address), Common::toHexStr(ctx.regs().a), R16_STR[(int)r16Mem]);
 #endif
 }
 
 void CPU::ld_a_r16mem()
 {
-	ctx.setRunning(false);
+	R16_MEM r16Mem = Registers::getR16MemFromCode((opCode() & 0b00110000) >> 4);
+	u16 address = ctx.regs().getPointerFromR16Mem(r16Mem);
+	ctx.regs().a = ctx.mem().at(address);
+
+	// HLI or HLD -> update HL after writing
+	ctx.regs().updateHLMem(r16Mem);
+
+#if CPU_DEBUG
+	std::cout << std::format("ld_r16mem_a : {} set to address {} from register {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(address), R16_STR[(int)r16Mem]);
+#endif
 }
 
 void CPU::ld_imm16_sp()
 {
+	std::cout << "ld_imm16_sp not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::inc_r16()
 {
+	std::cout << "inc_r16 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::dec_r16()
 {
+	std::cout << "dec_r16 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::add_hl_r16()
 {
+	std::cout << "add_hl_r16 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::inc_r8()
 {
+	std::cout << "inc_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
@@ -339,49 +355,55 @@ void CPU::ld_r8_imm8()
 
 void CPU::rlca()
 {
+	std::cout << "rlca not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::rrca()
 {
+	std::cout << "rrca not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::rla()
 {
+	std::cout << "rla not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::rra()
 {
+	std::cout << "rra not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::daa()
 {
+	std::cout << "daa not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::cpl()
 {
-
+	std::cout << "cpl not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::scf()
 {
-
+	std::cout << "scf not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::ccf()
 {
-
+	std::cout << "ccf not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::jr_imm8()
 {
+	std::cout << "jr_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
@@ -400,13 +422,14 @@ void CPU::jr_cond_imm8()
 	else
 	{
 #if CPU_DEBUG
-		std::cout << std::format("jr_cond_imm8 with {}, PC unchanged)\n", Common::toHexStr(imm8));
+		std::cout << std::format("jr_cond_imm8 with {}, PC unchanged\n", Common::toHexStr(imm8));
 #endif
 	}
 }
 
 void CPU::stop()
 {
+	std::cout << "stop not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
@@ -415,11 +438,13 @@ void CPU::stop()
 /**************************************/
 void CPU::ld_r8_r8()
 {
+	std::cout << "ld_r8_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::halt()
 {
+	std::cout << "halt not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 /**************************************/
@@ -427,26 +452,31 @@ void CPU::halt()
 /**************************************/
 void CPU::add_a_r8()
 {
+	std::cout << "add_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::adc_a_r8()
 {
+	std::cout << "adc_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::sub_a_r8()
 {
+	std::cout << "sub_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::sbc_a_r8()
 {
+	std::cout << "sbc_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::and_a_r8()
 {
+	std::cout << "and_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
@@ -467,11 +497,13 @@ void CPU::xor_a_r8()
 
 void CPU::or_a_r8()
 {
+	std::cout << "or_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::cp_a_r8()
 {
+	std::cout << "cp_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 /**************************************/
@@ -479,36 +511,43 @@ void CPU::cp_a_r8()
 /**************************************/
 void CPU::add_a_imm8()
 {
+	std::cout << "add_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::adc_a_imm8()
 {
+	std::cout << "adc_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::sub_a_imm8()
 {
+	std::cout << "sub_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::sbc_a_imm8()
 {
+	std::cout << "sbc_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::and_a_imm8()
 {
+	std::cout << "and_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::xor_a_imm8()
 {
+	std::cout << "xor_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::or_a_imm8()
 {
+	std::cout << "or_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
@@ -520,27 +559,31 @@ void CPU::cp_a_imm8()
 	ctx.regs().setFlags((a - imm8) == 0, 1, (a & 0xF) < (imm8 & 0xF), a < imm8);
 
 #if CPU_DEBUG
-	std::cout << std::format("Comparing {} with {}", Common::toHexStr(a), Common::toHexStr(imm8));
+	std::cout << std::format("Comparing {} with {}\n", Common::toHexStr(a), Common::toHexStr(imm8));
 #endif
 }
 
 void CPU::ret_cond()
 {
+	std::cout << "ret_cond not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::ret()
 {
+	std::cout << "ret not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::reti()
 {
+	std::cout << "reti not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::jp_cond_imm16()
 {
+	std::cout << "jp_cond_imm16 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
@@ -549,47 +592,62 @@ void CPU::jp_imm16()
 	u16 imm16 = ctx.regs().imm16();
 	// JP to address given
 	ctx.regs().pc = imm16;
+
+#if CPU_DEBUG
 	std::cout << std::format("jp_imm16 to {}\n", Common::toHexStr(imm16));
+#endif
 }
 
 void CPU::jp_hl()
 {
+	std::cout << "jp_hl not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::call_cond_imm16()
 {
+	std::cout << "call_cond_imm16 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::call_imm16()
 {
+	std::cout << "call_imm16 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::rst_tgt3()
 {
+	std::cout << "rst_tgt3 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::pop_r16stk()
 {
+	std::cout << "pop_r16stk not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::push_r16stk()
 {
+	std::cout << "push_r16stk not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::prefix()
 {
+	std::cout << "prefix not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::ldh_c_a()
 {
-	ctx.setRunning(false);
+	u16 c = 0xFF00 | ctx.regs().c;
+	ctx.mem().at(c) = ctx.regs().a;
+
+#if CPU_DEBUG
+	std::cout << std::format("ldh_c_a, addr {} set to {}\n", Common::toHexStr(c), Common::toHexStr(ctx.regs().a));
+#endif
 }
 
 void CPU::ldh_imm8_a()
@@ -598,16 +656,24 @@ void CPU::ldh_imm8_a()
 	u16 a8 = 0xFF00 | imm8;
 	ctx.mem().at(a8) = ctx.regs().a;
 
+#if CPU_DEBUG
 	std::cout << std::format("ldh_imm8_a, set {} to {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(a8));
+#endif
 }
 
 void CPU::ld_imm16_a()
 {
-	ctx.setRunning(false);
+	u16 imm16 = ctx.regs().imm16();
+	ctx.mem().at(imm16) = ctx.regs().a;
+
+#if CPU_DEBUG
+	std::cout << std::format("ld_imm16_a, set {} to addr {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(imm16));
+#endif
 }
 
 void CPU::ldh_a_c()
 {
+	std::cout << "ldh_a_c not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
@@ -617,37 +683,49 @@ void CPU::ldh_a_imm8()
 	u16 a8 = 0xFF00 | imm8;
 	ctx.regs().a = ctx.mem().at(a8);
 
+#if CPU_DEBUG
 	std::cout << std::format("ldh_a_imm8, A set to {} from {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(a8));
+#endif
 }
 
 void CPU::ld_a_imm16()
 {
+	std::cout << "ld_a_imm16 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::add_sp_imm8()
 {
+	std::cout << "add_sp_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::ld_hl_sp_imm8()
 {
+	std::cout << "ld_hl_sp_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::ld_sp_hl()
 {
+	std::cout << "ld_sp_hl not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
 void CPU::di()
 {
 	setIME(false);
+#if CPU_DEBUG
+	std::cout << "di" << std::endl;
+#endif
 }
 
 void CPU::ei()
 {
 	setIME(true);
+#if CPU_DEBUG
+	std::cout << "ei" << std::endl;
+#endif
 }
 
 /**************************************/

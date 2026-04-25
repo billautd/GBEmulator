@@ -33,6 +33,7 @@ public:
 
 	std::vector<u8> &mem() { return memory; }
 	void initMemory();
+	void logMemory();
 
 	CPU &cpu() { return currentCPU; }
 

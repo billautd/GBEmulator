@@ -14,7 +14,7 @@ void Registers::log()
 	std::cout << std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{} -> {}{}{}{}], G[{}], H[{}], L[{}], PC[{}], SP[{}]\n",
 							 Common::toHexStr(a), Common::toHexStr(b), Common::toHexStr(c), Common::toHexStr(d), Common::toHexStr(e),
 							 Common::toHexStr(f),
-							 (f & 0b10000000) ? "Z" : "-", (f & 0b01000000) ? "N" : "-", (f & 0b01000000) ? "H" : "-", (f & 0b00010000) ? "C" : "-",
+							 (f & 0b10000000) ? "Z" : "-", (f & 0b01000000) ? "N" : "-", (f & 0b00100000) ? "H" : "-", (f & 0b00010000) ? "C" : "-",
 							 Common::toHexStr(g), Common::toHexStr(h), Common::toHexStr(l), Common::toHexStr(pc), Common::toHexStr(sp));
 }
 
@@ -254,13 +254,11 @@ void Registers::updateHLMem(R16_MEM r16Mem)
 	if (r16Mem == R16_MEM::HLI)
 	{
 		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) + 1);
-		std::cout << "Incremented HL to " << Common::toHexStr(hl()) << std::endl;
 	}
 	// If using HLD, value in HL should be decremented. We get value present in HL and set it back as itself - 1
 	else if (r16Mem == R16_MEM::HLD)
 	{
 		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) - 1);
-		std::cout << "Decremented HL to " << Common::toHexStr(hl()) << std::endl;
 	}
 }
 
