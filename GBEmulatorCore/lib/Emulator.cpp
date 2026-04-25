@@ -20,7 +20,7 @@ void Emulator::init()
 void Emulator::runEmulator()
 {
 	init();
-	ctx.loadCartridge("../../../t.gb");
+	ctx.loadCartridge("../t.gb");
 	ctx.regs().pc = 0x100;
 
 	while (ctx.isRunning())
