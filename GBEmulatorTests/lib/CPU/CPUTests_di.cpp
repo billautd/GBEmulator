@@ -2,3 +2,16 @@
 #include <CPUTestsFixture.h>
 #include <CPU.h>
 #include <Context.h>
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xF3", "[cpu_ops_di]")
+{
+    cpu().setIME(false);
+    runOp(0xF3);
+    REQUIRE_FALSE(cpu().isIME());
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01);
+
+    cpu().setIME(true);
+    runOp(0xF3);
+    REQUIRE_FALSE(cpu().isIME());
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02);
+}

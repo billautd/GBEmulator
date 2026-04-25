@@ -33,6 +33,15 @@ enum class R16_MEM
 };
 const std::string R16_MEM_STR[]{"BC", "DE", "HL-", "HL+"};
 
+enum class COND
+{
+	NZ,
+	Z,
+	NC,
+	C
+};
+const std::string COND_STR[]{"NZ", "Z", "NC", "C"};
+
 class Context;
 class CORE_API Registers
 {
@@ -49,7 +58,7 @@ public:
 	u8 c = 0x00;
 	u8 d = 0x00;
 	u8 e = 0x00;
-	// Flags
+	// Flags : ZNHC 0000
 	u8 f = 0x00;
 	u8 g = 0x00;
 	u8 h = 0x00;
@@ -77,6 +86,11 @@ public:
 	static R16_MEM getR16MemFromCode(u8 code);
 	// Gets byte pointed to by 2 8-bit registers
 	u16 getPointerFromR16Mem(R16_MEM regMem);
+
+	// From 2 bits data, get COND
+	static COND getCONDFromCode(u8 code);
+	// Checks condition of F register
+	bool checkCOND(COND cond);
 
 	// Returns 1 byte after PC
 	u8 imm8();

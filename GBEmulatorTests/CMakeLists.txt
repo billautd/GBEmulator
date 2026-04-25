@@ -6,15 +6,84 @@ set_target_properties(GBEmulatorTests PROPERTIES
 )
 target_sources(GBEmulatorTests
 PRIVATE
+    #Registers
 	lib/Registers/RegistersTests.cpp
-    lib/CPU/CPUTests.cpp
+    #CPU
+    lib/CPU/CPUTests_adc_a_imm8.cpp
+    lib/CPU/CPUTests_adc_a_r8.cpp
+    lib/CPU/CPUTests_add_a_imm8.cpp
+    lib/CPU/CPUTests_add_a_r8.cpp
+    lib/CPU/CPUTests_add_hl_r16.cpp
+    lib/CPU/CPUTests_add_sp_imm8.cpp
+    lib/CPU/CPUTests_and_a_imm8.cpp
+    lib/CPU/CPUTests_and_a_r8.cpp
+    lib/CPU/CPUTests_bit_b3_r8.cpp
+    lib/CPU/CPUTests_call_cond_imm16.cpp
+    lib/CPU/CPUTests_call_imm16.cpp
+    lib/CPU/CPUTests_ccf.cpp
+    lib/CPU/CPUTests_cp_a_imm8.cpp
+    lib/CPU/CPUTests_cp_a_r8.cpp
+    lib/CPU/CPUTests_cpl.cpp
+    lib/CPU/CPUTests_daa.cpp
+    lib/CPU/CPUTests_dec_r16.cpp
     lib/CPU/CPUTests_dec_r8.cpp
+    lib/CPU/CPUTests_di.cpp
+    lib/CPU/CPUTests_ei.cpp
+    lib/CPU/CPUTests_halt.cpp
+    lib/CPU/CPUTests_inc_r16.cpp
+    lib/CPU/CPUTests_inc_r8.cpp
+    lib/CPU/CPUTests_jp_cond_imm16.cpp
+    lib/CPU/CPUTests_jp_hl.cpp
     lib/CPU/CPUTests_jp_imm16.cpp
-    lib/CPU/CPUTests_ld_r8_imm8.cpp
+    lib/CPU/CPUTests_jr_cond_imm8.cpp
+    lib/CPU/CPUTests_jr_imm8.cpp
+    lib/CPU/CPUTests_ld_a_imm16.cpp
+    lib/CPU/CPUTests_ld_a_r16mem.cpp
+    lib/CPU/CPUTests_ld_hl_sp_imm8.cpp
+    lib/CPU/CPUTests_ld_imm16_a.cpp
+    lib/CPU/CPUTests_ld_imm16_sp.cpp
     lib/CPU/CPUTests_ld_r16_imm16.cpp
     lib/CPU/CPUTests_ld_r16mem_a.cpp
+    lib/CPU/CPUTests_ld_r8_imm8.cpp
+    lib/CPU/CPUTests_ld_r8_r8.cpp
+    lib/CPU/CPUTests_ld_sp_hl.cpp
+    lib/CPU/CPUTests_ldh_a_c.cpp
+    lib/CPU/CPUTests_ldh_a_imm8.cpp
+    lib/CPU/CPUTests_ldh_c_a.cpp
+    lib/CPU/CPUTests_ldh_imm8_a.cpp
     lib/CPU/CPUTests_nop.cpp
+    lib/CPU/CPUTests_or_a_imm8.cpp
+    lib/CPU/CPUTests_or_a_r8.cpp
+    lib/CPU/CPUTests_pop_r16stk.cpp
+    lib/CPU/CPUTests_prefix.cpp
+    lib/CPU/CPUTests_push_r16stk.cpp
+    lib/CPU/CPUTests_res_b3_r8.cpp
+    lib/CPU/CPUTests_ret.cpp
+    lib/CPU/CPUTests_ret_cond.cpp
+    lib/CPU/CPUTests_reti.cpp
+    lib/CPU/CPUTests_rl_r8.cpp
+    lib/CPU/CPUTests_rla.cpp
+    lib/CPU/CPUTests_rlc_r8.cpp
+    lib/CPU/CPUTests_rlca.cpp
+    lib/CPU/CPUTests_rr_r8.cpp
+    lib/CPU/CPUTests_rra.cpp
+    lib/CPU/CPUTests_rrc_r8.cpp
+    lib/CPU/CPUTests_rrca.cpp
+    lib/CPU/CPUTests_rst_tgt3.cpp
+    lib/CPU/CPUTests_sbc_a_imm8.cpp
+    lib/CPU/CPUTests_sbc_a_r8.cpp
+    lib/CPU/CPUTests_scf.cpp
+    lib/CPU/CPUTests_set_b3_r8.cpp
+    lib/CPU/CPUTests_sla_r8.cpp
+    lib/CPU/CPUTests_sra_r8.cpp
+    lib/CPU/CPUTests_srl_r8.cpp
+    lib/CPU/CPUTests_stop.cpp
+    lib/CPU/CPUTests_sub_a_imm8.cpp
+    lib/CPU/CPUTests_sub_a_r8.cpp
+    lib/CPU/CPUTests_swap_r8.cpp
+    lib/CPU/CPUTests_xor_a_imm8.cpp
     lib/CPU/CPUTests_xor_a_r8.cpp
+    lib/CPU/CPUTests.cpp
 )
 target_compile_features(GBEmulatorTests PRIVATE cxx_std_20)
 target_include_directories(GBEmulatorTests PRIVATE include)

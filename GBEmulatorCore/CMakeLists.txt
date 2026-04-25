@@ -13,6 +13,7 @@ target_sources(GBEmulatorCore
 		lib/Context.cpp
 		lib/CPU.cpp
 		lib/Emulator.cpp
+		lib/PPU.cpp
 		lib/Registers.cpp
 	PUBLIC
 		FILE_SET HEADERS
@@ -24,6 +25,7 @@ target_sources(GBEmulatorCore
 			include/Context.h
 			include/CPU.h
 			include/Emulator.h
+			include/PPU.h
 			include/Registers.h
 )
 target_include_directories(GBEmulatorCore PUBLIC include)

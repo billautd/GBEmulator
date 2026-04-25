@@ -9,6 +9,8 @@ private:
 	Context &ctx;
 	u8 currentOpCode;
 
+	bool ime = false;
+
 public:
 	CPU(Context &ctx);
 	~CPU();
@@ -16,8 +18,10 @@ public:
 	u8 opCode() { return currentOpCode; }
 	void setCurrentOpCode(u8 opCode) { currentOpCode = opCode; }
 
+	bool isIME() { return ime; }
+	void setIME(bool ime) { this->ime = ime; }
+
 	// Main entry points
-	void runOp(u8 code);
 	void runOp();
 
 	// Block 0

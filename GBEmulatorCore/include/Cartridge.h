@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Common.h>
+#include <array>
 
 class Context;
 class CORE_API Cartridge

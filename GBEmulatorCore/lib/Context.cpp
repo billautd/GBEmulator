@@ -1,6 +1,7 @@
 #include <Context.h>
 
-Context::Context() : loadedCartridge(Cartridge(*this)), registers(Registers(*this)), currentCPU(CPU(*this))
+Context::Context() : loadedCartridge(Cartridge(*this)), registers(Registers(*this)), currentCPU(CPU(*this)),
+					 currentPPU(PPU(*this))
 {
 	init();
 }

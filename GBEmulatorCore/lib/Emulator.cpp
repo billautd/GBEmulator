@@ -13,6 +13,7 @@ Emulator::~Emulator()
 void Emulator::init()
 {
 	SDL_Init(SDL_INIT_VIDEO);
+	window = SDL_CreateWindow("", 600, 400, 0);
 	ctx.setRunning(true);
 	return;
 }
@@ -21,25 +22,40 @@ void Emulator::runEmulator()
 {
 	init();
 	ctx.loadCartridge("../t.gb");
-	ctx.regs().pc = 0x100;
 
+	SDL_Event evt;
 	while (ctx.isRunning())
 	{
-		Common::delay(100);
-		// Unsupported operation
+		//  Unsupported operation
 		try
 		{
 			ctx.cpu().runOp();
+			ctx.ppu().run();
 		}
 		catch (std::runtime_error &e)
 		{
 			std::cerr << e.what() << std::endl;
-			ctx.setRunning(false);
+			destroy();
 		}
+
+		// Listen to process exit
+		while (SDL_PollEvent(&evt))
+		{
+
+			if (evt.type == SDL_EVENT_QUIT)
+			{
+				std::cout << "Exiting" << std::endl;
+				destroy();
+			}
+		}
+		SDL_Delay(10);
 	}
 	return;
 }
 
 void Emulator::destroy()
 {
+	ctx.setRunning(false);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
 }

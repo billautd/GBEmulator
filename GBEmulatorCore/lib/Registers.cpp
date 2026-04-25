@@ -11,10 +11,11 @@ Registers::~Registers()
 
 void Registers::log()
 {
-	std::cout << std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{}], G[{}], H[{}], L[{}], PC[{}], SP[{}]\n",
-							 Common::toHexStr(a), Common::toHexStr(b), Common::toHexStr(c), Common::toHexStr(d),
-							 Common::toHexStr(e), Common::toHexStr(f), Common::toHexStr(g), Common::toHexStr(h),
-							 Common::toHexStr(l), Common::toHexStr(pc), Common::toHexStr(sp));
+	std::cout << std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{} -> {}{}{}{}], G[{}], H[{}], L[{}], PC[{}], SP[{}]\n",
+							 Common::toHexStr(a), Common::toHexStr(b), Common::toHexStr(c), Common::toHexStr(d), Common::toHexStr(e),
+							 Common::toHexStr(f),
+							 (f & 0b10000000) ? "Z" : "-", (f & 0b01000000) ? "N" : "-", (f & 0b01000000) ? "H" : "-", (f & 0b00010000) ? "C" : "-",
+							 Common::toHexStr(g), Common::toHexStr(h), Common::toHexStr(l), Common::toHexStr(pc), Common::toHexStr(sp));
 }
 
 R8 Registers::getR8FromCode(u8 data)
@@ -86,7 +87,7 @@ void Registers::setRegFromR8(R8 reg, u8 value)
 		break;
 	}
 	default:
-		throw std::invalid_argument(std::string("Registers::setRegFromR8 -> Invalid R8 reg " + R8_STR[(int)reg]));
+		throw std::invalid_argument(std::string("Registers::setRegFromR8 -> Invalid R8 reg " + (int)reg));
 	}
 }
 
@@ -111,7 +112,7 @@ u8 Registers::getFromR8(R8 reg)
 	case R8::HL:
 		return ctx.mem().at(hl());
 	}
-	throw std::invalid_argument(std::string("Registers::getFromR8 -> Invalid R8 reg " + R8_STR[(int)reg]));
+	throw std::invalid_argument(std::string("Registers::getFromR8 -> Invalid R8 reg " + (int)reg));
 }
 
 R16 Registers::getR16FromCode(u8 data)
@@ -161,7 +162,7 @@ void Registers::setRegFromR16(R16 reg, u16 value)
 		break;
 	}
 	default:
-		throw std::invalid_argument(std::string("Registers::setRegFromR16 -> Invalid R16 reg " + R16_STR[(int)reg]));
+		throw std::invalid_argument(std::string("Registers::setRegFromR16 -> Invalid R16 reg " + (int)reg));
 	}
 }
 
@@ -186,31 +187,59 @@ u16 Registers::getPointerFromR16Mem(R16_MEM regMem)
 	switch (regMem)
 	{
 	case R16_MEM::BC:
-	{
 		return b * 256 + c;
-	}
 	case R16_MEM::DE:
-	{
 		return d * 256 + e;
-	}
 	case R16_MEM::HLI:
 	case R16_MEM::HLD:
-	{
 		return h * 256 + l;
 	}
+	throw std::invalid_argument(std::string("Registers::getPointerFromR16Mem -> Invalid R16 mem reg " + (int)regMem));
+}
+
+COND Registers::getCONDFromCode(u8 data)
+{
+	switch (data)
+	{
+	case 0:
+		return COND::NZ;
+	case 1:
+		return COND::Z;
+	case 2:
+		return COND::NC;
+	case 3:
+		return COND::C;
 	}
-	throw std::invalid_argument(std::string("Registers::getPointerFromR16Mem -> Invalid R16 mem reg " + R16_MEM_STR[(int)regMem]));
+	throw std::invalid_argument(std::string("Registers::getCONDFromCode -> Invalid COND " + data));
+}
+
+bool Registers::checkCOND(COND cond)
+{
+	switch (cond)
+	{
+	case COND::NZ:
+		return !(f & 0b10000000);
+	case COND::Z:
+		return f & 0b10000000;
+	case COND::NC:
+		return !(f & 0b00010000);
+	case COND::C:
+		return f & 0b00010000;
+	}
+	throw std::invalid_argument(std::string("Registers::checkCOND -> Invalid COND " + (int)cond));
 }
 
 u8 Registers::imm8()
 {
-	return ctx.mem().at(pc + 1);
+	// Read next 8 bits and increase PC by 1
+	return ctx.mem().at(pc++);
 }
 
 u16 Registers::imm16()
 {
-	u8 bigValue = ctx.mem().at(pc + 2);
-	u8 littleValue = ctx.mem().at(pc + 1);
+	// Read next 16 bits and increase PC by 2
+	u8 littleValue = ctx.mem().at(pc++);
+	u8 bigValue = ctx.mem().at(pc++);
 	return bigValue * 256 + littleValue;
 }
 
@@ -225,13 +254,13 @@ void Registers::updateHLMem(R16_MEM r16Mem)
 	if (r16Mem == R16_MEM::HLI)
 	{
 		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) + 1);
-		std::cout << "Incremented HL to " << hl() << std::endl;
+		std::cout << "Incremented HL to " << Common::toHexStr(hl()) << std::endl;
 	}
 	// If using HLD, value in HL should be decremented. We get value present in HL and set it back as itself - 1
 	else if (r16Mem == R16_MEM::HLD)
 	{
 		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) - 1);
-		std::cout << "Decremented HL to " << hl() << std::endl;
+		std::cout << "Decremented HL to " << Common::toHexStr(hl()) << std::endl;
 	}
 }
 

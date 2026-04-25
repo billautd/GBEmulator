@@ -22,7 +22,7 @@ public:
 };
 int RegisterTestsFixture::id = 0;
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getR8FromCoode", "[getR8FromCoode]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_getR8FromCoode", "[regs]")
 {
 	// Check correct R8 is returned
 	REQUIRE(Registers::getR8FromCode(0) == R8::B);
@@ -38,7 +38,7 @@ TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getR8FromCoode", "[getR8Fro
 	REQUIRE_THROWS_AS(Registers::getR8FromCode(-1), std::invalid_argument);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method setRegFromR8", "[setRegFromR8]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_setRegFromR8", "[regs]")
 {
 	// Set all registers through method
 	regs->setRegFromR8(R8::B, 0x01);
@@ -61,7 +61,7 @@ TEST_CASE_METHOD(RegisterTestsFixture, "Tests method setRegFromR8", "[setRegFrom
 	REQUIRE(regs->a == 0x08);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getFromR8", "[getFromR8]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_getFromR8", "[regs]")
 {
 	// Sets registers directly
 	regs->b = 0x01;
@@ -83,7 +83,7 @@ TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getFromR8", "[getFromR8]")
 	REQUIRE(regs->getFromR8(R8::A) == 0x08);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getR16FromCode", "[getR16FromCode]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_getR16FromCode", "[regs]")
 {
 	REQUIRE(Registers::getR16FromCode(0) == R16::BC);
 	REQUIRE(Registers::getR16FromCode(1) == R16::DE);
@@ -94,7 +94,7 @@ TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getR16FromCode", "[getR16Fr
 	REQUIRE_THROWS_AS(Registers::getR16FromCode(-1), std::invalid_argument);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method setRegFromR16", "[setRegFromR16]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_setRegFromR16", "[regs]")
 {
 	// Set all registers through method
 	regs->setRegFromR16(R16::BC, 0x0102);
@@ -112,7 +112,7 @@ TEST_CASE_METHOD(RegisterTestsFixture, "Tests method setRegFromR16", "[setRegFro
 	REQUIRE(regs->sp == 0x0708);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getR16MemFromCode", "[getR16MemFromCode]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_getR16MemFromCode", "[regs]")
 {
 	REQUIRE(Registers::getR16MemFromCode(0) == R16_MEM::BC);
 	REQUIRE(Registers::getR16MemFromCode(1) == R16_MEM::DE);
@@ -123,7 +123,7 @@ TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getR16MemFromCode", "[getR1
 	REQUIRE_THROWS_AS(Registers::getR16MemFromCode(-1), std::invalid_argument);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getPointerFromR16Mem", "[getPointerFromR16Mem]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_getPointerFromR16Mem", "[regs]")
 {
 	// Sets registers directly
 	regs->b = 0x01;
@@ -142,23 +142,64 @@ TEST_CASE_METHOD(RegisterTestsFixture, "Tests method getPointerFromR16Mem", "[ge
 	REQUIRE(regs->getPointerFromR16Mem(R16_MEM::HLD) == 0x0506);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method imm8", "[imm8]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_getCONDFromCode", "[regs]")
 {
-	regs->pc = 0x1020;
-
-	ctx->mem().at(0x1020) = 0x01;
-	ctx->mem().at(0x1021) = 0x02;
-	ctx->mem().at(0x1022) = 0x03;
-	ctx->mem().at(0x1023) = 0x04;
-
-	REQUIRE(regs->imm8() == 0x02);
-	regs->pc++;
-	REQUIRE(regs->imm8() == 0x03);
-	regs->pc++;
-	REQUIRE(regs->imm8() == 0x04);
+	REQUIRE(Registers::getCONDFromCode(0) == COND::NZ);
+	REQUIRE(Registers::getCONDFromCode(1) == COND::Z);
+	REQUIRE(Registers::getCONDFromCode(2) == COND::NC);
+	REQUIRE(Registers::getCONDFromCode(3) == COND::C);
+	REQUIRE_THROWS_AS(Registers::getCONDFromCode(4), std::invalid_argument);
+	REQUIRE_THROWS_AS(Registers::getCONDFromCode(8), std::invalid_argument);
+	REQUIRE_THROWS_AS(Registers::getCONDFromCode(-1), std::invalid_argument);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method imm16", "[imm16]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_checkCOND", "[regs]")
+{
+	regs->f = 0b00000000;
+	REQUIRE(regs->checkCOND(COND::NZ));
+	REQUIRE_FALSE(regs->checkCOND(COND::Z));
+	REQUIRE(regs->checkCOND(COND::NC));
+	REQUIRE_FALSE(regs->checkCOND(COND::C));
+
+	regs->f = 0b10000000;
+	REQUIRE_FALSE(regs->checkCOND(COND::NZ));
+	REQUIRE(regs->checkCOND(COND::Z));
+	REQUIRE(regs->checkCOND(COND::NC));
+	REQUIRE_FALSE(regs->checkCOND(COND::C));
+
+	regs->f = 0b01000000;
+	REQUIRE(regs->checkCOND(COND::NZ));
+	REQUIRE_FALSE(regs->checkCOND(COND::Z));
+	REQUIRE(regs->checkCOND(COND::NC));
+	REQUIRE_FALSE(regs->checkCOND(COND::C));
+
+	regs->f = 0b00100000;
+	REQUIRE(regs->checkCOND(COND::NZ));
+	REQUIRE_FALSE(regs->checkCOND(COND::Z));
+	REQUIRE(regs->checkCOND(COND::NC));
+	REQUIRE_FALSE(regs->checkCOND(COND::C));
+
+	regs->f = 0b00010000;
+	REQUIRE(regs->checkCOND(COND::NZ));
+	REQUIRE_FALSE(regs->checkCOND(COND::Z));
+	REQUIRE_FALSE(regs->checkCOND(COND::NC));
+	REQUIRE(regs->checkCOND(COND::C));
+}
+
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_imm8", "[regs]")
+{
+	regs->pc = 0x1020;
+
+	ctx->mem().at(0x1020) = 0x01;
+	ctx->mem().at(0x1021) = 0x02;
+	ctx->mem().at(0x1022) = 0x03;
+
+	REQUIRE(regs->imm8() == 0x01);
+	REQUIRE(regs->imm8() == 0x02);
+	REQUIRE(regs->imm8() == 0x03);
+}
+
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_imm16", "[regs]")
 {
 	regs->pc = 0x1020;
 
@@ -167,12 +208,11 @@ TEST_CASE_METHOD(RegisterTestsFixture, "Tests method imm16", "[imm16]")
 	ctx->mem().at(0x1022) = 0x03;
 	ctx->mem().at(0x1023) = 0x04;
 
-	REQUIRE(regs->imm16() == 0x0302);
-	regs->pc++;
+	REQUIRE(regs->imm16() == 0x0201);
 	REQUIRE(regs->imm16() == 0x0403);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method hl", "[hl]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_hl", "[regs]")
 {
 	regs->h = 0x12;
 	regs->l = 0x34;
@@ -180,7 +220,7 @@ TEST_CASE_METHOD(RegisterTestsFixture, "Tests method hl", "[hl]")
 	REQUIRE(regs->hl() == 0x1234);
 }
 
-TEST_CASE_METHOD(RegisterTestsFixture, "Tests method updateHLMem", "[updateHLMem]")
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_updateHLMem", "[regs]")
 {
 	regs->h = 0x01;
 	regs->l = 0x02;

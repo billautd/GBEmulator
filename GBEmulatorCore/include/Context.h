@@ -4,6 +4,7 @@
 #include <Cartridge.h>
 #include <Registers.h>
 #include <CPU.h>
+#include <PPU.h>
 
 class CORE_API Context
 {
@@ -12,6 +13,7 @@ private:
 	Cartridge loadedCartridge;
 	Registers registers;
 	CPU currentCPU;
+	PPU currentPPU;
 
 	std::vector<u8> memory = {};
 
@@ -33,4 +35,6 @@ public:
 	void initMemory();
 
 	CPU &cpu() { return currentCPU; }
+
+	PPU &ppu() { return currentPPU; }
 };

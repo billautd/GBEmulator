@@ -6,20 +6,20 @@
 #define CORE_API __declspec(dllimport)
 #endif
 
-#include <array>
-#include <cstdint>
 #include <format>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <span>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include <SDL3/SDL.h>
 
+// Signed
+typedef int8_t i8;
+typedef int16_t i16;
+typedef int32_t i32;
+
+// Unsigned
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
