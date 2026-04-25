@@ -11,18 +11,10 @@ Registers::~Registers()
 
 void Registers::log()
 {
-	std::cout << "A[" << Common::toHexStr(a)
-			  << "], B[" << Common::toHexStr(b)
-			  << "], C[" << Common::toHexStr(c)
-			  << "], D[" << Common::toHexStr(d)
-			  << "], E[" << Common::toHexStr(e)
-			  << "], F[" << Common::toHexStr(f)
-			  << "], G[" << Common::toHexStr(g)
-			  << "], H[" << Common::toHexStr(h)
-			  << "], L[" << Common::toHexStr(l)
-			  << "], PC[" << Common::toHexStr(pc)
-			  << "], SP[" << Common::toHexStr(sp)
-			  << "]" << std::endl;
+	std::cout << std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{}], G[{}], H[{}], L[{}], PC[{}], SP[{}]\n",
+							 Common::toHexStr(a), Common::toHexStr(b), Common::toHexStr(c), Common::toHexStr(d),
+							 Common::toHexStr(e), Common::toHexStr(f), Common::toHexStr(g), Common::toHexStr(h),
+							 Common::toHexStr(l), Common::toHexStr(pc), Common::toHexStr(sp));
 }
 
 R8 Registers::getR8FromCode(u8 data)
@@ -117,9 +109,7 @@ u8 Registers::getFromR8(R8 reg)
 	case R8::A:
 		return a;
 	case R8::HL:
-	{
-		// TODO
-	}
+		return ctx.mem().at(hl());
 	}
 	throw std::invalid_argument(std::string("Registers::getFromR8 -> Invalid R8 reg " + R8_STR[(int)reg]));
 }
@@ -235,13 +225,13 @@ void Registers::updateHLMem(R16_MEM r16Mem)
 	if (r16Mem == R16_MEM::HLI)
 	{
 		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) + 1);
-		std::cout << "Incremented HL to " << Common::toHexStr(l) << Common::toHexStr(h) << std::endl;
+		std::cout << "Incremented HL to " << hl() << std::endl;
 	}
 	// If using HLD, value in HL should be decremented. We get value present in HL and set it back as itself - 1
 	else if (r16Mem == R16_MEM::HLD)
 	{
 		setRegFromR16(R16::HL, getPointerFromR16Mem(r16Mem) - 1);
-		std::cout << "Decrement HL to " << Common::toHexStr(l) << Common::toHexStr(h) << std::endl;
+		std::cout << "Decremented HL to " << hl() << std::endl;
 	}
 }
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Common.h"
-#include "Cartridge.h"
-#include "Registers.h"
-#include "CPU.h"
+#include <Common.h>
+#include <Cartridge.h>
+#include <Registers.h>
+#include <CPU.h>
 
 class CORE_API Context
 {
@@ -12,8 +12,6 @@ private:
 	Cartridge loadedCartridge;
 	Registers registers;
 	CPU currentCPU;
-
-	u8 currentOpCode;
 
 	std::vector<u8> memory = {};
 
@@ -27,9 +25,6 @@ public:
 	void setRunning(bool running) { this->running = running; }
 
 	Registers &regs() { return registers; }
-
-	u8 opCode() { return currentOpCode; }
-	void setCurrentOpCode(u8 opCode) { currentOpCode = opCode; }
 
 	void loadCartridge(const char *path);
 	Cartridge &getLoadedCartridge() { return loadedCartridge; }

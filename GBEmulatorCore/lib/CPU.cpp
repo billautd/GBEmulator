@@ -12,15 +12,16 @@ CPU::~CPU()
 void CPU::runOp()
 {
 	u8 code = ctx.mem().at(ctx.regs().pc);
-	ctx.setCurrentOpCode(code);
-	std::cout << "Current op code : " << Common::toHexStr(code) << std::endl;
-	ctx.regs().log();
 	// Call main method with op code
 	runOp(code);
 }
 
 void CPU::runOp(u8 code)
 {
+	setCurrentOpCode(code);
+	std::cout << std::format("\nCurrent op code : {}\n", Common::toHexStr(code));
+	ctx.regs().log();
+
 	// Block 0
 	// 0x00
 	if (code == 0)
@@ -441,7 +442,7 @@ void CPU::ld_r16_imm16()
 {
 	u16 imm16 = ctx.regs().imm16();
 
-	R16 r16 = Registers::getR16FromCode((ctx.opCode() & 0b110000) >> 4);
+	R16 r16 = Registers::getR16FromCode((opCode() & 0b00110000) >> 4);
 	ctx.regs().setRegFromR16(r16, imm16);
 
 	std::cout << "ld_r16_imm16 : " << Common::toHexStr(imm16) << " set to " << R16_STR[(int)r16] << std::endl;
@@ -451,7 +452,7 @@ void CPU::ld_r16_imm16()
 
 void CPU::ld_r16mem_a()
 {
-	R16_MEM r16Mem = Registers::getR16MemFromCode((ctx.opCode() & 0b110000) >> 4);
+	R16_MEM r16Mem = Registers::getR16MemFromCode((opCode() & 0b00110000) >> 4);
 	u16 address = ctx.regs().getPointerFromR16Mem(r16Mem);
 	ctx.mem().at(address) = ctx.regs().a;
 
@@ -489,7 +490,7 @@ void CPU::inc_r8()
 
 void CPU::dec_r8()
 {
-	R8 r8 = Registers::getR8FromCode((ctx.opCode() & 0b111000) >> 3);
+	R8 r8 = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
 	ctx.regs().setRegFromR8(r8, ctx.regs().getFromR8(r8) - 1);
 
 	ctx.regs().setFlags(ctx.regs().getFromR8(r8) == 0, 1, (ctx.regs().getFromR8(r8) & 0xF) == 0xF, -1);
@@ -502,7 +503,7 @@ void CPU::ld_r8_imm8()
 {
 	u8 imm8 = ctx.regs().imm8();
 
-	R8 r8 = Registers::getR8FromCode((ctx.opCode() & 0b111000) >> 3);
+	R8 r8 = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
 	ctx.regs().setRegFromR8(r8, imm8);
 
 	std::cout << "ld_r8_imm8 : " << Common::toHexStr(imm8) << " set to " << R8_STR[(int)r8] << std::endl;
@@ -589,7 +590,7 @@ void CPU::and_a_r8()
 
 void CPU::xor_a_r8()
 {
-	R8 r8 = Registers::getR8FromCode(ctx.opCode() & 0b111);
+	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
 	u8 r8Value = ctx.regs().getFromR8(r8);
 	ctx.regs().a ^= r8Value;
 

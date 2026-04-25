@@ -44,12 +44,12 @@ bool Cartridge::checkGlobalChecksum()
 
 void Cartridge::loadCartrige(const char *path)
 {
-	std::cout << "Loading cartridge from path: " << path << std::endl;
+	std::cout << std::format("Loading cartridge from path: {}\n", path);
 
 	std::ifstream file(path, std::ios::binary);
 	if (!file.is_open())
 	{
-		std::cerr << "Failed to open cartridge file at " << path << std::endl;
+		std::cerr << std::format("Failed to open cartridge file at {}\n", path);
 		return;
 	}
 

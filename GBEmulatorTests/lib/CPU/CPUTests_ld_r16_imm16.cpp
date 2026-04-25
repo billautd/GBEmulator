@@ -3,12 +3,38 @@
 #include <CPU.h>
 #include <Context.h>
 
-TEST_CASE_METHOD(CPUTestsFixture, "Test LD BC,d16 operation for code 0x01", "[lb_bc_imm16_0x01]")
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x01", "[cpu_ops_ld_r16_imm16]")
 {
-	ctx->mem().at(0x01) = 0xAB;
-	ctx->mem().at(0x02) = 0xCD;
-	ctx->cpu().runOp(0x01);
+	mem(0x01) = 0xAB;
+	mem(0x02) = 0xCD;
+	runOp(0x01);
 
-	// Check registers and PC
 	ASSERT_REGISTERS(0, 0xCD, 0xAB, 0, 0, 0, 0, 0, 0, 0, 3);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x11", "[cpu_ops_ld_r16_imm16]")
+{
+	mem(0x01) = 0xAB;
+	mem(0x02) = 0xCD;
+	runOp(0x11);
+
+	ASSERT_REGISTERS(0, 0, 0, 0xCD, 0xAB, 0, 0, 0, 0, 0, 3);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x21", "[cpu_ops_ld_r16_imm16]")
+{
+	mem(0x01) = 0xAB;
+	mem(0x02) = 0xCD;
+	runOp(0x21);
+
+	ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0xCD, 0xAB, 0, 3);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x31", "[cpu_ops_ld_r16_imm16]")
+{
+	mem(0x01) = 0xAB;
+	mem(0x02) = 0xCD;
+	runOp(0x31);
+
+	ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0xCDAB, 3);
 }

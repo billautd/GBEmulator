@@ -19,6 +19,13 @@ public:
         ctx->regs().pc = 0;
     }
 
+    // Shortcut getters
+    Registers &regs() { return ctx->regs(); }
+    CPU &cpu() { return ctx->cpu(); }
+    std::vector<u8> &mem() { return ctx->mem(); }
+    void runOp(u8 code) { cpu().runOp(code); }
+    u8 &mem(u16 at) { return mem().at(at); }
+
     void ASSERT_REGISTERS(u8 a, u8 b, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h, u8 l, u16 sp, u16 pc)
     {
         Registers &regs = ctx->regs();

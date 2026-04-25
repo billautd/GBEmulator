@@ -1,19 +1,25 @@
 #pragma once
 
-#include "Common.h"
+#include <Common.h>
 
 class Context;
 class CORE_API CPU
 {
 private:
 	Context &ctx;
+	u8 currentOpCode;
 
 public:
 	CPU(Context &ctx);
 	~CPU();
 
+	u8 opCode() { return currentOpCode; }
+	void setCurrentOpCode(u8 opCode) { currentOpCode = opCode; }
+
+	// Main entry points
 	void runOp(u8 code);
 	void runOp();
+
 	// Block 0
 	void nop();
 	void ld_r16_imm16();

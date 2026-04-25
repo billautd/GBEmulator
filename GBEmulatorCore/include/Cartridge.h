@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common.h"
+#include <Common.h>
 
 class Context;
 class CORE_API Cartridge

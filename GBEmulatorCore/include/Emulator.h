@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Common.h"
-#include "Context.h"
+#include <Common.h>
+#include <Context.h>
 
 class CORE_API Emulator
 {

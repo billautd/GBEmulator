@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstdint>
+#include <format>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -23,7 +24,7 @@ typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 
-class Common
+class CORE_API Common
 {
 public:
 	static void delay(int ms);
