@@ -1,5 +1,6 @@
 #include <CPU.h>
 #include <Context.h>
+#include <math.h>
 
 #define CPU_DEBUG true
 
@@ -9,6 +10,24 @@ CPU::CPU(Context &ctx) : ctx(ctx)
 
 CPU::~CPU()
 {
+}
+
+void CPU::pushToStack(u16 value)
+{
+	// Set value to stack
+	ctx.regs().sp--;
+	ctx.mem().at(ctx.regs().sp) = value >> 8;
+	ctx.regs().sp--;
+	ctx.mem().at(ctx.regs().sp) = value & 0XFF;
+}
+
+u16 CPU::popFromStack()
+{
+	u8 lsb = ctx.mem().at(ctx.regs().sp);
+	ctx.regs().sp++;
+	u8 msb = ctx.mem().at(ctx.regs().sp);
+	ctx.regs().sp++;
+	return msb * 256 + lsb;
 }
 
 void CPU::runOp()
@@ -360,8 +379,13 @@ void CPU::ld_imm16_sp()
 
 void CPU::inc_r16()
 {
-	std::cout << "inc_r16 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R16 r16 = Registers::getR16FromCode((opCode() & 0b00110000) >> 4);
+	u16 r16Value = ctx.regs().getFromR16(r16);
+	ctx.regs().setRegFromR16(r16, r16Value + 1);
+
+#if CPU_DEBUG
+	std::cout << std::format("inc_r16 : {} incremented to {}\n", R16_STR[(int)r16], Common::toHexStr(ctx.regs().getFromR16(r16)));
+#endif
 }
 
 void CPU::dec_r16()
@@ -377,8 +401,17 @@ void CPU::dec_r16()
 
 void CPU::add_hl_r16()
 {
-	std::cout << "add_hl_r16 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R16 r16 = Registers::getR16FromCode((opCode() & 0b00110000) >> 4);
+	u16 hlVal = ctx.regs().getFromR16(R16::HL);
+	u16 r16Val = ctx.regs().getFromR16(r16);
+	ctx.regs().setRegFromR16(R16::HL, hlVal + r16Val);
+	u32 result32 = hlVal + r16Val;
+
+	ctx.regs().setFlags(-1, 0, ((hlVal & 0x0FFF) + (r16Val & 0x0FFF)) > 0x0FFF, result32 > 0xFFFF);
+
+#if CPU_DEBUG
+	std::cout << std::format("add_hl_r16 : HL set to {} from {}\n", Common::toHexStr(ctx.regs().getFromR16(R16::HL)), R16_STR[(int)r16]);
+#endif
 }
 
 void CPU::inc_r8()
@@ -529,8 +562,19 @@ void CPU::halt()
 /**************************************/
 void CPU::add_a_r8()
 {
-	std::cout << "add_a_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
+	u8 r8Value = ctx.regs().getFromR8(r8);
+	u8 a = ctx.regs().a;
+	ctx.regs().a += r8Value;
+
+	u16 result16 = a + r8Value;
+	std::cout << result16 << std::endl;
+
+	ctx.regs().setFlags(ctx.regs().a == 0, 0, ((a & 0xF) + (r8Value & 0xF)) > 0xF, result16 > 0xFF);
+
+#if CPU_DEBUG
+	std::cout << std::format("add_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
+#endif
 }
 
 void CPU::adc_a_r8()
@@ -553,8 +597,17 @@ void CPU::sbc_a_r8()
 
 void CPU::and_a_r8()
 {
-	std::cout << "and_a_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
+	u8 r8Value = ctx.regs().getFromR8(r8);
+
+	ctx.regs().a &= r8Value;
+
+	u8 newValue = ctx.regs().a;
+	ctx.regs().setFlags(newValue == 0, 0, 1, 0);
+
+#if CPU_DEBUG
+	std::cout << std::format("and_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
+#endif
 }
 
 void CPU::xor_a_r8()
@@ -701,8 +754,12 @@ void CPU::jp_imm16()
 
 void CPU::jp_hl()
 {
-	std::cout << "jp_hl not implemented" << std::endl;
-	ctx.setRunning(false);
+	u16 hl = ctx.regs().getFromR16(R16::HL);
+	ctx.regs().pc = hl;
+
+#if CPU_DEBUG
+	std::cout << std::format("jp_hl to {}\n", Common::toHexStr(hl));
+#endif
 }
 
 void CPU::call_cond_imm16()
@@ -714,13 +771,7 @@ void CPU::call_cond_imm16()
 void CPU::call_imm16()
 {
 	u16 newPC = ctx.regs().imm16();
-
-	// Set imm16 to stack
-	ctx.regs().sp--;
-	ctx.mem().at(ctx.regs().sp) = ctx.regs().pc >> 8;
-	ctx.regs().sp--;
-	ctx.mem().at(ctx.regs().sp) = ctx.regs().pc & 0XFF;
-
+	pushToStack(ctx.regs().pc);
 	ctx.regs().pc = newPC;
 
 #if CPU_DEBUG
@@ -730,20 +781,35 @@ void CPU::call_imm16()
 
 void CPU::rst_tgt3()
 {
-	std::cout << "rst_tgt3 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u16 newPC = Registers::getTGT3FromCode((opCode() & 0b00111000) >> 3);
+	pushToStack(ctx.regs().pc);
+	ctx.regs().pc = newPC;
+
+#if CPU_DEBUG
+	std::cout << std::format("rst_tgt3 to {}\n", Common::toHexStr(newPC));
+#endif
 }
 
 void CPU::pop_r16stk()
 {
-	std::cout << "pop_r16stk not implemented" << std::endl;
-	ctx.setRunning(false);
+	R16_STK r16Stk = Registers::getR16StkFromCode((opCode() & 0b00110000) >> 4);
+	u16 pop = popFromStack();
+	ctx.regs().setRegFromR16Stk(r16Stk, pop);
+
+#if CPU_DEBUG
+	std::cout << std::format("pop_r16stk, {} popped to {}\n", Common::toHexStr(pop), R16_STK_STR[(int)r16Stk]);
+#endif
 }
 
 void CPU::push_r16stk()
 {
-	std::cout << "push_r16stk not implemented" << std::endl;
-	ctx.setRunning(false);
+	R16_STK r16 = Registers::getR16StkFromCode((opCode() & 0b00110000) >> 4);
+	u16 r16Val = ctx.regs().getFromR16Stk(r16);
+	pushToStack(r16Val);
+
+#if CPU_DEBUG
+	std::cout << std::format("push_r16stk, {} pushed from {}\n", Common::toHexStr(r16Val), R16_STK_STR[(int)r16]);
+#endif
 }
 
 void CPU::prefix()
@@ -802,8 +868,12 @@ void CPU::ldh_a_imm8()
 
 void CPU::ld_a_imm16()
 {
-	std::cout << "ld_a_imm16 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u16 imm16 = ctx.regs().imm16();
+	ctx.regs().a = ctx.mem().at(imm16);
+
+#if CPU_DEBUG
+	std::cout << std::format("ld_a_imm16, set A to {} from addr {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(imm16));
+#endif
 }
 
 void CPU::add_sp_imm8()
@@ -907,8 +977,15 @@ void CPU::bit_b3_r8()
 
 void CPU::res_b3_r8()
 {
-	std::cout << "res_b3_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u8 b3 = (cbPrefixOpCode() & 0b00111000) >> 3;
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	// Reset bit at index b3
+	u8 resVal = ctx.regs().getFromR8(r8) & (0xFF - (u8)pow(2, b3));
+	ctx.regs().setRegFromR8(r8, resVal);
+
+#if CPU_DEBUG
+	std::cout << std::format("res_b3_r8, Reset bit {} at {} to value {}\n", b3, R8_STR[(int)r8], Common::toHexStr(resVal));
+#endif
 }
 
 void CPU::set_b3_r8()

@@ -182,6 +182,74 @@ u16 Registers::getFromR16(R16 reg)
 	throw std::invalid_argument(std::string("Registers::getFromR16 -> Invalid R16 reg " + (int)reg));
 }
 
+R16_STK Registers::getR16StkFromCode(u8 data)
+{
+	switch (data)
+	{
+	case 0:
+		return R16_STK::BC;
+	case 1:
+		return R16_STK::DE;
+	case 2:
+		return R16_STK::HL;
+	case 3:
+		return R16_STK::AF;
+	}
+	throw std::invalid_argument(std::string("Registers::getR16StkFromCode -> Invalid R16_STK code " + data));
+}
+
+void Registers::setRegFromR16Stk(R16_STK reg, u16 value)
+{
+	u8 first = value >> 8;
+	u8 second = value & 0xFF;
+
+	switch (reg)
+	{
+	case R16_STK::BC:
+	{
+		b = first;
+		c = second;
+		break;
+	}
+	case R16_STK::DE:
+	{
+		d = first;
+		e = second;
+		break;
+	}
+	case R16_STK::HL:
+	{
+		h = first;
+		l = second;
+		break;
+	}
+	case R16_STK::AF:
+	{
+		a = first;
+		f = second;
+		break;
+	}
+	default:
+		throw std::invalid_argument(std::string("Registers::setRegFromR16Stk -> Invalid R16_STK reg " + (int)reg));
+	}
+}
+
+u16 Registers::getFromR16Stk(R16_STK reg)
+{
+	switch (reg)
+	{
+	case R16_STK::BC:
+		return b * 256 + c;
+	case R16_STK::DE:
+		return d * 256 + e;
+	case R16_STK::HL:
+		return h * 256 + l;
+	case R16_STK::AF:
+		return a * 256 + f;
+	}
+	throw std::invalid_argument(std::string("Registers::getFromR16Stk -> Invalid R16_STK reg " + (int)reg));
+}
+
 R16_MEM Registers::getR16MemFromCode(u8 data)
 {
 	switch (data)
@@ -243,6 +311,30 @@ bool Registers::checkCOND(COND cond)
 		return f & 0b00010000;
 	}
 	throw std::invalid_argument(std::string("Registers::checkCOND -> Invalid COND " + (int)cond));
+}
+
+u16 Registers::getTGT3FromCode(u8 code)
+{
+	switch (code)
+	{
+	case 0:
+		return 0x00;
+	case 1:
+		return 0x08;
+	case 2:
+		return 0x10;
+	case 3:
+		return 0x18;
+	case 4:
+		return 0x20;
+	case 5:
+		return 0x28;
+	case 6:
+		return 0x30;
+	case 7:
+		return 0x38;
+	}
+	throw std::invalid_argument(std::string("Registers::getTGT3FromCode -> Invalid TGT3 " + code));
 }
 
 u8 Registers::imm8()

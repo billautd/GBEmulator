@@ -130,6 +130,54 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_getFromR16", "[regs]")
 	REQUIRE(regs->getFromR16(R16::SP) == 0x1234);
 }
 
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_getR16StkFromCode", "[regs]")
+{
+	REQUIRE(Registers::getR16StkFromCode(0) == R16_STK::BC);
+	REQUIRE(Registers::getR16StkFromCode(1) == R16_STK::DE);
+	REQUIRE(Registers::getR16StkFromCode(2) == R16_STK::HL);
+	REQUIRE(Registers::getR16StkFromCode(3) == R16_STK::AF);
+	REQUIRE_THROWS_AS(Registers::getR16StkFromCode(4), std::invalid_argument);
+	REQUIRE_THROWS_AS(Registers::getR16StkFromCode(8), std::invalid_argument);
+	REQUIRE_THROWS_AS(Registers::getR16StkFromCode(-1), std::invalid_argument);
+}
+
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_setRegFromR16Stk", "[regs]")
+{
+	// Set all registers through method
+	regs->setRegFromR16Stk(R16_STK::BC, 0x0102);
+	regs->setRegFromR16Stk(R16_STK::DE, 0x0304);
+	regs->setRegFromR16Stk(R16_STK::HL, 0x0506);
+	regs->setRegFromR16Stk(R16_STK::AF, 0x0708);
+
+	// Asserts updated registers
+	REQUIRE(regs->a == 0x07);
+	REQUIRE(regs->b == 0x01);
+	REQUIRE(regs->c == 0x02);
+	REQUIRE(regs->d == 0x03);
+	REQUIRE(regs->e == 0x04);
+	REQUIRE(regs->f == 0x08);
+	REQUIRE(regs->h == 0x05);
+	REQUIRE(regs->l == 0x06);
+}
+
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_getFromR16Stk", "[regs]")
+{
+	// Sets registers directly
+	regs->a = 0x07;
+	regs->b = 0x01;
+	regs->c = 0x02;
+	regs->d = 0x03;
+	regs->e = 0x04;
+	regs->f = 0x08;
+	regs->h = 0x05;
+	regs->l = 0x06;
+
+	REQUIRE(regs->getFromR16Stk(R16_STK::BC) == 0x0102);
+	REQUIRE(regs->getFromR16Stk(R16_STK::DE) == 0x0304);
+	REQUIRE(regs->getFromR16Stk(R16_STK::HL) == 0x0506);
+	REQUIRE(regs->getFromR16Stk(R16_STK::AF) == 0x0708);
+}
+
 TEST_CASE_METHOD(RegisterTestsFixture, "regs_getR16MemFromCode", "[regs]")
 {
 	REQUIRE(Registers::getR16MemFromCode(0) == R16_MEM::BC);

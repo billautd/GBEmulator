@@ -24,6 +24,9 @@ public:
 	bool isIME() { return ime; }
 	void setIME(bool ime) { this->ime = ime; }
 
+	void pushToStack(u16 value);
+	u16 popFromStack();
+
 	// Main entry points
 	void runOp();
 

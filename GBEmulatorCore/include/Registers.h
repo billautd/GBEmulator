@@ -33,6 +33,15 @@ enum class R16_MEM
 };
 const std::string R16_MEM_STR[]{"BC", "DE", "HL-", "HL+"};
 
+enum class R16_STK
+{
+	BC,
+	DE,
+	HL,
+	AF
+};
+const std::string R16_STK_STR[]{"BC", "DE", "HL", "AF"};
+
 enum class COND
 {
 	NZ,
@@ -84,6 +93,13 @@ public:
 	// Get 16-bit register value from R16
 	u16 getFromR16(R16 reg);
 
+	// From 2 bits data, get R16_STK to set
+	static R16_STK getR16StkFromCode(u8 code);
+	// Set u16 value in 2 8-bit registers
+	void setRegFromR16Stk(R16_STK reg, u16 value);
+	// Get 16-bit register value from R16_STK
+	u16 getFromR16Stk(R16_STK reg);
+
 	// From 2 bits data, get R16_MEM to set
 	static R16_MEM getR16MemFromCode(u8 code);
 	// Gets byte pointed to by 2 8-bit registers
@@ -93,6 +109,9 @@ public:
 	static COND getCONDFromCode(u8 code);
 	// Checks condition of F register
 	bool checkCOND(COND cond);
+
+	// From 3 bits data, get TGT3
+	static u16 getTGT3FromCode(u8 code);
 
 	// Returns 1 byte after PC
 	u8 imm8();

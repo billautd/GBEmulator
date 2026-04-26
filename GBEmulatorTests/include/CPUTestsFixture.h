@@ -28,7 +28,7 @@ public:
         mem(regs().pc) = code;
         cpu().runOp();
     }
-    void runCBPrexixOp(u8 code)
+    void runCBPrefixOp(u8 code)
     {
         mem(regs().pc) = 0xCB;
         mem(regs().pc + 1) = code;
