@@ -5,7 +5,6 @@ find_package(SDL3_ttf REQUIRED)
 set_target_properties(GBEmulatorCore PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
-target_compile_features(GBEmulatorCore PRIVATE cxx_std_20)
 target_compile_definitions(GBEmulatorCore PRIVATE CORE_EXPORTS)
 target_sources(GBEmulatorCore
 	PRIVATE

@@ -84,7 +84,6 @@ PRIVATE
     lib/CPU/CPUTests_xor_a_imm8.cpp
     lib/CPU/CPUTests_xor_a_r8.cpp
 )
-target_compile_features(GBEmulatorTests PRIVATE cxx_std_20)
 target_include_directories(GBEmulatorTests PRIVATE include)
 target_link_libraries(GBEmulatorTests PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(GBEmulatorTests PRIVATE GBEmulatorCore)
