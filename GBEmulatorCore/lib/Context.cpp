@@ -1,5 +1,6 @@
 #include <Context.h>
 #include <fstream>
+#include <SDL3_ttf/SDL_ttf.h>
 
 Context::Context() : loadedCartridge(Cartridge(*this)), registers(Registers(*this)), currentCPU(CPU(*this)),
 					 currentPPU(PPU(*this))
@@ -13,6 +14,8 @@ Context::~Context()
 
 void Context::init()
 {
+	tCycles = 0;
+
 	// Init memory
 	initMemory();
 	registers.pc = 0x100;
@@ -21,6 +24,9 @@ void Context::init()
 	// Init window
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_CreateWindowAndRenderer("GBEmulator", 1920, 1080, 0, &window, &renderer);
+
+	// Init fonts
+	TTF_Init();
 }
 
 void Context::destroy()

@@ -1,6 +1,7 @@
 add_library(GBEmulatorCore SHARED)
 
 find_package(SDL3 REQUIRED)
+find_package(SDL3_ttf REQUIRED)
 set_target_properties(GBEmulatorCore PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
@@ -30,3 +31,4 @@ target_sources(GBEmulatorCore
 )
 target_include_directories(GBEmulatorCore PUBLIC include)
 target_link_libraries(GBEmulatorCore PUBLIC SDL3::SDL3)
+target_link_libraries(GBEmulatorCore PUBLIC SDL3_ttf::SDL3_ttf)

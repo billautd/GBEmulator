@@ -2,9 +2,14 @@
 #include <sstream>
 #include <iomanip>
 
-void Common::delay(int ms)
+u64 Common::getTicks()
 {
-	SDL_Delay(ms);
+	return SDL_GetTicksNS();
+}
+
+void Common::delay(int ns)
+{
+	SDL_DelayNS(ns);
 }
 
 std::string Common::toHexStr(u8 data)

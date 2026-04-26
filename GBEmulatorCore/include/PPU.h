@@ -22,7 +22,9 @@ public:
     const static u16 LY_ADDR = 0xFF44;
 
     void init();
-    void run();
+    void run(u64 tCycles);
+
+    void displayTileMap();
 
     u8 getLY();
     void setLY(u8 ly);

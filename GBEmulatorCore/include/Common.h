@@ -18,16 +18,19 @@
 typedef int8_t i8;
 typedef int16_t i16;
 typedef int32_t i32;
+typedef int64_t i64;
 
 // Unsigned
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
+typedef uint64_t u64;
 
 class CORE_API Common
 {
 public:
-	static void delay(int ms);
+	static u64 getTicks();
+	static void delay(int ns);
 	static std::string toHexStr(u8 data);
 	static std::string toHexStr(u16 data);
 	static std::string toHexStr(const u8 *data, const size_t size);

@@ -114,42 +114,42 @@ void CPU::runOp()
 	else if (code == 0b00010000)
 		stop();
 	// Block 1 : 8-bit reg to reg loads
-	// 0x40 (B/B), 0x41 (B/C), 0x42 (B/D), 0x43 (B/E), 0x44 (B/H), Ox45 (B/L), Ox46 (B/HL), Ox47 (B/A)
-	// 0x48 (C/B), 0x49 (C/C), 0x4A (C/D), 0x4B (C/E), 0x4C (C/H), Ox4D (C/L), Ox4E (C/HL), Ox4F (C/A)
-	// 0x50 (D/B), 0x51 (D/C), 0x52 (D/D), 0x53 (D/E), 0x54 (D/H), Ox55 (D/L), Ox56 (D/HL), Ox57 (D/A)
-	// 0x58 (E/B), 0x59 (E/C), 0x5A (E/D), 0x5B (E/E), 0x5C (E/H), Ox5D (E/L), Ox5E (E/HL), Ox5F (E/A)
-	// 0x60 (H/B), 0x61 (H/C), 0x62 (H/D), 0x63 (H/E), 0x64 (H/H), Ox65 (H/L), Ox66 (H/HL), Ox67 (H/A)
-	// 0x68 (L/B), 0x69 (L/C), 0x6A (L/D), 0x6B (L/E), 0x6C (L/H), Ox6D (L/L), Ox6E (L/HL), Ox6F (L/A)
-	// 0x70 (HL/B), 0x71 (HL/C), 0x72 (HL/D), 0x73 (HL/E), 0x74 (HL/H), Ox75 (HL/L), NO 0x76 (Used as halt), Ox77 (HL/A)
-	// 0x78 (A/B), 0x79 (A/C), 0x7A (A/D), 0x7B (A/E), 0x7C (A/H), Ox7D (A/L), Ox7E (A/HL), Ox7F (A/A)
+	// 0x40 (B/B), 0x41 (B/C), 0x42 (B/D), 0x43 (B/E), 0x44 (B/H), 0x45 (B/L), 0x46 (B/HL), 0x47 (B/A)
+	// 0x48 (C/B), 0x49 (C/C), 0x4A (C/D), 0x4B (C/E), 0x4C (C/H), 0x4D (C/L), 0x4E (C/HL), 0x4F (C/A)
+	// 0x50 (D/B), 0x51 (D/C), 0x52 (D/D), 0x53 (D/E), 0x54 (D/H), 0x55 (D/L), 0x56 (D/HL), 0x57 (D/A)
+	// 0x58 (E/B), 0x59 (E/C), 0x5A (E/D), 0x5B (E/E), 0x5C (E/H), 0x5D (E/L), 0x5E (E/HL), 0x5F (E/A)
+	// 0x60 (H/B), 0x61 (H/C), 0x62 (H/D), 0x63 (H/E), 0x64 (H/H), 0x65 (H/L), 0x66 (H/HL), 0x67 (H/A)
+	// 0x68 (L/B), 0x69 (L/C), 0x6A (L/D), 0x6B (L/E), 0x6C (L/H), 0x6D (L/L), 0x6E (L/HL), 0x6F (L/A)
+	// 0x70 (HL/B), 0x71 (HL/C), 0x72 (HL/D), 0x73 (HL/E), 0x74 (HL/H), 0x75 (HL/L), 0x77 (HL/A)
+	// 0x78 (A/B), 0x79 (A/C), 0x7A (A/D), 0x7B (A/E), 0x7C (A/H), 0x7D (A/L), 0x7E (A/HL), 0x7F (A/A)
 	else if ((code & 0b11000000) == 0b01000000 && code != 0b01110110)
 		ld_r8_r8();
 	// 0x76
 	else if (code == 0b01110110)
 		halt();
 	// Block 2 : 8-bit arithmetic
-	// 0x80 (B), 0x81 (C), 0x82 (D), 0x83 (E), 0x84 (H), Ox85 (L), Ox86 (HL), 0x87 (A)
+	// 0x80 (B), 0x81 (C), 0x82 (D), 0x83 (E), 0x84 (H), 0x85 (L), 0x86 (HL), 0x87 (A)
 	else if ((code & 0b11111000) == 0b10000000)
 		add_a_r8();
-	// 0x88 (B), 0x89 (C), 0x8A (D), 0x8B (E), 0x8C (H), Ox8D (L), Ox8E (HL), 0x8F (A)
+	// 0x88 (B), 0x89 (C), 0x8A (D), 0x8B (E), 0x8C (H), 0x8D (L), 0x8E (HL), 0x8F (A)
 	else if ((code & 0b11111000) == 0b10001000)
 		adc_a_r8();
-	// 0x90 (B), 0x91 (C), 0x92 (D), 0x93 (E), 0x94 (H), Ox95 (L), Ox96 (HL), 0x97 (A)
+	// 0x90 (B), 0x91 (C), 0x92 (D), 0x93 (E), 0x94 (H), 0x95 (L), 0x96 (HL), 0x97 (A)
 	else if ((code & 0b11111000) == 0b10010000)
 		sub_a_r8();
-	// 0x98 (B), 0x99 (C), 0x9A (D), 0x9B (E), 0x9C (H), Ox9D (L), Ox9E (HL), 0x9F (A)
+	// 0x98 (B), 0x99 (C), 0x9A (D), 0x9B (E), 0x9C (H), 0x9D (L), 0x9E (HL), 0x9F (A)
 	else if ((code & 0b11111000) == 0b10011000)
 		sbc_a_r8();
-	// 0xA0 (B), 0xA1 (C), 0xA2 (D), 0xA3 (E), 0xA4 (H), OxA5 (L), OxA6 (HL), 0xA7 (A)
+	// 0xA0 (B), 0xA1 (C), 0xA2 (D), 0xA3 (E), 0xA4 (H), 0xA5 (L), 0xA6 (HL), 0xA7 (A)
 	else if ((code & 0b11111000) == 0b10100000)
 		and_a_r8();
-	// 0xA8 (B), 0xA9 (C), 0xAA (D), 0xAB (E), 0xAC (H), OxAD (L), OxAE (HL), 0xAF (A)
+	// 0xA8 (B), 0xA9 (C), 0xAA (D), 0xAB (E), 0xAC (H), 0xAD (L), 0xAE (HL), 0xAF (A)
 	else if ((code & 0b11111000) == 0b10101000)
 		xor_a_r8();
-	// 0xB0 (B), 0xB1 (C), 0xB2 (D), 0xB3 (E), 0xB4 (H), OxB5 (L), OxB6 (HL), 0xB7 (A)
+	// 0xB0 (B), 0xB1 (C), 0xB2 (D), 0xB3 (E), 0xB4 (H), 0xB5 (L), 0xB6 (HL), 0xB7 (A)
 	else if ((code & 0b11111000) == 0b10110000)
 		or_a_r8();
-	// 0xB8 (B), 0xB9 (C), 0xBA (D), 0xBB (E), 0xBC (H), OxBD (L), OxBE (HL), 0xBF (A)
+	// 0xB8 (B), 0xB9 (C), 0xBA (D), 0xBB (E), 0xBC (H), 0xBD (L), 0xBE (HL), 0xBF (A)
 	else if ((code & 0b11111000) == 0b10111000)
 		cp_a_r8();
 	// Block 3
@@ -204,13 +204,13 @@ void CPU::runOp()
 	// 0xC4 (NZ), 0xCC (Z), 0xD4 (NC), 0xDC (C)
 	else if ((code & 0b11100111) == 0b11000100)
 		call_cond_imm16();
-	// 0xC7 (00H), 0xCF (08H), 0xD7 (10H), 0xDF (18H), 0xE7 (20H), OxEF (28H), OxF7 (30H), OxFF (38H)
+	// 0xC7 (00H), 0xCF (08H), 0xD7 (10H), 0xDF (18H), 0xE7 (20H), 0xEF (28H), 0xF7 (30H), 0xFF (38H)
 	else if ((code & 0b11000111) == 0b11000111)
 		rst_tgt3();
-	// 0xC1 (BC), 0xD1 (DE), 0xE1 (HL), OxF1 (SP)
+	// 0xC1 (BC), 0xD1 (DE), 0xE1 (HL), 0xF1 (SP)
 	else if ((code & 0b11001111) == 0b11000001)
 		pop_r16stk();
-	// 0xC5 (BC), 0xD5 (DE), 0xE5 (HL), OxF5 (SP)
+	// 0xC5 (BC), 0xD5 (DE), 0xE5 (HL), 0xF5 (SP)
 	else if ((code & 0b11001111) == 0b11000101)
 		push_r16stk();
 	// 0xCB prefix
@@ -293,7 +293,7 @@ void CPU::runOp()
 	// 0xF0
 	else if (code == 0b11110000)
 		ldh_a_imm8();
-	// 0xF6
+	// 0xFA
 	else if (code == 0b11111010)
 		ld_a_imm16();
 	// 0xE8
@@ -326,6 +326,7 @@ void CPU::runOp()
 void CPU::nop()
 {
 	// Nothing
+	ctx.incTCycles(4);
 #if CPU_DEBUG
 	std::cout << "nop" << std::endl;
 #endif
@@ -337,6 +338,8 @@ void CPU::ld_r16_imm16()
 
 	R16 r16 = Registers::getR16FromCode((opCode() & 0b00110000) >> 4);
 	ctx.regs().setRegFromR16(r16, imm16);
+
+	ctx.incTCycles(12);
 
 #if CPU_DEBUG
 	std::cout << std::format("ld_r16_imm16 : {} set to {}\n", Common::toHexStr(imm16), R16_STR[(int)r16]);
@@ -352,6 +355,8 @@ void CPU::ld_r16mem_a()
 	// HLI or HLD -> update HL after writing
 	ctx.regs().updateHLMem(r16Mem);
 
+	ctx.incTCycles(8);
+
 #if CPU_DEBUG
 	std::cout << std::format("ld_a_r16mem : Address {} set to {}from register {}\n", Common::toHexStr(address), Common::toHexStr(ctx.regs().a), R16_STR[(int)r16Mem]);
 #endif
@@ -366,6 +371,7 @@ void CPU::ld_a_r16mem()
 	// HLI or HLD -> update HL after writing
 	ctx.regs().updateHLMem(r16Mem);
 
+	ctx.incTCycles(8);
 #if CPU_DEBUG
 	std::cout << std::format("ld_r16mem_a : {} set to address {} from register {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(address), R16_STR[(int)r16Mem]);
 #endif
@@ -383,6 +389,7 @@ void CPU::inc_r16()
 	u16 r16Value = ctx.regs().getFromR16(r16);
 	ctx.regs().setRegFromR16(r16, r16Value + 1);
 
+	ctx.incTCycles(8);
 #if CPU_DEBUG
 	std::cout << std::format("inc_r16 : {} incremented to {}\n", R16_STR[(int)r16], Common::toHexStr(ctx.regs().getFromR16(r16)));
 #endif
@@ -394,6 +401,7 @@ void CPU::dec_r16()
 	u16 r16Value = ctx.regs().getFromR16(r16);
 	ctx.regs().setRegFromR16(r16, r16Value - 1);
 
+	ctx.incTCycles(8);
 #if CPU_DEBUG
 	std::cout << std::format("dec_r16 : {} decremented to {}\n", R16_STR[(int)r16], Common::toHexStr(ctx.regs().getFromR16(r16)));
 #endif
@@ -409,6 +417,7 @@ void CPU::add_hl_r16()
 
 	ctx.regs().setFlags(-1, 0, ((hlVal & 0x0FFF) + (r16Val & 0x0FFF)) > 0x0FFF, result32 > 0xFFFF);
 
+	ctx.incTCycles(8);
 #if CPU_DEBUG
 	std::cout << std::format("add_hl_r16 : HL set to {} from {}\n", Common::toHexStr(ctx.regs().getFromR16(R16::HL)), R16_STR[(int)r16]);
 #endif
@@ -424,6 +433,7 @@ void CPU::inc_r8()
 
 	ctx.regs().setFlags(newValue == 0, 0, (r8Value & 0xF) == 0xF, -1);
 
+	ctx.incTCycles(4 + (r8 == R8::HL) ? 8 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("dec_r8 : {} decremented to {}\n", R8_STR[(int)r8], Common::toHexStr(newValue));
 #endif
@@ -439,6 +449,7 @@ void CPU::dec_r8()
 
 	ctx.regs().setFlags(newValue == 0, 1, (r8Value & 0xF) == 0, -1);
 
+	ctx.incTCycles(4 + (r8 == R8::HL) ? 8 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("dec_r8 : {} decremented to {}\n", R8_STR[(int)r8], Common::toHexStr(newValue));
 #endif
@@ -451,6 +462,7 @@ void CPU::ld_r8_imm8()
 	R8 r8 = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
 	ctx.regs().setRegFromR8(r8, imm8);
 
+	ctx.incTCycles(8 + (r8 == R8::HL) ? 4 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("ld_r8_imm8 with {} set to {}\n", Common::toHexStr(imm8), R8_STR[(int)r8]);
 #endif
@@ -489,6 +501,7 @@ void CPU::daa()
 void CPU::cpl()
 {
 	ctx.regs().a = ~ctx.regs().a;
+	ctx.incTCycles(4);
 #if CPU_DEBUG
 	std::cout << std::format("Flipped A bits to {}\n", Common::toHexStr(ctx.regs().a));
 #endif
@@ -511,6 +524,8 @@ void CPU::jr_imm8()
 	u8 imm8 = ctx.regs().imm8();
 	// Value is signed, will jump after or before current PC
 	ctx.regs().pc += (i8)imm8;
+
+	ctx.incTCycles(12);
 #if CPU_DEBUG
 	std::cout << std::format("jr_imm8 with {}, PC set to {}\n", Common::toHexStr(imm8), Common::toHexStr(ctx.regs().pc));
 #endif
@@ -524,12 +539,14 @@ void CPU::jr_cond_imm8()
 	{
 		// Value is signed, will jump after or before current PC
 		ctx.regs().pc += (i8)imm8;
+		ctx.incTCycles(12);
 #if CPU_DEBUG
 		std::cout << std::format("jr_cond_imm8 with {}, PC set to {}\n", Common::toHexStr(imm8), Common::toHexStr(ctx.regs().pc));
 #endif
 	}
 	else
 	{
+		ctx.incTCycles(8);
 #if CPU_DEBUG
 		std::cout << std::format("jr_cond_imm8 with {}, PC unchanged\n", Common::toHexStr(imm8));
 #endif
@@ -551,6 +568,7 @@ void CPU::ld_r8_r8()
 	R8 r8_dest = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
 	ctx.regs().setRegFromR8(r8_dest, ctx.regs().getFromR8(r8_src));
 
+	ctx.incTCycles(4 + (r8_src == R8::HL || r8_dest == R8::HL) ? 4 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("ld_r8_r8 with {} set to {} value {}\n", R8_STR[(int)r8_dest], R8_STR[(int)r8_src], Common::toHexStr(ctx.regs().getFromR8(r8_src)));
 #endif
@@ -575,6 +593,7 @@ void CPU::add_a_r8()
 
 	ctx.regs().setFlags(ctx.regs().a == 0, 0, ((a & 0xF) + (r8Value & 0xF)) > 0xF, result16 > 0xFF);
 
+	ctx.incTCycles(4 + (r8 == R8::HL) ? 4 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("add_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
 #endif
@@ -608,6 +627,7 @@ void CPU::and_a_r8()
 	u8 newValue = ctx.regs().a;
 	ctx.regs().setFlags(newValue == 0, 0, 1, 0);
 
+	ctx.incTCycles(4 + (r8 == R8::HL) ? 4 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("and_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
 #endif
@@ -623,6 +643,7 @@ void CPU::xor_a_r8()
 	u8 newValue = ctx.regs().a;
 	ctx.regs().setFlags(newValue == 0, 0, 0, 0);
 
+	ctx.incTCycles(4 + (r8 == R8::HL) ? 4 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("xor_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
 #endif
@@ -638,6 +659,7 @@ void CPU::or_a_r8()
 	u8 newValue = ctx.regs().a;
 	ctx.regs().setFlags(newValue == 0, 0, 0, 0);
 
+	ctx.incTCycles(4 + (r8 == R8::HL) ? 4 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("or_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
 #endif
@@ -683,6 +705,7 @@ void CPU::and_a_imm8()
 
 	ctx.regs().setFlags(ctx.regs().a == 0, 0, 1, 0);
 
+	ctx.incTCycles(8);
 #if CPU_DEBUG
 	std::cout << std::format("AND {} with {}\n", Common::toHexStr(aValue), Common::toHexStr(imm8));
 #endif
@@ -707,6 +730,7 @@ void CPU::cp_a_imm8()
 
 	ctx.regs().setFlags((a - imm8) == 0, 1, (a & 0xF) < (imm8 & 0xF), a < imm8);
 
+	ctx.incTCycles(8);
 #if CPU_DEBUG
 	std::cout << std::format("Comparing {} with {}\n", Common::toHexStr(a), Common::toHexStr(imm8));
 #endif
@@ -719,12 +743,14 @@ void CPU::ret_cond()
 	if (ctx.regs().checkCOND(cond))
 	{
 		ctx.regs().pc = popFromStack();
+		ctx.incTCycles(20);
 #if CPU_DEBUG
 		std::cout << std::format("ret_cond to addr {}\n", Common::toHexStr(ctx.regs().pc));
 #endif
 	}
 	else
 	{
+		ctx.incTCycles(8);
 #if CPU_DEBUG
 		std::cout << std::format("ret_cond, PC unchanged\n");
 #endif
@@ -734,7 +760,7 @@ void CPU::ret_cond()
 void CPU::ret()
 {
 	ctx.regs().pc = popFromStack();
-
+	ctx.incTCycles(16);
 #if CPU_DEBUG
 	std::cout << std::format("ret to addr {}\n", Common::toHexStr(ctx.regs().pc));
 #endif
@@ -754,12 +780,14 @@ void CPU::jp_cond_imm16()
 	{
 		// Value is signed, will jump after or before current PC
 		ctx.regs().pc = imm16;
+		ctx.incTCycles(16);
 #if CPU_DEBUG
 		std::cout << std::format("jp_cond_imm16, PC set to {}\n", Common::toHexStr(ctx.regs().pc));
 #endif
 	}
 	else
 	{
+		ctx.incTCycles(12);
 #if CPU_DEBUG
 		std::cout << std::format("jp_cond_imm16, PC unchanged\n");
 #endif
@@ -772,6 +800,7 @@ void CPU::jp_imm16()
 	// JP to address given
 	ctx.regs().pc = imm16;
 
+	ctx.incTCycles(16);
 #if CPU_DEBUG
 	std::cout << std::format("jp_imm16 to {}\n", Common::toHexStr(imm16));
 #endif
@@ -782,6 +811,7 @@ void CPU::jp_hl()
 	u16 hl = ctx.regs().getFromR16(R16::HL);
 	ctx.regs().pc = hl;
 
+	ctx.incTCycles(4);
 #if CPU_DEBUG
 	std::cout << std::format("jp_hl to {}\n", Common::toHexStr(hl));
 #endif
@@ -799,6 +829,7 @@ void CPU::call_imm16()
 	pushToStack(ctx.regs().pc);
 	ctx.regs().pc = newPC;
 
+	ctx.incTCycles(24);
 #if CPU_DEBUG
 	std::cout << std::format("call_imm16 to {}\n", Common::toHexStr(newPC));
 #endif
@@ -810,6 +841,7 @@ void CPU::rst_tgt3()
 	pushToStack(ctx.regs().pc);
 	ctx.regs().pc = newPC;
 
+	ctx.incTCycles(16);
 #if CPU_DEBUG
 	std::cout << std::format("rst_tgt3 to {}\n", Common::toHexStr(newPC));
 #endif
@@ -821,6 +853,7 @@ void CPU::pop_r16stk()
 	u16 pop = popFromStack();
 	ctx.regs().setRegFromR16Stk(r16Stk, pop);
 
+	ctx.incTCycles(12);
 #if CPU_DEBUG
 	std::cout << std::format("pop_r16stk, {} popped to {}\n", Common::toHexStr(pop), R16_STK_STR[(int)r16Stk]);
 #endif
@@ -832,6 +865,7 @@ void CPU::push_r16stk()
 	u16 r16Val = ctx.regs().getFromR16Stk(r16);
 	pushToStack(r16Val);
 
+	ctx.incTCycles(16);
 #if CPU_DEBUG
 	std::cout << std::format("push_r16stk, {} pushed from {}\n", Common::toHexStr(r16Val), R16_STK_STR[(int)r16]);
 #endif
@@ -848,6 +882,7 @@ void CPU::ldh_c_a()
 	u16 c = 0xFF00 | ctx.regs().c;
 	ctx.mem().at(c) = ctx.regs().a;
 
+	ctx.incTCycles(8);
 #if CPU_DEBUG
 	std::cout << std::format("ldh_c_a, addr {} set to {}\n", Common::toHexStr(c), Common::toHexStr(ctx.regs().a));
 #endif
@@ -859,6 +894,7 @@ void CPU::ldh_imm8_a()
 	u16 a8 = 0xFF00 | imm8;
 	ctx.mem().at(a8) = ctx.regs().a;
 
+	ctx.incTCycles(12);
 #if CPU_DEBUG
 	std::cout << std::format("ldh_imm8_a, set {} to {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(a8));
 #endif
@@ -869,6 +905,7 @@ void CPU::ld_imm16_a()
 	u16 imm16 = ctx.regs().imm16();
 	ctx.mem().at(imm16) = ctx.regs().a;
 
+	ctx.incTCycles(16);
 #if CPU_DEBUG
 	std::cout << std::format("ld_imm16_a, set {} to addr {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(imm16));
 #endif
@@ -886,6 +923,7 @@ void CPU::ldh_a_imm8()
 	u16 a8 = 0xFF00 | imm8;
 	ctx.regs().a = ctx.mem().at(a8);
 
+	ctx.incTCycles(12);
 #if CPU_DEBUG
 	std::cout << std::format("ldh_a_imm8, A set to {} from {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(a8));
 #endif
@@ -896,6 +934,7 @@ void CPU::ld_a_imm16()
 	u16 imm16 = ctx.regs().imm16();
 	ctx.regs().a = ctx.mem().at(imm16);
 
+	ctx.incTCycles(16);
 #if CPU_DEBUG
 	std::cout << std::format("ld_a_imm16, set A to {} from addr {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(imm16));
 #endif
@@ -922,6 +961,7 @@ void CPU::ld_sp_hl()
 void CPU::di()
 {
 	setIME(false);
+	ctx.incTCycles(4);
 #if CPU_DEBUG
 	std::cout << "di" << std::endl;
 #endif
@@ -930,6 +970,7 @@ void CPU::di()
 void CPU::ei()
 {
 	setIME(true);
+	ctx.incTCycles(4);
 #if CPU_DEBUG
 	std::cout << "ei" << std::endl;
 #endif
@@ -983,6 +1024,7 @@ void CPU::swap_r8()
 
 	ctx.regs().setFlags(swapped == 0, 0, 0, 0);
 
+	ctx.incTCycles(8 + (r8 == R8::HL) ? 8 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("Swapped {} value to {}\n", R8_STR[(int)r8], swapped);
 #endif
@@ -1008,6 +1050,7 @@ void CPU::res_b3_r8()
 	u8 resVal = ctx.regs().getFromR8(r8) & (0xFF - (u8)pow(2, b3));
 	ctx.regs().setRegFromR8(r8, resVal);
 
+	ctx.incTCycles(8 + (r8 == R8::HL) ? 8 : 0);
 #if CPU_DEBUG
 	std::cout << std::format("res_b3_r8, Reset bit {} at {} to value {}\n", b3, R8_STR[(int)r8], Common::toHexStr(resVal));
 #endif
