@@ -8,6 +8,7 @@ class CORE_API CPU
 private:
 	Context &ctx;
 	u8 currentOpCode;
+	u8 currentCBPrefixOpCode;
 
 	bool ime = false;
 
@@ -17,6 +18,8 @@ public:
 
 	u8 opCode() { return currentOpCode; }
 	void setCurrentOpCode(u8 opCode) { currentOpCode = opCode; }
+	u8 cbPrefixOpCode() { return currentCBPrefixOpCode; }
+	void setCurrentCBPRefixOpCode(u8 opCode) { currentCBPrefixOpCode = opCode; }
 
 	bool isIME() { return ime; }
 	void setIME(bool ime) { this->ime = ime; }

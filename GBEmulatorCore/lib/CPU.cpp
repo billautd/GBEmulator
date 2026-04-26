@@ -197,7 +197,67 @@ void CPU::runOp()
 	// 0xCB prefix
 	else if (code == 0b11001011)
 	{
-		// TODO
+		u8 cbCode = ctx.regs().imm8();
+		setCurrentCBPRefixOpCode(cbCode);
+#if CPU_DEBUG
+		std::cout << std::format("Current CB prefix op code : {}\n", Common::toHexStr(cbCode));
+#endif
+		// 0xCB00 (B), 0xCB01 (C), 0xCB02 (D), 0xCB03 (E), 0xCB04 (H), 0xCB05 (L), 0xCB06 (HL), 0xCB07 (A)
+		if ((cbCode & 0b11111000) == 0b00000000)
+			rlc_r8();
+		// 0xCB08 (B), 0xCB09 (C), 0xCB0A (D), 0xCB0B (E), 0xCB0C (H), 0xCB0D (L), 0xCB0E (HL), 0xCB0F (A)
+		else if ((cbCode & 0b11111000) == 0b00001000)
+			rrc_r8();
+		// 0xCB10 (B), 0xCB11 (C), 0xCB12 (D), 0xCB13 (E), 0xCB14 (H), 0xCB15 (L), 0xCB16 (HL), 0xCB17 (A)
+		else if ((cbCode & 0b11111000) == 0b00010000)
+			rl_r8();
+		// 0xCB18 (B), 0xCB19 (C), 0xCB1A (D), 0xCB1B (E), 0xCB1C (H), 0xCB1D (L), 0xCB1E (HL), 0xCB1F (A)
+		else if ((cbCode & 0b11111000) == 0b00011000)
+			rr_r8();
+		// 0xCB20 (B), 0xCB21 (C), 0xCB22 (D), 0xCB23 (E), 0xCB24 (H), 0xCB25 (L), 0xCB26 (HL), 0xCB27 (A)
+		else if ((cbCode & 0b11111000) == 0b00100000)
+			sla_r8();
+		// 0xCB28 (B), 0xCB29 (C), 0xCB2A (D), 0xCB2B (E), 0xCB2C (H), 0xCB2D (L), 0xCB2E (HL), 0xCB2F (A)
+		else if ((cbCode & 0b11111000) == 0b00101000)
+			sra_r8();
+		// 0xCB30 (B), 0xCB31 (C), 0xCB32 (D), 0xCB33 (E), 0xCB34 (H), 0xCB35 (L), 0xCB36 (HL), 0xCB37 (A)
+		else if ((cbCode & 0b11111000) == 0b00110000)
+			swap_r8();
+		// 0xCB38 (B), 0xCB39 (C), 0xCB3A (D), 0xCB3B (E), 0xCB3C (H), 0xCB3D (L), 0xCB3E (HL), 0xCB3F (A)
+		else if ((cbCode & 0b11111000) == 0b00111000)
+			srl_r8();
+		// 0xCB40 (0 / B),0xCB41 (0 / C), 0xCB42 (0 / D), 0xCB43 (0 / E), 0xCB44 (0 / H), 0xCB45 (0 / L), 0xCB46 (0 / HL), 0xCB47 (0 / A)
+		// 0xCB48 (1 / B),0xCB49 (1 / C), 0xCB4A (1 / D), 0xCB4B (1 / E), 0xCB4C (1 / H), 0xCB4D (1 / L), 0xCB4E (1 / HL), 0xCB4F (1 / A)
+		// 0xCB50 (2 / B),0xCB51 (2 / C), 0xCB52 (2 / D), 0xCB53 (2 / E), 0xCB54 (2 / H), 0xCB55 (2 / L), 0xCB56 (2 / HL), 0xCB57 (2 / A)
+		// 0xCB58 (3 / B),0xCB59 (3 / C), 0xCB5A (3 / D), 0xCB5B (3 / E), 0xCB5C (3 / H), 0xCB5D (3 / L), 0xCB5E (3 / HL), 0xCB5F (3 / A)
+		// 0xCB60 (4 / B),0xCB61 (4 / C), 0xCB62 (4 / D), 0xCB63 (4 / E), 0xCB64 (4 / H), 0xCB65 (4 / L), 0xCB66 (4 / HL), 0xCB67 (4 / A)
+		// 0xCB68 (5 / B),0xCB69 (5 / C), 0xCB6A (5 / D), 0xCB6B (5 / E), 0xCB6C (5 / H), 0xCB6D (5 / L), 0xCB6E (5 / HL), 0xCB6F (5 / A)
+		// 0xCB70 (6 / B),0xCB71 (6 / C), 0xCB72 (6 / D), 0xCB73 (6 / E), 0xCB74 (6 / H), 0xCB75 (6 / L), 0xCB76 (6 / HL), 0xCB77 (6 / A)
+		// 0xCB78 (7 / B),0xCB79 (7 / C), 0xCB7A (7 / D), 0xCB7B (7 / E), 0xCB7C (7 / H), 0xCB7D (7 / L), 0xCB7E (7 / HL), 0xCB7F (7 / A)
+		else if ((cbCode & 0b11000000) == 0b01000000)
+			bit_b3_r8();
+		// 0xCB80 (0 / B),0xCB81 (0 / C), 0xCB82 (0 / D), 0xCB83 (0 / E), 0xCB84 (0 / H), 0xCB85 (0 / L), 0xCB86 (0 / HL), 0xCB87 (0 / A)
+		// 0xCB88 (1 / B),0xCB89 (1 / C), 0xCB8A (1 / D), 0xCB8B (1 / E), 0xCB8C (1 / H), 0xCB8D (1 / L), 0xCB8E (1 / HL), 0xCB8F (1 / A)
+		// 0xCB90 (2 / B),0xCB91 (2 / C), 0xCB92 (2 / D), 0xCB93 (2 / E), 0xCB94 (2 / H), 0xCB95 (2 / L), 0xCB96 (2 / HL), 0xCB97 (2 / A)
+		// 0xCB98 (3 / B),0xCB99 (3 / C), 0xCB9A (3 / D), 0xCB9B (3 / E), 0xCB9C (3 / H), 0xCB9D (3 / L), 0xCB9E (3 / HL), 0xCB9F (3 / A)
+		// 0xCBA0 (4 / B),0xCBA1 (4 / C), 0xCBA2 (4 / D), 0xCBA3 (4 / E), 0xCBA4 (4 / H), 0xCBA5 (4 / L), 0xCBA6 (4 / HL), 0xCBA7 (4 / A)
+		// 0xCBA8 (5 / B),0xCBA9 (5 / C), 0xCBAA (5 / D), 0xCBAB (5 / E), 0xCBAC (5 / H), 0xCBAD (5 / L), 0xCBAE (5 / HL), 0xCBAF (5 / A)
+		// 0xCBB0 (6 / B),0xCBB1 (6 / C), 0xCBB2 (6 / D), 0xCBB3 (6 / E), 0xCBB4 (6 / H), 0xCBB5 (6 / L), 0xCBB6 (6 / HL), 0xCBB7 (6 / A)
+		// 0xCBB8 (7 / B),0xCBB9 (7 / C), 0xCBBA (7 / D), 0xCBBB (7 / E), 0xCBBC (7 / H), 0xCBBD (7 / L), 0xCBBE (7 / HL), 0xCBBF (7 / A)
+		else if ((cbCode & 0b11000000) == 0b10000000)
+			res_b3_r8();
+		// 0xCBC0 (0 / B),0xCBC1 (0 / C), 0xCBC2 (0 / D), 0xCBC3 (0 / E), 0xCBC4 (0 / H), 0xCBC5 (0 / L), 0xCBC6 (0 / HL), 0xCBC7 (0 / A)
+		// 0xCBC8 (1 / B),0xCBC9 (1 / C), 0xCBCA (1 / D), 0xCBCB (1 / E), 0xCBCC (1 / H), 0xCBCD (1 / L), 0xCBCE (1 / HL), 0xCBCF (1 / A)
+		// 0xCBD0 (2 / B),0xCBD1 (2 / C), 0xCBD2 (2 / D), 0xCBD3 (2 / E), 0xCBD4 (2 / H), 0xCBD5 (2 / L), 0xCBD6 (2 / HL), 0xCBD7 (2 / A)
+		// 0xCBD8 (3 / B),0xCBD9 (3 / C), 0xCBDA (3 / D), 0xCBDB (3 / E), 0xCBDC (3 / H), 0xCBDD (3 / L), 0xCBDE (3 / HL), 0xCBDF (3 / A)
+		// 0xCBE0 (4 / B),0xCBE1 (4 / C), 0xCBE2 (4 / D), 0xCBE3 (4 / E), 0xCBE4 (4 / H), 0xCBE5 (4 / L), 0xCBE6 (4 / HL), 0xCBE7 (4 / A)
+		// 0xCBE8 (5 / B),0xCBE9 (5 / C), 0xCBEA (5 / D), 0xCBEB (5 / E), 0xCBEC (5 / H), 0xCBED (5 / L), 0xCBEE (5 / HL), 0xCBEF (5 / A)
+		// 0xCBF0 (6 / B),0xCBF1 (6 / C), 0xCBF2 (6 / D), 0xCBF3 (6 / E), 0xCBF4 (6 / H), 0xCBF5 (6 / L), 0xCBF6 (6 / HL), 0xCBF7 (6 / A)
+		// 0xCBF8 (7 / B),0xCBF9 (7 / C), 0xCBFA (7 / D), 0xCBFB (7 / E), 0xCBFC (7 / H), 0xCBFD (7 / L), 0xCBFE (7 / HL), 0xCBFF (7 / A)
+		else if ((cbCode & 0b11000000) == 0b11000000)
+			set_b3_r8();
+		else
+			throw std::runtime_error(std::string("Op code " + Common::toHexStr(cbCode) + "with CB prefix not managed"));
 	}
 	// 0xE2
 	else if (code == 0b11100010)
@@ -236,13 +296,9 @@ void CPU::runOp()
 			 code == 0xE3 || code == 0xE4 || code == 0xEB ||
 			 code == 0xEC || code == 0xED || code == 0xF4 ||
 			 code == 0xFC || code == 0xFD)
-	{
 		throw std::runtime_error(std::string("Invalid op code " + Common::toHexStr(code)));
-	}
 	else
-	{
 		throw std::runtime_error(std::string("Op code " + Common::toHexStr(code) + " not managed"));
-	}
 }
 
 /**************************************/
@@ -399,8 +455,10 @@ void CPU::daa()
 
 void CPU::cpl()
 {
-	std::cout << "cpl not implemented" << std::endl;
-	ctx.setRunning(false);
+	ctx.regs().a = ~ctx.regs().a;
+#if CPU_DEBUG
+	std::cout << std::format("Flipped A bits to {}\n", Common::toHexStr(ctx.regs().a));
+#endif
 }
 
 void CPU::scf()
@@ -516,8 +574,17 @@ void CPU::xor_a_r8()
 
 void CPU::or_a_r8()
 {
-	std::cout << "or_a_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
+	u8 r8Value = ctx.regs().getFromR8(r8);
+
+	ctx.regs().a |= r8Value;
+
+	u8 newValue = ctx.regs().a;
+	ctx.regs().setFlags(newValue == 0, 0, 0, 0);
+
+#if CPU_DEBUG
+	std::cout << std::format("or_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
+#endif
 }
 
 void CPU::cp_a_r8()
@@ -554,8 +621,15 @@ void CPU::sbc_a_imm8()
 
 void CPU::and_a_imm8()
 {
-	std::cout << "and_a_imm8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u8 aValue = ctx.regs().a;
+	u8 imm8 = ctx.regs().imm8();
+	ctx.regs().a &= imm8;
+
+	ctx.regs().setFlags(ctx.regs().a == 0, 0, 1, 0);
+
+#if CPU_DEBUG
+	std::cout << std::format("AND {} with {}\n", Common::toHexStr(aValue), Common::toHexStr(imm8));
+#endif
 }
 
 void CPU::xor_a_imm8()
@@ -590,8 +664,16 @@ void CPU::ret_cond()
 
 void CPU::ret()
 {
-	std::cout << "ret not implemented" << std::endl;
-	ctx.setRunning(false);
+	u8 sp_lsb = ctx.mem().at(ctx.regs().sp);
+	ctx.regs().sp++;
+	u8 sp_msb = ctx.mem().at(ctx.regs().sp);
+	ctx.regs().sp++;
+
+	ctx.regs().pc = (sp_msb * 256 + sp_lsb);
+
+#if CPU_DEBUG
+	std::cout << std::format("ret to addr {}\n", Common::toHexStr(ctx.regs().pc));
+#endif
 }
 
 void CPU::reti()
@@ -761,3 +843,76 @@ void CPU::ei()
 /**************************************/
 /**           $CB prefix             **/
 /**************************************/
+void CPU::rlc_r8()
+{
+	std::cout << "rlc_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}
+
+void CPU::rrc_r8()
+{
+	std::cout << "rrc_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}
+
+void CPU::rl_r8()
+{
+	std::cout << "rl_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}
+
+void CPU::rr_r8()
+{
+	std::cout << "rr_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}
+
+void CPU::sla_r8()
+{
+	std::cout << "sla_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}
+
+void CPU::sra_r8()
+{
+	std::cout << "sra_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}
+
+void CPU::swap_r8()
+{
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	u8 regValue = ctx.regs().getFromR8(r8);
+	u8 swapped = ((regValue & 0xF) << 4) + ((regValue & 0xF0) >> 4);
+	ctx.regs().setRegFromR8(r8, swapped);
+
+	ctx.regs().setFlags(swapped == 0, 0, 0, 0);
+
+#if CPU_DEBUG
+	std::cout << std::format("Swapped {} value to {}\n", R8_STR[(int)r8], swapped);
+#endif
+}
+
+void CPU::srl_r8()
+{
+	std::cout << "srl_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}
+
+void CPU::bit_b3_r8()
+{
+	std::cout << "bit_b3_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}
+
+void CPU::res_b3_r8()
+{
+	std::cout << "res_b3_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}
+
+void CPU::set_b3_r8()
+{
+	std::cout << "set_b3_r8 not implemented" << std::endl;
+	ctx.setRunning(false);
+}

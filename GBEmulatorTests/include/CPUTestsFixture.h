@@ -28,6 +28,12 @@ public:
         mem(regs().pc) = code;
         cpu().runOp();
     }
+    void runCBPrexixOp(u8 code)
+    {
+        mem(regs().pc) = 0xCB;
+        mem(regs().pc + 1) = code;
+        cpu().runOp();
+    }
     u8 &mem(u16 at) { return mem().at(at); }
 
     void ASSERT_REGISTERS(u8 a, u8 b, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h, u8 l, u16 sp, u16 pc)

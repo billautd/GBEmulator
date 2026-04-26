@@ -21,3 +21,13 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_method_calls", "[cpu_method_calls]")
 		}
 	}
 }
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_cb_prefix_method_calls", "[cpu_method_calls]")
+{
+	for (int i = 0; i < 256; i++)
+	{
+		std::cout << std::format("CB Code : {}\n", Common::toHexStr((u8)i));
+		mem(regs().pc + 1) = (u8)i;
+		REQUIRE_NOTHROW(runOp(0xCB));
+	}
+}
