@@ -508,8 +508,12 @@ void CPU::ccf()
 
 void CPU::jr_imm8()
 {
-	std::cout << "jr_imm8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u8 imm8 = ctx.regs().imm8();
+	// Value is signed, will jump after or before current PC
+	ctx.regs().pc += (i8)imm8;
+#if CPU_DEBUG
+	std::cout << std::format("jr_imm8 with {}, PC set to {}\n", Common::toHexStr(imm8), Common::toHexStr(ctx.regs().pc));
+#endif
 }
 
 void CPU::jr_cond_imm8()
@@ -711,18 +715,26 @@ void CPU::cp_a_imm8()
 
 void CPU::ret_cond()
 {
-	std::cout << "ret_cond not implemented" << std::endl;
-	ctx.setRunning(false);
+	COND cond = Registers::getCONDFromCode((opCode() & 0b00011000) >> 3);
+
+	if (ctx.regs().checkCOND(cond))
+	{
+		ctx.regs().pc = popFromStack();
+#if CPU_DEBUG
+		std::cout << std::format("ret_cond to addr {}\n", Common::toHexStr(ctx.regs().pc));
+#endif
+	}
+	else
+	{
+#if CPU_DEBUG
+		std::cout << std::format("ret_cond, PC unchanged\n");
+#endif
+	}
 }
 
 void CPU::ret()
 {
-	u8 sp_lsb = ctx.mem().at(ctx.regs().sp);
-	ctx.regs().sp++;
-	u8 sp_msb = ctx.mem().at(ctx.regs().sp);
-	ctx.regs().sp++;
-
-	ctx.regs().pc = (sp_msb * 256 + sp_lsb);
+	ctx.regs().pc = popFromStack();
 
 #if CPU_DEBUG
 	std::cout << std::format("ret to addr {}\n", Common::toHexStr(ctx.regs().pc));
@@ -737,8 +749,22 @@ void CPU::reti()
 
 void CPU::jp_cond_imm16()
 {
-	std::cout << "jp_cond_imm16 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u16 imm16 = ctx.regs().imm16();
+	COND cond = Registers::getCONDFromCode((opCode() & 0b00011000) >> 3);
+	if (ctx.regs().checkCOND(cond))
+	{
+		// Value is signed, will jump after or before current PC
+		ctx.regs().pc = imm16;
+#if CPU_DEBUG
+		std::cout << std::format("jp_cond_imm16, PC set to {}\n", Common::toHexStr(ctx.regs().pc));
+#endif
+	}
+	else
+	{
+#if CPU_DEBUG
+		std::cout << std::format("jp_cond_imm16, PC unchanged\n");
+#endif
+	}
 }
 
 void CPU::jp_imm16()
