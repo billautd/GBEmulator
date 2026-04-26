@@ -13,9 +13,21 @@ Context::~Context()
 
 void Context::init()
 {
+	// Init memory
 	initMemory();
 	registers.pc = 0x100;
 	memory.at(PPU::LY_ADDR) = 0;
+
+	// Init window
+	SDL_Init(SDL_INIT_VIDEO);
+	SDL_CreateWindowAndRenderer("GBEmulator", 1920, 1080, 0, &window, &renderer);
+}
+
+void Context::destroy()
+{
+	logMemory();
+	setRunning(false);
+	SDL_DestroyWindow(window);
 }
 
 void Context::loadCartridge(const char *path)

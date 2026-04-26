@@ -2,7 +2,7 @@
 #include <Context.h>
 #include <math.h>
 
-#define CPU_DEBUG true
+#define CPU_DEBUG false
 
 CPU::CPU(Context &ctx) : ctx(ctx)
 {
@@ -572,7 +572,6 @@ void CPU::add_a_r8()
 	ctx.regs().a += r8Value;
 
 	u16 result16 = a + r8Value;
-	std::cout << result16 << std::endl;
 
 	ctx.regs().setFlags(ctx.regs().a == 0, 0, ((a & 0xF) + (r8Value & 0xF)) > 0xF, result16 > 0xFF);
 

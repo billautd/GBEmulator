@@ -10,6 +10,9 @@ class CORE_API Context
 {
 private:
 	bool running = false;
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+
 	Cartridge loadedCartridge;
 	Registers registers;
 	CPU currentCPU;
@@ -22,20 +25,22 @@ public:
 	~Context();
 
 	void init();
+	void destroy();
 
 	bool isRunning() { return running; }
 	void setRunning(bool running) { this->running = running; }
 
-	Registers &regs() { return registers; }
+	SDL_Window *getWindow() { return window; }
+	SDL_Renderer *getRenderer() { return renderer; }
 
-	void loadCartridge(const char *path);
 	Cartridge &getLoadedCartridge() { return loadedCartridge; }
+	void loadCartridge(const char *path);
+
+	Registers &regs() { return registers; }
+	CPU &cpu() { return currentCPU; }
+	PPU &ppu() { return currentPPU; }
 
 	std::vector<u8> &mem() { return memory; }
 	void initMemory();
 	void logMemory();
-
-	CPU &cpu() { return currentCPU; }
-
-	PPU &ppu() { return currentPPU; }
 };

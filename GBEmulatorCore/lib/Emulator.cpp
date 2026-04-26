@@ -12,8 +12,7 @@ Emulator::~Emulator()
 
 void Emulator::init()
 {
-	SDL_Init(SDL_INIT_VIDEO);
-	window = SDL_CreateWindow("", 600, 400, 0);
+	ctx.init();
 	ctx.setRunning(true);
 	return;
 }
@@ -47,15 +46,12 @@ void Emulator::runEmulator()
 				destroy();
 			}
 		}
-		// SDL_Delay(1);
 	}
 	return;
 }
 
 void Emulator::destroy()
 {
-	ctx.logMemory();
-	ctx.setRunning(false);
-	SDL_DestroyWindow(window);
+	ctx.destroy();
 	SDL_Quit();
 }

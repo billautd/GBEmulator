@@ -56,7 +56,6 @@ PRIVATE
     lib/CPU/CPUTests_or_a_imm8.cpp
     lib/CPU/CPUTests_or_a_r8.cpp
     lib/CPU/CPUTests_pop_r16stk.cpp
-    lib/CPU/CPUTests_prefix.cpp
     lib/CPU/CPUTests_push_r16stk.cpp
     lib/CPU/CPUTests_res_b3_r8.cpp
     lib/CPU/CPUTests_ret.cpp
