@@ -68,7 +68,7 @@ public:
 	// Stack Pointer
 	u16 sp = 0x0000;
 
-	void log();
+	std::string log();
 
 	// From 3 bits data, get R8 to set
 	static R8 getR8FromCode(u8 code);
@@ -81,6 +81,8 @@ public:
 	static R16 getR16FromCode(u8 code);
 	// Set u16 value in 2 8-bit registers
 	void setRegFromR16(R16 reg, u16 value);
+	// Get 16-bit register value from R16
+	u16 getFromR16(R16 reg);
 
 	// From 2 bits data, get R16_MEM to set
 	static R16_MEM getR16MemFromCode(u8 code);
@@ -96,8 +98,6 @@ public:
 	u8 imm8();
 	// Returns 2 bytes after PC, in little endian order
 	u16 imm16();
-	// Returns address in HL
-	u16 hl();
 	// Increments or decrements HL dependening on R16_MEM HL+ or HL-
 	void updateHLMem(R16_MEM r16Mem);
 

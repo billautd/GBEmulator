@@ -2,3 +2,15 @@
 #include <CPUTestsFixture.h>
 #include <CPU.h>
 #include <Context.h>
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCD", "[cpu_ops_call_imm16]")
+{
+    regs().sp = 0xCFFF;
+    regs().pc = 0x100;
+    mem(0x101) = 0xAB;
+    mem(0x102) = 0xCD;
+
+    runOp(0xCD);
+
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0xCFFD, 0xCDAB);
+}

@@ -1,7 +1,7 @@
 #include <CPU.h>
 #include <Context.h>
 
-#define CPU_DEBUG false
+#define CPU_DEBUG true
 
 CPU::CPU(Context &ctx) : ctx(ctx)
 {
@@ -15,7 +15,7 @@ void CPU::runOp()
 {
 #if CPU_DEBUG
 	std::cout << std::endl;
-	ctx.regs().log();
+	std::cout << ctx.regs().log() << std::endl;
 #endif
 
 	// Read opcode and increase PC
@@ -310,8 +310,13 @@ void CPU::inc_r16()
 
 void CPU::dec_r16()
 {
-	std::cout << "dec_r16 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R16 r16 = Registers::getR16FromCode((opCode() & 0b00110000) >> 4);
+	u16 r16Value = ctx.regs().getFromR16(r16);
+	ctx.regs().setRegFromR16(r16, r16Value - 1);
+
+#if CPU_DEBUG
+	std::cout << std::format("dec_r16 : {} decremented to {}\n", R16_STR[(int)r16], Common::toHexStr(ctx.regs().getFromR16(r16)));
+#endif
 }
 
 void CPU::add_hl_r16()
@@ -322,8 +327,17 @@ void CPU::add_hl_r16()
 
 void CPU::inc_r8()
 {
-	std::cout << "inc_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R8 r8 = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
+	u8 r8Value = ctx.regs().getFromR8(r8);
+	ctx.regs().setRegFromR8(r8, r8Value + 1);
+
+	u8 newValue = ctx.regs().getFromR8(r8);
+
+	ctx.regs().setFlags(newValue == 0, 0, (r8Value & 0xF) == 0xF, -1);
+
+#if CPU_DEBUG
+	std::cout << std::format("dec_r8 : {} decremented to {}\n", R8_STR[(int)r8], Common::toHexStr(newValue));
+#endif
 }
 
 void CPU::dec_r8()
@@ -334,7 +348,7 @@ void CPU::dec_r8()
 
 	u8 newValue = ctx.regs().getFromR8(r8);
 
-	ctx.regs().setFlags(newValue == 0, 1, (r8Value & 0xF) < 1, -1);
+	ctx.regs().setFlags(newValue == 0, 1, (r8Value & 0xF) == 0, -1);
 
 #if CPU_DEBUG
 	std::cout << std::format("dec_r8 : {} decremented to {}\n", R8_STR[(int)r8], Common::toHexStr(newValue));
@@ -438,8 +452,13 @@ void CPU::stop()
 /**************************************/
 void CPU::ld_r8_r8()
 {
-	std::cout << "ld_r8_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R8 r8_src = Registers::getR8FromCode(opCode() & 0b111);
+	R8 r8_dest = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
+	ctx.regs().setRegFromR8(r8_dest, ctx.regs().getFromR8(r8_src));
+
+#if CPU_DEBUG
+	std::cout << std::format("ld_r8_r8 with {} set to {} value {}\n", R8_STR[(int)r8_dest], R8_STR[(int)r8_src], Common::toHexStr(ctx.regs().getFromR8(r8_src)));
+#endif
 }
 
 void CPU::halt()
@@ -612,8 +631,19 @@ void CPU::call_cond_imm16()
 
 void CPU::call_imm16()
 {
-	std::cout << "call_imm16 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u16 newPC = ctx.regs().imm16();
+
+	// Set imm16 to stack
+	ctx.regs().sp--;
+	ctx.mem().at(ctx.regs().sp) = ctx.regs().pc >> 8;
+	ctx.regs().sp--;
+	ctx.mem().at(ctx.regs().sp) = ctx.regs().pc & 0XFF;
+
+	ctx.regs().pc = newPC;
+
+#if CPU_DEBUG
+	std::cout << std::format("call_imm16 to {}\n", Common::toHexStr(newPC));
+#endif
 }
 
 void CPU::rst_tgt3()

@@ -112,6 +112,24 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_setRegFromR16", "[regs]")
 	REQUIRE(regs->sp == 0x0708);
 }
 
+TEST_CASE_METHOD(RegisterTestsFixture, "regs_getFromR16", "[regs]")
+{
+	// Sets registers directly
+	regs->b = 0x01;
+	regs->c = 0x02;
+	regs->d = 0x03;
+	regs->e = 0x04;
+	regs->h = 0x05;
+	regs->l = 0x06;
+	regs->a = 0x08;
+	regs->sp = 0x1234;
+
+	REQUIRE(regs->getFromR16(R16::BC) == 0x0102);
+	REQUIRE(regs->getFromR16(R16::DE) == 0x0304);
+	REQUIRE(regs->getFromR16(R16::HL) == 0x0506);
+	REQUIRE(regs->getFromR16(R16::SP) == 0x1234);
+}
+
 TEST_CASE_METHOD(RegisterTestsFixture, "regs_getR16MemFromCode", "[regs]")
 {
 	REQUIRE(Registers::getR16MemFromCode(0) == R16_MEM::BC);
@@ -210,14 +228,6 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_imm16", "[regs]")
 
 	REQUIRE(regs->imm16() == 0x0201);
 	REQUIRE(regs->imm16() == 0x0403);
-}
-
-TEST_CASE_METHOD(RegisterTestsFixture, "regs_hl", "[regs]")
-{
-	regs->h = 0x12;
-	regs->l = 0x34;
-
-	REQUIRE(regs->hl() == 0x1234);
 }
 
 TEST_CASE_METHOD(RegisterTestsFixture, "regs_updateHLMem", "[regs]")

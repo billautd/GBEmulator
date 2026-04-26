@@ -9,13 +9,13 @@ Registers::~Registers()
 {
 }
 
-void Registers::log()
+std::string Registers::log()
 {
-	std::cout << std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{} -> {}{}{}{}], G[{}], H[{}], L[{}], PC[{}], SP[{}]\n",
-							 Common::toHexStr(a), Common::toHexStr(b), Common::toHexStr(c), Common::toHexStr(d), Common::toHexStr(e),
-							 Common::toHexStr(f),
-							 (f & 0b10000000) ? "Z" : "-", (f & 0b01000000) ? "N" : "-", (f & 0b00100000) ? "H" : "-", (f & 0b00010000) ? "C" : "-",
-							 Common::toHexStr(g), Common::toHexStr(h), Common::toHexStr(l), Common::toHexStr(pc), Common::toHexStr(sp));
+	return std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{} -> {}{}{}{}], G[{}], H[{}], L[{}], PC[{}], SP[{}]",
+					   Common::toHexStr(a), Common::toHexStr(b), Common::toHexStr(c), Common::toHexStr(d), Common::toHexStr(e),
+					   Common::toHexStr(f),
+					   (f & 0b10000000) ? "Z" : "-", (f & 0b01000000) ? "N" : "-", (f & 0b00100000) ? "H" : "-", (f & 0b00010000) ? "C" : "-",
+					   Common::toHexStr(g), Common::toHexStr(h), Common::toHexStr(l), Common::toHexStr(pc), Common::toHexStr(sp));
 }
 
 R8 Registers::getR8FromCode(u8 data)
@@ -83,7 +83,7 @@ void Registers::setRegFromR8(R8 reg, u8 value)
 	}
 	case R8::HL:
 	{
-		ctx.mem().at(hl()) = value;
+		ctx.mem().at(getFromR16(R16::HL)) = value;
 		break;
 	}
 	default:
@@ -110,7 +110,7 @@ u8 Registers::getFromR8(R8 reg)
 	case R8::A:
 		return a;
 	case R8::HL:
-		return ctx.mem().at(hl());
+		return ctx.mem().at(getFromR16(R16::HL));
 	}
 	throw std::invalid_argument(std::string("Registers::getFromR8 -> Invalid R8 reg " + (int)reg));
 }
@@ -164,6 +164,22 @@ void Registers::setRegFromR16(R16 reg, u16 value)
 	default:
 		throw std::invalid_argument(std::string("Registers::setRegFromR16 -> Invalid R16 reg " + (int)reg));
 	}
+}
+
+u16 Registers::getFromR16(R16 reg)
+{
+	switch (reg)
+	{
+	case R16::BC:
+		return b * 256 + c;
+	case R16::DE:
+		return d * 256 + e;
+	case R16::HL:
+		return h * 256 + l;
+	case R16::SP:
+		return sp;
+	}
+	throw std::invalid_argument(std::string("Registers::getFromR16 -> Invalid R16 reg " + (int)reg));
 }
 
 R16_MEM Registers::getR16MemFromCode(u8 data)
@@ -241,11 +257,6 @@ u16 Registers::imm16()
 	u8 littleValue = ctx.mem().at(pc++);
 	u8 bigValue = ctx.mem().at(pc++);
 	return bigValue * 256 + littleValue;
-}
-
-u16 Registers::hl()
-{
-	return h * 256 + l;
 }
 
 void Registers::updateHLMem(R16_MEM r16Mem)
