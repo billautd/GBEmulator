@@ -13,22 +13,20 @@ Emulator::Emulator() : ctx(Context())
 
 Emulator::~Emulator()
 {
-	destroy();
 }
 
 void Emulator::init()
 {
 	ctx.init();
 	ctx.setRunning(true);
+	ctx.ui().init();
 	return;
 }
 
-void Emulator::runEmulator()
+void Emulator::runEmulator(const char *romPath)
 {
 	init();
-	ctx.loadCartridge("../t.gb");
-
-	SDL_Event evt;
+	ctx.loadCartridge(romPath);
 
 	u64 nextTCyclesTarget = CYCLES_PER_FRAME;
 	while (ctx.isRunning())
@@ -40,18 +38,7 @@ void Emulator::runEmulator()
 		u64 ticksStart = Common::getTicks();
 		while (ctx.getTCycles() < nextTCyclesTarget)
 		{
-			//  Unsupported operation
-			try
-			{
-				u64 tCyclesStart = ctx.getTCycles();
-				ctx.cpu().runOp();
-				ctx.ppu().run(ctx.getTCycles() - tCyclesStart);
-			}
-			catch (std::runtime_error &e)
-			{
-				std::cerr << "Exception : " << e.what() << std::endl;
-				destroy();
-			}
+			ctx.tick(1);
 		}
 		u64 elapsedTime = Common::getTicks() - ticksStart;
 		if (elapsedTime < NS_PER_FRAME)
@@ -60,27 +47,17 @@ void Emulator::runEmulator()
 		nextTCyclesTarget += CYCLES_PER_FRAME;
 
 		// Render UI
-		ctx.ppu().displayTileMap();
-
-		// Update FPS
-		fps = (float)1000000000 / (Common::getTicks() - ticksStart);
-
-		// Listen to process exit
-		while (SDL_PollEvent(&evt))
-		{
-			if (evt.type == SDL_EVENT_QUIT)
-			{
-				std::cout << "Exiting" << std::endl;
-				std::cout << ctx.getTCycles() << std::endl;
-				destroy();
-			}
-		}
+		ctx.ui().handle();
+		ctx.ui().update();
+		ctx.ui().setMainWindowFPS((float)1000000000 / (Common::getTicks() - ticksStart));
 	}
+	destroy();
 	return;
 }
 
 void Emulator::destroy()
 {
+	std::cout << "Exiting" << std::endl;
 	ctx.destroy();
 	SDL_Quit();
 }

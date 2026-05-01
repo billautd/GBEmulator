@@ -1,34 +1,55 @@
 #pragma once
 
+#include <functional>
+#include <queue>
 #include <Common.h>
+#include <CPUMicroOp.h>
 
 class Context;
 class CORE_API CPU
 {
 private:
 	Context &ctx;
+	CPUMicroOp microOp;
 	u8 currentOpCode;
 	u8 currentCBPrefixOpCode;
 
+	// Scheduler
+	u64 cycles = 0;
+	u64 stallCycles = 0;
+	std::queue<CPUMicroOpStruct> queue = {};
+
 	bool ime = false;
+
+	void scheduleMicroOps();
 
 public:
 	CPU(Context &ctx);
 	~CPU();
 
+	void tick();
+	void stall(u64 ticks) { stallCycles += ticks; }
+
+	u64 getStallCycles() { return stallCycles; }
+	void setStallTicks(u64 ticks) { stallCycles = ticks; }
+	u64 getCycles() { return cycles; }
+	void setCycles(u64 cycles) { this->cycles = cycles; }
+
 	u8 opCode() { return currentOpCode; }
 	void setCurrentOpCode(u8 opCode) { currentOpCode = opCode; }
+
 	u8 cbPrefixOpCode() { return currentCBPrefixOpCode; }
 	void setCurrentCBPRefixOpCode(u8 opCode) { currentCBPrefixOpCode = opCode; }
 
 	bool isIME() { return ime; }
 	void setIME(bool ime) { this->ime = ime; }
+	void handleInterrupts();
 
-	void pushToStack(u16 value);
-	u16 popFromStack();
+	void runOp(u8 code);
+	void runOpCBPrefix(u8 cbCode);
 
-	// Main entry points
-	void runOp();
+	void pushToQueue(const CPUMicroOpStruct &op) { queue.push(op); }
+	std::queue<CPUMicroOpStruct> &getQueue() { return queue; }
 
 	// Block 0
 	void nop();

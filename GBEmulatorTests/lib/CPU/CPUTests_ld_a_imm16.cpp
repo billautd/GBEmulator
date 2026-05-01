@@ -15,4 +15,5 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xFA", "[cpu_ops_ld_a_imm16]")
 
     ASSERT_REGISTERS(0xEF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
     REQUIRE(mem(0xCDAB) == 0xEF);
+    REQUIRE(ticks() == 16);
 }

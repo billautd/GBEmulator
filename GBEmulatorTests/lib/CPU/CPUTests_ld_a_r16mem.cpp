@@ -15,6 +15,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x0A", "[cpu_ops_ld_a_r16mem]")
 
     ASSERT_REGISTERS(0xEF, 0xAB, 0xCD, 0, 0, 0, 0, 0, 0, 0, 1);
     REQUIRE(mem(0xABCD) == 0xEF);
+    REQUIRE(ticks() == 8);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x1A", "[cpu_ops_ld_a_r16mem]")
@@ -29,6 +30,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x1A", "[cpu_ops_ld_a_r16mem]")
 
     ASSERT_REGISTERS(0xEF, 0, 0, 0xAB, 0xCD, 0, 0, 0, 0, 0, 1);
     REQUIRE(mem(0xABCD) == 0xEF);
+    REQUIRE(ticks() == 8);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x2A", "[cpu_ops_ld_a_r16mem]")
@@ -43,6 +45,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x2A", "[cpu_ops_ld_a_r16mem]")
 
     ASSERT_REGISTERS(0xEF, 0, 0, 0, 0, 0, 0, 0xAB, 0xCE, 0, 1);
     REQUIRE(mem(0xABCD) == 0xEF);
+    REQUIRE(ticks() == 8);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x3A", "[cpu_ops_ld_a_r16mem]")
@@ -57,4 +60,5 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x3A", "[cpu_ops_ld_a_r16mem]")
 
     ASSERT_REGISTERS(0xEF, 0, 0, 0, 0, 0, 0, 0xAB, 0xCC, 0, 1);
     REQUIRE(mem(0xABCD) == 0xEF);
+    REQUIRE(ticks() == 8);
 }

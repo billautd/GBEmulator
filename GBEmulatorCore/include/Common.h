@@ -33,6 +33,7 @@ public:
 	static void delay(int ns);
 	static std::string toHexStr(u8 data);
 	static std::string toHexStr(u16 data);
+	static std::string toHexStr(u64 data);
 	static std::string toHexStr(const u8 *data, const size_t size);
 	static std::string toHexStr(const std::span<u8> &array);
 };

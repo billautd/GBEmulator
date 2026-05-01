@@ -14,7 +14,7 @@ Cartridge::~Cartridge()
 
 void Cartridge::readBytesFromRomData(size_t offset, const std::span<u8> &array)
 {
-	std::copy_n(ctx.mem().begin() + offset, array.size(), array.begin());
+	std::copy_n(ctx.mem().getMem().begin() + offset, array.size(), array.begin());
 }
 
 bool Cartridge::checkHeaderChecksum()
@@ -22,7 +22,7 @@ bool Cartridge::checkHeaderChecksum()
 	u8 checksum = 0;
 	for (u16 address = 0x0134; address <= 0x14C; address++)
 	{
-		checksum = checksum - ctx.mem().at(address) - 1;
+		checksum = checksum - ctx.mem().readMem(address) - 1;
 	}
 	return checksum == headerChecksum.at(0);
 }
@@ -37,7 +37,7 @@ bool Cartridge::checkGlobalChecksum()
 		{
 			continue;
 		}
-		checksum += ctx.mem().at(i);
+		checksum += ctx.mem().readMem(i);
 	}
 	// Big endian
 	return checksum == (globalChecksum.at(1) + 256 * globalChecksum.at(0));
@@ -58,7 +58,7 @@ void Cartridge::loadCartrige(const char *path)
 	file.seekg(0, file.end);
 	actualRomSize = file.tellg();
 	file.seekg(0);
-	file.read(reinterpret_cast<char *>(ctx.mem().data()), actualRomSize);
+	file.read(reinterpret_cast<char *>(ctx.mem().getMem().data()), actualRomSize);
 
 	// Read header from ROM data
 	readBytesFromRomData(0x100, entryPoint);
@@ -98,4 +98,5 @@ void Cartridge::loadCartrige(const char *path)
 	{
 		std::cerr << "Wrong global checksum" << std::endl;
 	}
+	std::cout << std::endl;
 }

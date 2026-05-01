@@ -10,14 +10,16 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x0B", "[cpu_ops_dec_r16]")
 
     runOp(0x0B);
 
-    ASSERT_REGISTERS(0, 0x12, 0x33, 0, 0, 0, 0, 0, 0, 0, 0X01);
+    ASSERT_REGISTERS(0, 0x12, 0x33, 0, 0, 0, 0, 0, 0, 0, 0x01);
+    REQUIRE(ticks() == 8);
 
     regs().b = 0;
     regs().c = 0;
 
     runOp(0x0B);
 
-    ASSERT_REGISTERS(0, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0X02);
+    ASSERT_REGISTERS(0, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0x02);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x1B", "[cpu_ops_dec_r16]")
@@ -27,14 +29,16 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x1B", "[cpu_ops_dec_r16]")
 
     runOp(0x1B);
 
-    ASSERT_REGISTERS(0, 0, 0, 0x12, 0x33, 0, 0, 0, 0, 0, 0X01);
+    ASSERT_REGISTERS(0, 0, 0, 0x12, 0x33, 0, 0, 0, 0, 0, 1);
+    REQUIRE(ticks() == 8);
 
     regs().d = 0;
     regs().e = 0;
 
     runOp(0x1B);
 
-    ASSERT_REGISTERS(0, 0, 0, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0X02);
+    ASSERT_REGISTERS(0, 0, 0, 0xFF, 0xFF, 0, 0, 0, 0, 0, 2);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x2B", "[cpu_ops_dec_r16]")
@@ -44,14 +48,16 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x2B", "[cpu_ops_dec_r16]")
 
     runOp(0x2B);
 
-    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0x12, 0x33, 0, 0X01);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0x12, 0x33, 0, 1);
+    REQUIRE(ticks() == 8);
 
     regs().h = 0;
     regs().l = 0;
 
     runOp(0x2B);
 
-    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, 0, 0X02);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, 0, 2);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x3B", "[cpu_ops_dec_r16]")
@@ -60,11 +66,13 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x3B", "[cpu_ops_dec_r16]")
 
     runOp(0x3B);
 
-    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1233, 0X01);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1233, 1);
+    REQUIRE(ticks() == 8);
 
     regs().sp = 0;
 
     runOp(0x3B);
 
-    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFFFF, 0X02);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFFFF, 2);
+    REQUIRE(ticks() == 16);
 }

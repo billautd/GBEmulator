@@ -47,7 +47,6 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_setRegFromR8", "[regs]")
 	regs->setRegFromR8(R8::E, 0x04);
 	regs->setRegFromR8(R8::H, 0x05);
 	regs->setRegFromR8(R8::L, 0x06);
-	regs->setRegFromR8(R8::HL, 0x07);
 	regs->setRegFromR8(R8::A, 0x08);
 
 	// Asserts updated registers
@@ -57,7 +56,6 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_setRegFromR8", "[regs]")
 	REQUIRE(regs->e == 0x04);
 	REQUIRE(regs->h == 0x05);
 	REQUIRE(regs->l == 0x06);
-	REQUIRE(ctx->mem().at(0x0506) == 0X07);
 	REQUIRE(regs->a == 0x08);
 }
 
@@ -79,7 +77,6 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_getFromR8", "[regs]")
 	REQUIRE(regs->getFromR8(R8::E) == 0x04);
 	REQUIRE(regs->getFromR8(R8::H) == 0x05);
 	REQUIRE(regs->getFromR8(R8::L) == 0x06);
-	// REQUIRE(regs->getFromR8(R8::HL) == 0x07);
 	REQUIRE(regs->getFromR8(R8::A) == 0x08);
 }
 
@@ -147,7 +144,7 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_setRegFromR16Stk", "[regs]")
 	regs->setRegFromR16Stk(R16_STK::BC, 0x0102);
 	regs->setRegFromR16Stk(R16_STK::DE, 0x0304);
 	regs->setRegFromR16Stk(R16_STK::HL, 0x0506);
-	regs->setRegFromR16Stk(R16_STK::AF, 0x0708);
+	regs->setRegFromR16Stk(R16_STK::AF, 0x0728);
 
 	// Asserts updated registers
 	REQUIRE(regs->a == 0x07);
@@ -155,7 +152,7 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_setRegFromR16Stk", "[regs]")
 	REQUIRE(regs->c == 0x02);
 	REQUIRE(regs->d == 0x03);
 	REQUIRE(regs->e == 0x04);
-	REQUIRE(regs->f == 0x08);
+	REQUIRE(regs->f == 0x20);
 	REQUIRE(regs->h == 0x05);
 	REQUIRE(regs->l == 0x06);
 }
@@ -256,9 +253,9 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_imm8", "[regs]")
 {
 	regs->pc = 0x1020;
 
-	ctx->mem().at(0x1020) = 0x01;
-	ctx->mem().at(0x1021) = 0x02;
-	ctx->mem().at(0x1022) = 0x03;
+	ctx->mem().getMem().at(0x1020) = 0x01;
+	ctx->mem().getMem().at(0x1021) = 0x02;
+	ctx->mem().getMem().at(0x1022) = 0x03;
 
 	REQUIRE(regs->imm8() == 0x01);
 	REQUIRE(regs->imm8() == 0x02);
@@ -269,10 +266,10 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_imm16", "[regs]")
 {
 	regs->pc = 0x1020;
 
-	ctx->mem().at(0x1020) = 0x01;
-	ctx->mem().at(0x1021) = 0x02;
-	ctx->mem().at(0x1022) = 0x03;
-	ctx->mem().at(0x1023) = 0x04;
+	ctx->mem().getMem().at(0x1020) = 0x01;
+	ctx->mem().getMem().at(0x1021) = 0x02;
+	ctx->mem().getMem().at(0x1022) = 0x03;
+	ctx->mem().getMem().at(0x1023) = 0x04;
 
 	REQUIRE(regs->imm16() == 0x0201);
 	REQUIRE(regs->imm16() == 0x0403);

@@ -26,6 +26,13 @@ std::string Common::toHexStr(u16 data)
 	return oss.str();
 }
 
+std::string Common::toHexStr(u64 data)
+{
+	std::ostringstream oss;
+	oss << std::hex << std::setw(16) << std::setfill('0') << std::uppercase << static_cast<u64>(data);
+	return oss.str();
+}
+
 std::string Common::toHexStr(const u8 *data, const size_t size)
 {
 	std::ostringstream oss;

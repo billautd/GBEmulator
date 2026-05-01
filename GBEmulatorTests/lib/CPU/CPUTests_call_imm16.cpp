@@ -16,4 +16,5 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCD", "[cpu_ops_call_imm16]")
     // Store pointer after original function call
     REQUIRE(mem(0xCFFD) == 0x03);
     REQUIRE(mem(0xCFFE) == 0x01);
+    REQUIRE(ticks() == 24);
 }

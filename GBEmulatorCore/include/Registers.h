@@ -77,6 +77,7 @@ public:
 	// Stack Pointer
 	u16 sp = 0x0000;
 
+	void init();
 	std::string log();
 
 	// From 3 bits data, get R8 to set

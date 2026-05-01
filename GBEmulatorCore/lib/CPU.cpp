@@ -2,9 +2,9 @@
 #include <Context.h>
 #include <math.h>
 
-#define CPU_DEBUG false
+#define CPU_DEBUG true
 
-CPU::CPU(Context &ctx) : ctx(ctx)
+CPU::CPU(Context &ctx) : ctx(ctx), microOp(CPUMicroOp(ctx))
 {
 }
 
@@ -12,40 +12,48 @@ CPU::~CPU()
 {
 }
 
-void CPU::pushToStack(u16 value)
+void CPU::tick()
 {
-	// Set value to stack
-	ctx.regs().sp--;
-	ctx.mem().at(ctx.regs().sp) = value >> 8;
-	ctx.regs().sp--;
-	ctx.mem().at(ctx.regs().sp) = value & 0XFF;
+	scheduleMicroOps();
+	cycles++;
+	handleInterrupts();
 }
 
-u16 CPU::popFromStack()
+void CPU::scheduleMicroOps()
 {
-	u8 lsb = ctx.mem().at(ctx.regs().sp);
-	ctx.regs().sp++;
-	u8 msb = ctx.mem().at(ctx.regs().sp);
-	ctx.regs().sp++;
-	return msb * 256 + lsb;
+	// Stall T-cycles
+	if (stallCycles > 0)
+	{
+		stallCycles--;
+		return;
+	}
+	// If queue empty, scheduling next CPU operation
+	// Each instruction in queue = 4 T-Cycles = 1 M-Cycle
+	if (queue.empty())
+	{
+#if CPU_DEBUG
+		std::cout << std::format("Cycle {} - {} => {}\n", Common::toHexStr(cycles), Common::toHexStr(ctx.mem().readMem(ctx.regs().pc)), ctx.regs().log());
+#endif
+		pushToQueue({CPUMicroOpType::FETCH_DECODE_SCHEDULE}); // 4
+	}
+	// Pop next instruction in queue and run it, until CPU operation is fully processed (empty queue)
+	// If instruction takes no cycle, go to next without waiting for tick
+	while (!queue.empty())
+	{
+		CPUMicroOpStruct op = queue.front();
+		if (stallCycles > 0 && op.cycles != 0)
+			break;
+
+		queue.pop();
+		microOp.runMicroOp(op);
+
+		if (op.cycles > 0 && stallCycles == 0)
+			stall(op.cycles * 3);
+	}
 }
 
-void CPU::runOp()
+void CPU::runOp(u8 code)
 {
-#if CPU_DEBUG
-	std::cout << std::endl;
-	std::cout << ctx.regs().log() << std::endl;
-#endif
-
-	// Read opcode and increase PC
-	u8 code = ctx.mem().at(ctx.regs().pc);
-	ctx.regs().pc++;
-	setCurrentOpCode(code);
-
-#if CPU_DEBUG
-	std::cout << std::format("Current op code : {}\n", Common::toHexStr(code));
-#endif
-
 	// Block 0
 	// 0x00
 	if (code == 0)
@@ -216,67 +224,7 @@ void CPU::runOp()
 	// 0xCB prefix
 	else if (code == 0b11001011)
 	{
-		u8 cbCode = ctx.regs().imm8();
-		setCurrentCBPRefixOpCode(cbCode);
-#if CPU_DEBUG
-		std::cout << std::format("Current CB prefix op code : {}\n", Common::toHexStr(cbCode));
-#endif
-		// 0xCB00 (B), 0xCB01 (C), 0xCB02 (D), 0xCB03 (E), 0xCB04 (H), 0xCB05 (L), 0xCB06 (HL), 0xCB07 (A)
-		if ((cbCode & 0b11111000) == 0b00000000)
-			rlc_r8();
-		// 0xCB08 (B), 0xCB09 (C), 0xCB0A (D), 0xCB0B (E), 0xCB0C (H), 0xCB0D (L), 0xCB0E (HL), 0xCB0F (A)
-		else if ((cbCode & 0b11111000) == 0b00001000)
-			rrc_r8();
-		// 0xCB10 (B), 0xCB11 (C), 0xCB12 (D), 0xCB13 (E), 0xCB14 (H), 0xCB15 (L), 0xCB16 (HL), 0xCB17 (A)
-		else if ((cbCode & 0b11111000) == 0b00010000)
-			rl_r8();
-		// 0xCB18 (B), 0xCB19 (C), 0xCB1A (D), 0xCB1B (E), 0xCB1C (H), 0xCB1D (L), 0xCB1E (HL), 0xCB1F (A)
-		else if ((cbCode & 0b11111000) == 0b00011000)
-			rr_r8();
-		// 0xCB20 (B), 0xCB21 (C), 0xCB22 (D), 0xCB23 (E), 0xCB24 (H), 0xCB25 (L), 0xCB26 (HL), 0xCB27 (A)
-		else if ((cbCode & 0b11111000) == 0b00100000)
-			sla_r8();
-		// 0xCB28 (B), 0xCB29 (C), 0xCB2A (D), 0xCB2B (E), 0xCB2C (H), 0xCB2D (L), 0xCB2E (HL), 0xCB2F (A)
-		else if ((cbCode & 0b11111000) == 0b00101000)
-			sra_r8();
-		// 0xCB30 (B), 0xCB31 (C), 0xCB32 (D), 0xCB33 (E), 0xCB34 (H), 0xCB35 (L), 0xCB36 (HL), 0xCB37 (A)
-		else if ((cbCode & 0b11111000) == 0b00110000)
-			swap_r8();
-		// 0xCB38 (B), 0xCB39 (C), 0xCB3A (D), 0xCB3B (E), 0xCB3C (H), 0xCB3D (L), 0xCB3E (HL), 0xCB3F (A)
-		else if ((cbCode & 0b11111000) == 0b00111000)
-			srl_r8();
-		// 0xCB40 (0 / B),0xCB41 (0 / C), 0xCB42 (0 / D), 0xCB43 (0 / E), 0xCB44 (0 / H), 0xCB45 (0 / L), 0xCB46 (0 / HL), 0xCB47 (0 / A)
-		// 0xCB48 (1 / B),0xCB49 (1 / C), 0xCB4A (1 / D), 0xCB4B (1 / E), 0xCB4C (1 / H), 0xCB4D (1 / L), 0xCB4E (1 / HL), 0xCB4F (1 / A)
-		// 0xCB50 (2 / B),0xCB51 (2 / C), 0xCB52 (2 / D), 0xCB53 (2 / E), 0xCB54 (2 / H), 0xCB55 (2 / L), 0xCB56 (2 / HL), 0xCB57 (2 / A)
-		// 0xCB58 (3 / B),0xCB59 (3 / C), 0xCB5A (3 / D), 0xCB5B (3 / E), 0xCB5C (3 / H), 0xCB5D (3 / L), 0xCB5E (3 / HL), 0xCB5F (3 / A)
-		// 0xCB60 (4 / B),0xCB61 (4 / C), 0xCB62 (4 / D), 0xCB63 (4 / E), 0xCB64 (4 / H), 0xCB65 (4 / L), 0xCB66 (4 / HL), 0xCB67 (4 / A)
-		// 0xCB68 (5 / B),0xCB69 (5 / C), 0xCB6A (5 / D), 0xCB6B (5 / E), 0xCB6C (5 / H), 0xCB6D (5 / L), 0xCB6E (5 / HL), 0xCB6F (5 / A)
-		// 0xCB70 (6 / B),0xCB71 (6 / C), 0xCB72 (6 / D), 0xCB73 (6 / E), 0xCB74 (6 / H), 0xCB75 (6 / L), 0xCB76 (6 / HL), 0xCB77 (6 / A)
-		// 0xCB78 (7 / B),0xCB79 (7 / C), 0xCB7A (7 / D), 0xCB7B (7 / E), 0xCB7C (7 / H), 0xCB7D (7 / L), 0xCB7E (7 / HL), 0xCB7F (7 / A)
-		else if ((cbCode & 0b11000000) == 0b01000000)
-			bit_b3_r8();
-		// 0xCB80 (0 / B),0xCB81 (0 / C), 0xCB82 (0 / D), 0xCB83 (0 / E), 0xCB84 (0 / H), 0xCB85 (0 / L), 0xCB86 (0 / HL), 0xCB87 (0 / A)
-		// 0xCB88 (1 / B),0xCB89 (1 / C), 0xCB8A (1 / D), 0xCB8B (1 / E), 0xCB8C (1 / H), 0xCB8D (1 / L), 0xCB8E (1 / HL), 0xCB8F (1 / A)
-		// 0xCB90 (2 / B),0xCB91 (2 / C), 0xCB92 (2 / D), 0xCB93 (2 / E), 0xCB94 (2 / H), 0xCB95 (2 / L), 0xCB96 (2 / HL), 0xCB97 (2 / A)
-		// 0xCB98 (3 / B),0xCB99 (3 / C), 0xCB9A (3 / D), 0xCB9B (3 / E), 0xCB9C (3 / H), 0xCB9D (3 / L), 0xCB9E (3 / HL), 0xCB9F (3 / A)
-		// 0xCBA0 (4 / B),0xCBA1 (4 / C), 0xCBA2 (4 / D), 0xCBA3 (4 / E), 0xCBA4 (4 / H), 0xCBA5 (4 / L), 0xCBA6 (4 / HL), 0xCBA7 (4 / A)
-		// 0xCBA8 (5 / B),0xCBA9 (5 / C), 0xCBAA (5 / D), 0xCBAB (5 / E), 0xCBAC (5 / H), 0xCBAD (5 / L), 0xCBAE (5 / HL), 0xCBAF (5 / A)
-		// 0xCBB0 (6 / B),0xCBB1 (6 / C), 0xCBB2 (6 / D), 0xCBB3 (6 / E), 0xCBB4 (6 / H), 0xCBB5 (6 / L), 0xCBB6 (6 / HL), 0xCBB7 (6 / A)
-		// 0xCBB8 (7 / B),0xCBB9 (7 / C), 0xCBBA (7 / D), 0xCBBB (7 / E), 0xCBBC (7 / H), 0xCBBD (7 / L), 0xCBBE (7 / HL), 0xCBBF (7 / A)
-		else if ((cbCode & 0b11000000) == 0b10000000)
-			res_b3_r8();
-		// 0xCBC0 (0 / B),0xCBC1 (0 / C), 0xCBC2 (0 / D), 0xCBC3 (0 / E), 0xCBC4 (0 / H), 0xCBC5 (0 / L), 0xCBC6 (0 / HL), 0xCBC7 (0 / A)
-		// 0xCBC8 (1 / B),0xCBC9 (1 / C), 0xCBCA (1 / D), 0xCBCB (1 / E), 0xCBCC (1 / H), 0xCBCD (1 / L), 0xCBCE (1 / HL), 0xCBCF (1 / A)
-		// 0xCBD0 (2 / B),0xCBD1 (2 / C), 0xCBD2 (2 / D), 0xCBD3 (2 / E), 0xCBD4 (2 / H), 0xCBD5 (2 / L), 0xCBD6 (2 / HL), 0xCBD7 (2 / A)
-		// 0xCBD8 (3 / B),0xCBD9 (3 / C), 0xCBDA (3 / D), 0xCBDB (3 / E), 0xCBDC (3 / H), 0xCBDD (3 / L), 0xCBDE (3 / HL), 0xCBDF (3 / A)
-		// 0xCBE0 (4 / B),0xCBE1 (4 / C), 0xCBE2 (4 / D), 0xCBE3 (4 / E), 0xCBE4 (4 / H), 0xCBE5 (4 / L), 0xCBE6 (4 / HL), 0xCBE7 (4 / A)
-		// 0xCBE8 (5 / B),0xCBE9 (5 / C), 0xCBEA (5 / D), 0xCBEB (5 / E), 0xCBEC (5 / H), 0xCBED (5 / L), 0xCBEE (5 / HL), 0xCBEF (5 / A)
-		// 0xCBF0 (6 / B),0xCBF1 (6 / C), 0xCBF2 (6 / D), 0xCBF3 (6 / E), 0xCBF4 (6 / H), 0xCBF5 (6 / L), 0xCBF6 (6 / HL), 0xCBF7 (6 / A)
-		// 0xCBF8 (7 / B),0xCBF9 (7 / C), 0xCBFA (7 / D), 0xCBFB (7 / E), 0xCBFC (7 / H), 0xCBFD (7 / L), 0xCBFE (7 / HL), 0xCBFF (7 / A)
-		else if ((cbCode & 0b11000000) == 0b11000000)
-			set_b3_r8();
-		else
-			throw std::runtime_error(std::string("Op code " + Common::toHexStr(cbCode) + "with CB prefix not managed"));
+		pushToQueue({CPUMicroOpType::FETCH_DECODE_SCHEDULE_CB_PREFIX});
 	}
 	// 0xE2
 	else if (code == 0b11100010)
@@ -320,239 +268,235 @@ void CPU::runOp()
 		throw std::runtime_error(std::string("Op code " + Common::toHexStr(code) + " not managed"));
 }
 
+void CPU::runOpCBPrefix(u8 cbCode)
+{
+	// 0xCB00 (B), 0xCB01 (C), 0xCB02 (D), 0xCB03 (E), 0xCB04 (H), 0xCB05 (L), 0xCB06 (HL), 0xCB07 (A)
+	if ((cbCode & 0b11111000) == 0b00000000)
+		rlc_r8();
+	// 0xCB08 (B), 0xCB09 (C), 0xCB0A (D), 0xCB0B (E), 0xCB0C (H), 0xCB0D (L), 0xCB0E (HL), 0xCB0F (A)
+	else if ((cbCode & 0b11111000) == 0b00001000)
+		rrc_r8();
+	// 0xCB10 (B), 0xCB11 (C), 0xCB12 (D), 0xCB13 (E), 0xCB14 (H), 0xCB15 (L), 0xCB16 (HL), 0xCB17 (A)
+	else if ((cbCode & 0b11111000) == 0b00010000)
+		rl_r8();
+	// 0xCB18 (B), 0xCB19 (C), 0xCB1A (D), 0xCB1B (E), 0xCB1C (H), 0xCB1D (L), 0xCB1E (HL), 0xCB1F (A)
+	else if ((cbCode & 0b11111000) == 0b00011000)
+		rr_r8();
+	// 0xCB20 (B), 0xCB21 (C), 0xCB22 (D), 0xCB23 (E), 0xCB24 (H), 0xCB25 (L), 0xCB26 (HL), 0xCB27 (A)
+	else if ((cbCode & 0b11111000) == 0b00100000)
+		sla_r8();
+	// 0xCB28 (B), 0xCB29 (C), 0xCB2A (D), 0xCB2B (E), 0xCB2C (H), 0xCB2D (L), 0xCB2E (HL), 0xCB2F (A)
+	else if ((cbCode & 0b11111000) == 0b00101000)
+		sra_r8();
+	// 0xCB30 (B), 0xCB31 (C), 0xCB32 (D), 0xCB33 (E), 0xCB34 (H), 0xCB35 (L), 0xCB36 (HL), 0xCB37 (A)
+	else if ((cbCode & 0b11111000) == 0b00110000)
+		swap_r8();
+	// 0xCB38 (B), 0xCB39 (C), 0xCB3A (D), 0xCB3B (E), 0xCB3C (H), 0xCB3D (L), 0xCB3E (HL), 0xCB3F (A)
+	else if ((cbCode & 0b11111000) == 0b00111000)
+		srl_r8();
+	// 0xCB40 (0 / B),0xCB41 (0 / C), 0xCB42 (0 / D), 0xCB43 (0 / E), 0xCB44 (0 / H), 0xCB45 (0 / L), 0xCB46 (0 / HL), 0xCB47 (0 / A)
+	// 0xCB48 (1 / B),0xCB49 (1 / C), 0xCB4A (1 / D), 0xCB4B (1 / E), 0xCB4C (1 / H), 0xCB4D (1 / L), 0xCB4E (1 / HL), 0xCB4F (1 / A)
+	// 0xCB50 (2 / B),0xCB51 (2 / C), 0xCB52 (2 / D), 0xCB53 (2 / E), 0xCB54 (2 / H), 0xCB55 (2 / L), 0xCB56 (2 / HL), 0xCB57 (2 / A)
+	// 0xCB58 (3 / B),0xCB59 (3 / C), 0xCB5A (3 / D), 0xCB5B (3 / E), 0xCB5C (3 / H), 0xCB5D (3 / L), 0xCB5E (3 / HL), 0xCB5F (3 / A)
+	// 0xCB60 (4 / B),0xCB61 (4 / C), 0xCB62 (4 / D), 0xCB63 (4 / E), 0xCB64 (4 / H), 0xCB65 (4 / L), 0xCB66 (4 / HL), 0xCB67 (4 / A)
+	// 0xCB68 (5 / B),0xCB69 (5 / C), 0xCB6A (5 / D), 0xCB6B (5 / E), 0xCB6C (5 / H), 0xCB6D (5 / L), 0xCB6E (5 / HL), 0xCB6F (5 / A)
+	// 0xCB70 (6 / B),0xCB71 (6 / C), 0xCB72 (6 / D), 0xCB73 (6 / E), 0xCB74 (6 / H), 0xCB75 (6 / L), 0xCB76 (6 / HL), 0xCB77 (6 / A)
+	// 0xCB78 (7 / B),0xCB79 (7 / C), 0xCB7A (7 / D), 0xCB7B (7 / E), 0xCB7C (7 / H), 0xCB7D (7 / L), 0xCB7E (7 / HL), 0xCB7F (7 / A)
+	else if ((cbCode & 0b11000000) == 0b01000000)
+		bit_b3_r8();
+	// 0xCB80 (0 / B),0xCB81 (0 / C), 0xCB82 (0 / D), 0xCB83 (0 / E), 0xCB84 (0 / H), 0xCB85 (0 / L), 0xCB86 (0 / HL), 0xCB87 (0 / A)
+	// 0xCB88 (1 / B),0xCB89 (1 / C), 0xCB8A (1 / D), 0xCB8B (1 / E), 0xCB8C (1 / H), 0xCB8D (1 / L), 0xCB8E (1 / HL), 0xCB8F (1 / A)
+	// 0xCB90 (2 / B),0xCB91 (2 / C), 0xCB92 (2 / D), 0xCB93 (2 / E), 0xCB94 (2 / H), 0xCB95 (2 / L), 0xCB96 (2 / HL), 0xCB97 (2 / A)
+	// 0xCB98 (3 / B),0xCB99 (3 / C), 0xCB9A (3 / D), 0xCB9B (3 / E), 0xCB9C (3 / H), 0xCB9D (3 / L), 0xCB9E (3 / HL), 0xCB9F (3 / A)
+	// 0xCBA0 (4 / B),0xCBA1 (4 / C), 0xCBA2 (4 / D), 0xCBA3 (4 / E), 0xCBA4 (4 / H), 0xCBA5 (4 / L), 0xCBA6 (4 / HL), 0xCBA7 (4 / A)
+	// 0xCBA8 (5 / B),0xCBA9 (5 / C), 0xCBAA (5 / D), 0xCBAB (5 / E), 0xCBAC (5 / H), 0xCBAD (5 / L), 0xCBAE (5 / HL), 0xCBAF (5 / A)
+	// 0xCBB0 (6 / B),0xCBB1 (6 / C), 0xCBB2 (6 / D), 0xCBB3 (6 / E), 0xCBB4 (6 / H), 0xCBB5 (6 / L), 0xCBB6 (6 / HL), 0xCBB7 (6 / A)
+	// 0xCBB8 (7 / B),0xCBB9 (7 / C), 0xCBBA (7 / D), 0xCBBB (7 / E), 0xCBBC (7 / H), 0xCBBD (7 / L), 0xCBBE (7 / HL), 0xCBBF (7 / A)
+	else if ((cbCode & 0b11000000) == 0b10000000)
+		res_b3_r8();
+	// 0xCBC0 (0 / B),0xCBC1 (0 / C), 0xCBC2 (0 / D), 0xCBC3 (0 / E), 0xCBC4 (0 / H), 0xCBC5 (0 / L), 0xCBC6 (0 / HL), 0xCBC7 (0 / A)
+	// 0xCBC8 (1 / B),0xCBC9 (1 / C), 0xCBCA (1 / D), 0xCBCB (1 / E), 0xCBCC (1 / H), 0xCBCD (1 / L), 0xCBCE (1 / HL), 0xCBCF (1 / A)
+	// 0xCBD0 (2 / B),0xCBD1 (2 / C), 0xCBD2 (2 / D), 0xCBD3 (2 / E), 0xCBD4 (2 / H), 0xCBD5 (2 / L), 0xCBD6 (2 / HL), 0xCBD7 (2 / A)
+	// 0xCBD8 (3 / B),0xCBD9 (3 / C), 0xCBDA (3 / D), 0xCBDB (3 / E), 0xCBDC (3 / H), 0xCBDD (3 / L), 0xCBDE (3 / HL), 0xCBDF (3 / A)
+	// 0xCBE0 (4 / B),0xCBE1 (4 / C), 0xCBE2 (4 / D), 0xCBE3 (4 / E), 0xCBE4 (4 / H), 0xCBE5 (4 / L), 0xCBE6 (4 / HL), 0xCBE7 (4 / A)
+	// 0xCBE8 (5 / B),0xCBE9 (5 / C), 0xCBEA (5 / D), 0xCBEB (5 / E), 0xCBEC (5 / H), 0xCBED (5 / L), 0xCBEE (5 / HL), 0xCBEF (5 / A)
+	// 0xCBF0 (6 / B),0xCBF1 (6 / C), 0xCBF2 (6 / D), 0xCBF3 (6 / E), 0xCBF4 (6 / H), 0xCBF5 (6 / L), 0xCBF6 (6 / HL), 0xCBF7 (6 / A)
+	// 0xCBF8 (7 / B),0xCBF9 (7 / C), 0xCBFA (7 / D), 0xCBFB (7 / E), 0xCBFC (7 / H), 0xCBFD (7 / L), 0xCBFE (7 / HL), 0xCBFF (7 / A)
+	else if ((cbCode & 0b11000000) == 0b11000000)
+		set_b3_r8();
+	else
+		throw std::runtime_error(std::string("Op code " + Common::toHexStr(cbCode) + "with CB prefix not managed"));
+}
+
+void CPU::handleInterrupts()
+{
+	// TODO
+}
+
 /**************************************/
 /**              Block 0             **/
 /**************************************/
+// 4 ticks
 void CPU::nop()
 {
 	// Nothing
-	ctx.incTCycles(4);
-#if CPU_DEBUG
-	std::cout << "nop" << std::endl;
-#endif
 }
 
+// 12 ticks
 void CPU::ld_r16_imm16()
 {
-	u16 imm16 = ctx.regs().imm16();
-
 	R16 r16 = Registers::getR16FromCode((opCode() & 0b00110000) >> 4);
-	ctx.regs().setRegFromR16(r16, imm16);
-
-	ctx.incTCycles(12);
-
-#if CPU_DEBUG
-	std::cout << std::format("ld_r16_imm16 : {} set to {}\n", Common::toHexStr(imm16), R16_STR[(int)r16]);
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});									  // 4
+	pushToQueue({CPUMicroOpType::READ_IMM8_HIGH});									  // 4
+	pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R16, .cycles = 0, .r16 = r16}); // 0
 }
 
+// 8 ticks
 void CPU::ld_r16mem_a()
 {
 	R16_MEM r16Mem = Registers::getR16MemFromCode((opCode() & 0b00110000) >> 4);
-	u16 address = ctx.regs().getPointerFromR16Mem(r16Mem);
-	ctx.mem().at(address) = ctx.regs().a;
-
-	// HLI or HLD -> update HL after writing
-	ctx.regs().updateHLMem(r16Mem);
-
-	ctx.incTCycles(8);
-
-#if CPU_DEBUG
-	std::cout << std::format("ld_a_r16mem : Address {} set to {}from register {}\n", Common::toHexStr(address), Common::toHexStr(ctx.regs().a), R16_STR[(int)r16Mem]);
-#endif
+	pushToQueue({.type = CPUMicroOpType::WRITE_A_TO_R16MEM_ADDR, .r16Mem = r16Mem}); // 4
 }
 
+// 8 ticks
 void CPU::ld_a_r16mem()
 {
 	R16_MEM r16Mem = Registers::getR16MemFromCode((opCode() & 0b00110000) >> 4);
-	u16 address = ctx.regs().getPointerFromR16Mem(r16Mem);
-	ctx.regs().a = ctx.mem().at(address);
-
-	// HLI or HLD -> update HL after writing
-	ctx.regs().updateHLMem(r16Mem);
-
-	ctx.incTCycles(8);
-#if CPU_DEBUG
-	std::cout << std::format("ld_r16mem_a : {} set to address {} from register {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(address), R16_STR[(int)r16Mem]);
-#endif
+	pushToQueue({.type = CPUMicroOpType::WRITE_R16MEM_ADDR_TO_A, .r16Mem = r16Mem}); // 4
 }
 
+// 20 ticks
 void CPU::ld_imm16_sp()
 {
 	std::cout << "ld_imm16_sp not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks
 void CPU::inc_r16()
 {
 	R16 r16 = Registers::getR16FromCode((opCode() & 0b00110000) >> 4);
-	u16 r16Value = ctx.regs().getFromR16(r16);
-	ctx.regs().setRegFromR16(r16, r16Value + 1);
-
-	ctx.incTCycles(8);
-#if CPU_DEBUG
-	std::cout << std::format("inc_r16 : {} incremented to {}\n", R16_STR[(int)r16], Common::toHexStr(ctx.regs().getFromR16(r16)));
-#endif
+	pushToQueue({.type = CPUMicroOpType::INC_R16, .r16 = r16}); // 4
 }
 
+// 8 ticks
 void CPU::dec_r16()
 {
 	R16 r16 = Registers::getR16FromCode((opCode() & 0b00110000) >> 4);
-	u16 r16Value = ctx.regs().getFromR16(r16);
-	ctx.regs().setRegFromR16(r16, r16Value - 1);
-
-	ctx.incTCycles(8);
-#if CPU_DEBUG
-	std::cout << std::format("dec_r16 : {} decremented to {}\n", R16_STR[(int)r16], Common::toHexStr(ctx.regs().getFromR16(r16)));
-#endif
+	pushToQueue({.type = CPUMicroOpType::DEC_R16, .r16 = r16}); // 4
 }
 
+// 8 ticks
 void CPU::add_hl_r16()
 {
 	R16 r16 = Registers::getR16FromCode((opCode() & 0b00110000) >> 4);
-	u16 hlVal = ctx.regs().getFromR16(R16::HL);
-	u16 r16Val = ctx.regs().getFromR16(r16);
-	ctx.regs().setRegFromR16(R16::HL, hlVal + r16Val);
-	u32 result32 = hlVal + r16Val;
-
-	ctx.regs().setFlags(-1, 0, ((hlVal & 0x0FFF) + (r16Val & 0x0FFF)) > 0x0FFF, result32 > 0xFFFF);
-
-	ctx.incTCycles(8);
-#if CPU_DEBUG
-	std::cout << std::format("add_hl_r16 : HL set to {} from {}\n", Common::toHexStr(ctx.regs().getFromR16(R16::HL)), R16_STR[(int)r16]);
-#endif
+	pushToQueue({.type = CPUMicroOpType::ADD_R16_TO_HL, .r16 = r16}); // 4
 }
 
+// 4 ticks if not (HL), 12 ticks if (HL)
 void CPU::inc_r8()
 {
 	R8 r8 = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
-	u8 r8Value = ctx.regs().getFromR8(r8);
-	ctx.regs().setRegFromR8(r8, r8Value + 1);
-
-	u8 newValue = ctx.regs().getFromR8(r8);
-
-	ctx.regs().setFlags(newValue == 0, 0, (r8Value & 0xF) == 0xF, -1);
-
-	ctx.incTCycles(4 + (r8 == R8::HL) ? 8 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("dec_r8 : {} decremented to {}\n", R8_STR[(int)r8], Common::toHexStr(newValue));
-#endif
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
+	pushToQueue({.type = CPUMicroOpType::INC_R8, .cycles = 0, .r8_dest = r8});	   // 0
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R8, .r8_dest = R8::HL}); // 4
 }
 
+// 4 ticks if not (HL), 12 ticks if (HL)
 void CPU::dec_r8()
 {
 	R8 r8 = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
-	u8 r8Value = ctx.regs().getFromR8(r8);
-	ctx.regs().setRegFromR8(r8, r8Value - 1);
-
-	u8 newValue = ctx.regs().getFromR8(r8);
-
-	ctx.regs().setFlags(newValue == 0, 1, (r8Value & 0xF) == 0, -1);
-
-	ctx.incTCycles(4 + (r8 == R8::HL) ? 8 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("dec_r8 : {} decremented to {}\n", R8_STR[(int)r8], Common::toHexStr(newValue));
-#endif
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
+	pushToQueue({.type = CPUMicroOpType::DEC_R8, .cycles = 0, .r8_dest = r8});	   // 0
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R8, .r8_dest = R8::HL}); // 4
 }
 
+// 8 ticks if not (HL), 12 ticks if (HL)
 void CPU::ld_r8_imm8()
 {
-	u8 imm8 = ctx.regs().imm8();
-
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW}); // 4
 	R8 r8 = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
-	ctx.regs().setRegFromR8(r8, imm8);
-
-	ctx.incTCycles(8 + (r8 == R8::HL) ? 4 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("ld_r8_imm8 with {} set to {}\n", Common::toHexStr(imm8), R8_STR[(int)r8]);
-#endif
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R8, .cycles = 1, .r8_dest = R8::HL}); // 4
+	else
+		pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R8, .cycles = 0, .r8_dest = r8}); // 0
 }
 
+// 4 ticks
 void CPU::rlca()
 {
 	std::cout << "rlca not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks
 void CPU::rrca()
 {
 	std::cout << "rrca not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks
 void CPU::rla()
 {
 	std::cout << "rla not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks
 void CPU::rra()
 {
 	std::cout << "rra not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks
 void CPU::daa()
 {
 	std::cout << "daa not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks
 void CPU::cpl()
 {
-	ctx.regs().a = ~ctx.regs().a;
-	ctx.incTCycles(4);
-#if CPU_DEBUG
-	std::cout << std::format("Flipped A bits to {}\n", Common::toHexStr(ctx.regs().a));
-#endif
+	pushToQueue({CPUMicroOpType::CPL, 0});
 }
 
+// 4 ticks
 void CPU::scf()
 {
 	std::cout << "scf not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks
 void CPU::ccf()
 {
 	std::cout << "ccf not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 12 ticks
 void CPU::jr_imm8()
 {
-	u8 imm8 = ctx.regs().imm8();
-	// Value is signed, will jump after or before current PC
-	ctx.regs().pc += (i8)imm8;
-
-	ctx.incTCycles(12);
-#if CPU_DEBUG
-	std::cout << std::format("jr_imm8 with {}, PC set to {}\n", Common::toHexStr(imm8), Common::toHexStr(ctx.regs().pc));
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW}); // 4
+	pushToQueue({CPUMicroOpType::JR});			  // 4
 }
 
+// 8 ticks if cond false, 12 ticks if cond true
 void CPU::jr_cond_imm8()
 {
-	u8 imm8 = ctx.regs().imm8();
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW}); // 4
 	COND cond = Registers::getCONDFromCode((opCode() & 0b00011000) >> 3);
-	if (ctx.regs().checkCOND(cond))
-	{
-		// Value is signed, will jump after or before current PC
-		ctx.regs().pc += (i8)imm8;
-		ctx.incTCycles(12);
-#if CPU_DEBUG
-		std::cout << std::format("jr_cond_imm8 with {}, PC set to {}\n", Common::toHexStr(imm8), Common::toHexStr(ctx.regs().pc));
-#endif
-	}
-	else
-	{
-		ctx.incTCycles(8);
-#if CPU_DEBUG
-		std::cout << std::format("jr_cond_imm8 with {}, PC unchanged\n", Common::toHexStr(imm8));
-#endif
-	}
+	pushToQueue({.type = CPUMicroOpType::JR_CONDITIONAL, .cycles = 0, .cond = cond}); // 0 or 4
 }
 
+// 4 ticks
 void CPU::stop()
 {
 	std::cout << "stop not implemented" << std::endl;
@@ -562,18 +506,17 @@ void CPU::stop()
 /**************************************/
 /** Block 1 : 8-bit reg to reg loads **/
 /**************************************/
+// 4 ticks if r8 src and dest are not (HL), 8 ticks if r8 src or dest is (HL)
 void CPU::ld_r8_r8()
 {
 	R8 r8_src = Registers::getR8FromCode(opCode() & 0b111);
 	R8 r8_dest = Registers::getR8FromCode((opCode() & 0b111000) >> 3);
-	ctx.regs().setRegFromR8(r8_dest, ctx.regs().getFromR8(r8_src));
-
-	ctx.incTCycles(4 + (r8_src == R8::HL || r8_dest == R8::HL) ? 4 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("ld_r8_r8 with {} set to {} value {}\n", R8_STR[(int)r8_dest], R8_STR[(int)r8_src], Common::toHexStr(ctx.regs().getFromR8(r8_src)));
-#endif
+	if ((r8_src == R8::HL) || (r8_dest == R8::HL))
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = r8_src, .r8_dest = r8_dest});	// 4
+	pushToQueue({.type = CPUMicroOpType::LD_R8_R8, .cycles = 0, .r8_src = r8_src, .r8_dest = r8_dest}); // 4
 }
 
+// 4 ticks
 void CPU::halt()
 {
 	std::cout << "halt not implemented" << std::endl;
@@ -582,89 +525,64 @@ void CPU::halt()
 /**************************************/
 /**     Block 2 : 8-bit arithmetic   **/
 /**************************************/
+// 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::add_a_r8()
 {
 	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
-	u8 r8Value = ctx.regs().getFromR8(r8);
-	u8 a = ctx.regs().a;
-	ctx.regs().a += r8Value;
-
-	u16 result16 = a + r8Value;
-
-	ctx.regs().setFlags(ctx.regs().a == 0, 0, ((a & 0xF) + (r8Value & 0xF)) > 0xF, result16 > 0xFF);
-
-	ctx.incTCycles(4 + (r8 == R8::HL) ? 4 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("add_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
-#endif
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
+	pushToQueue({CPUMicroOpType::ADD_A_R8, 0, r8});								   // 0
 }
 
+// 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::adc_a_r8()
 {
 	std::cout << "adc_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::sub_a_r8()
 {
 	std::cout << "sub_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::sbc_a_r8()
 {
 	std::cout << "sbc_a_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::and_a_r8()
 {
 	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
-	u8 r8Value = ctx.regs().getFromR8(r8);
-
-	ctx.regs().a &= r8Value;
-
-	u8 newValue = ctx.regs().a;
-	ctx.regs().setFlags(newValue == 0, 0, 1, 0);
-
-	ctx.incTCycles(4 + (r8 == R8::HL) ? 4 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("and_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
-#endif
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
+	pushToQueue({CPUMicroOpType::AND_A_R8, 0, r8});								   // 0
 }
 
+// 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::xor_a_r8()
 {
 	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
-	u8 r8Value = ctx.regs().getFromR8(r8);
-
-	ctx.regs().a ^= r8Value;
-
-	u8 newValue = ctx.regs().a;
-	ctx.regs().setFlags(newValue == 0, 0, 0, 0);
-
-	ctx.incTCycles(4 + (r8 == R8::HL) ? 4 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("xor_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
-#endif
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
+	pushToQueue({CPUMicroOpType::XOR_A_R8, 0, r8});								   // 0
 }
 
+// 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::or_a_r8()
 {
 	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
-	u8 r8Value = ctx.regs().getFromR8(r8);
-
-	ctx.regs().a |= r8Value;
-
-	u8 newValue = ctx.regs().a;
-	ctx.regs().setFlags(newValue == 0, 0, 0, 0);
-
-	ctx.incTCycles(4 + (r8 == R8::HL) ? 4 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("or_a_r8 with {}, A is {}\n", R8_STR[(int)r8], Common::toHexStr(ctx.regs().a));
-#endif
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
+	pushToQueue({CPUMicroOpType::OR_A_R8, 0, r8});								   // 0
 }
 
+// 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::cp_a_r8()
 {
 	std::cout << "cp_a_r8 not implemented" << std::endl;
@@ -673,389 +591,313 @@ void CPU::cp_a_r8()
 /**************************************/
 /**              Block 3             **/
 /**************************************/
+// 8 ticks
 void CPU::add_a_imm8()
 {
 	std::cout << "add_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks
 void CPU::adc_a_imm8()
 {
 	std::cout << "adc_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks
 void CPU::sub_a_imm8()
 {
 	std::cout << "sub_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks
 void CPU::sbc_a_imm8()
 {
 	std::cout << "sbc_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks
 void CPU::and_a_imm8()
 {
-	u8 aValue = ctx.regs().a;
-	u8 imm8 = ctx.regs().imm8();
-	ctx.regs().a &= imm8;
-
-	ctx.regs().setFlags(ctx.regs().a == 0, 0, 1, 0);
-
-	ctx.incTCycles(8);
-#if CPU_DEBUG
-	std::cout << std::format("AND {} with {}\n", Common::toHexStr(aValue), Common::toHexStr(imm8));
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});					// 4
+	pushToQueue({.type = CPUMicroOpType::AND_A_IMM8, .cycles = 0}); // 0
 }
 
+// 8 ticks
 void CPU::xor_a_imm8()
 {
 	std::cout << "xor_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks
 void CPU::or_a_imm8()
 {
 	std::cout << "or_a_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks
 void CPU::cp_a_imm8()
 {
-	u8 imm8 = ctx.regs().imm8();
-	u8 a = ctx.regs().a;
-
-	ctx.regs().setFlags((a - imm8) == 0, 1, (a & 0xF) < (imm8 & 0xF), a < imm8);
-
-	ctx.incTCycles(8);
-#if CPU_DEBUG
-	std::cout << std::format("Comparing {} with {}\n", Common::toHexStr(a), Common::toHexStr(imm8));
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});				   // 4
+	pushToQueue({.type = CPUMicroOpType::CP_A_IMM8, .cycles = 0}); // 0
 }
 
+// 8 ticks if cond false, 20 ticks if cond true
 void CPU::ret_cond()
 {
 	COND cond = Registers::getCONDFromCode((opCode() & 0b00011000) >> 3);
-
-	if (ctx.regs().checkCOND(cond))
-	{
-		ctx.regs().pc = popFromStack();
-		ctx.incTCycles(20);
-#if CPU_DEBUG
-		std::cout << std::format("ret_cond to addr {}\n", Common::toHexStr(ctx.regs().pc));
-#endif
-	}
-	else
-	{
-		ctx.incTCycles(8);
-#if CPU_DEBUG
-		std::cout << std::format("ret_cond, PC unchanged\n");
-#endif
-	}
+	pushToQueue({.type = CPUMicroOpType::RET_CONDITIONAL, .cycles = 0, .cond = cond});
 }
 
+// 16 ticks
 void CPU::ret()
 {
-	ctx.regs().pc = popFromStack();
-	ctx.incTCycles(16);
-#if CPU_DEBUG
-	std::cout << std::format("ret to addr {}\n", Common::toHexStr(ctx.regs().pc));
-#endif
+	pushToQueue({CPUMicroOpType::READ_SP_LOW});		// 4
+	pushToQueue({CPUMicroOpType::READ_SP_HIGH});	// 4
+	pushToQueue({CPUMicroOpType::WRITE_TMP_TO_PC}); // 4
 }
 
+// 16 ticks
 void CPU::reti()
 {
 	std::cout << "reti not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 12 ticks if cond false, 16 ticks if cond true
 void CPU::jp_cond_imm16()
 {
-	u16 imm16 = ctx.regs().imm16();
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});  // 4
+	pushToQueue({CPUMicroOpType::READ_IMM8_HIGH}); // 4
 	COND cond = Registers::getCONDFromCode((opCode() & 0b00011000) >> 3);
-	if (ctx.regs().checkCOND(cond))
-	{
-		// Value is signed, will jump after or before current PC
-		ctx.regs().pc = imm16;
-		ctx.incTCycles(16);
-#if CPU_DEBUG
-		std::cout << std::format("jp_cond_imm16, PC set to {}\n", Common::toHexStr(ctx.regs().pc));
-#endif
-	}
-	else
-	{
-		ctx.incTCycles(12);
-#if CPU_DEBUG
-		std::cout << std::format("jp_cond_imm16, PC unchanged\n");
-#endif
-	}
+	pushToQueue({.type = CPUMicroOpType::JP_CONDITIONAL, .cycles = 0, .cond = cond}); // 0 or 4
 }
 
+// 16 ticks
 void CPU::jp_imm16()
 {
-	u16 imm16 = ctx.regs().imm16();
-	// JP to address given
-	ctx.regs().pc = imm16;
-
-	ctx.incTCycles(16);
-#if CPU_DEBUG
-	std::cout << std::format("jp_imm16 to {}\n", Common::toHexStr(imm16));
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});	// 4
+	pushToQueue({CPUMicroOpType::READ_IMM8_HIGH});	// 4
+	pushToQueue({CPUMicroOpType::WRITE_TMP_TO_PC}); // 4
 }
 
+// 4 ticks
 void CPU::jp_hl()
 {
-	u16 hl = ctx.regs().getFromR16(R16::HL);
-	ctx.regs().pc = hl;
-
-	ctx.incTCycles(4);
-#if CPU_DEBUG
-	std::cout << std::format("jp_hl to {}\n", Common::toHexStr(hl));
-#endif
+	pushToQueue({CPUMicroOpType::JP_HL, 0});
 }
 
+// 12 ticks if cond false, 24 ticks if cond true
 void CPU::call_cond_imm16()
 {
 	std::cout << "call_cond_imm16 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 24 ticks
 void CPU::call_imm16()
 {
-	u16 newPC = ctx.regs().imm16();
-	pushToStack(ctx.regs().pc);
-	ctx.regs().pc = newPC;
-
-	ctx.incTCycles(24);
-#if CPU_DEBUG
-	std::cout << std::format("call_imm16 to {}\n", Common::toHexStr(newPC));
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});		 // 4
+	pushToQueue({CPUMicroOpType::READ_IMM8_HIGH});		 // 4
+	pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC}); // 4
+	pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC});	 // 4
+	pushToQueue({CPUMicroOpType::WRITE_TMP_TO_PC});		 // 4
 }
 
+// 16 ticks
 void CPU::rst_tgt3()
 {
-	u16 newPC = Registers::getTGT3FromCode((opCode() & 0b00111000) >> 3);
-	pushToStack(ctx.regs().pc);
-	ctx.regs().pc = newPC;
-
-	ctx.incTCycles(16);
-#if CPU_DEBUG
-	std::cout << std::format("rst_tgt3 to {}\n", Common::toHexStr(newPC));
-#endif
+	u8 tgt3 = (opCode() & 0b00111000) >> 3;
+	pushToQueue({.type = CPUMicroOpType::READ_TGT3, .cycles = 0, .tgt3 = tgt3}); // 0
+	pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC});						 // 4
+	pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC});							 // 4
+	pushToQueue({CPUMicroOpType::WRITE_TMP_TO_PC});								 // 4
 }
 
+// 12 ticks
 void CPU::pop_r16stk()
 {
 	R16_STK r16Stk = Registers::getR16StkFromCode((opCode() & 0b00110000) >> 4);
-	u16 pop = popFromStack();
-	ctx.regs().setRegFromR16Stk(r16Stk, pop);
-
-	ctx.incTCycles(12);
-#if CPU_DEBUG
-	std::cout << std::format("pop_r16stk, {} popped to {}\n", Common::toHexStr(pop), R16_STK_STR[(int)r16Stk]);
-#endif
+	pushToQueue({CPUMicroOpType::READ_SP_LOW});												   // 4
+	pushToQueue({CPUMicroOpType::READ_SP_HIGH});											   // 4
+	pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R16STK, .cycles = 0, .r16Stk = r16Stk}); // 0
 }
 
+// 16 ticks
 void CPU::push_r16stk()
 {
-	R16_STK r16 = Registers::getR16StkFromCode((opCode() & 0b00110000) >> 4);
-	u16 r16Val = ctx.regs().getFromR16Stk(r16);
-	pushToStack(r16Val);
-
-	ctx.incTCycles(16);
-#if CPU_DEBUG
-	std::cout << std::format("push_r16stk, {} pushed from {}\n", Common::toHexStr(r16Val), R16_STK_STR[(int)r16]);
-#endif
+	R16_STK r16Stk = Registers::getR16StkFromCode((opCode() & 0b00110000) >> 4);
+	pushToQueue({CPUMicroOpType::INTERNAL});
+	pushToQueue({.type = CPUMicroOpType::PUSH_SP_HIGH_FROM_R16STK, .r16Stk = r16Stk});
+	pushToQueue({.type = CPUMicroOpType::PUSH_SP_LOW_FROM_R16STK, .r16Stk = r16Stk});
 }
 
-void CPU::prefix()
-{
-	std::cout << "prefix not implemented" << std::endl;
-	ctx.setRunning(false);
-}
-
+// 8 ticks
 void CPU::ldh_c_a()
 {
-	u16 c = 0xFF00 | ctx.regs().c;
-	ctx.mem().at(c) = ctx.regs().a;
-
-	ctx.incTCycles(8);
-#if CPU_DEBUG
-	std::cout << std::format("ldh_c_a, addr {} set to {}\n", Common::toHexStr(c), Common::toHexStr(ctx.regs().a));
-#endif
+	pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .cycles = 0, .r8_src = R8::C});
+	pushToQueue({CPUMicroOpType::WRITE_A_TO_LDH_ADDR});
 }
 
+// 12 ticks
 void CPU::ldh_imm8_a()
 {
-	u8 imm8 = ctx.regs().imm8();
-	u16 a8 = 0xFF00 | imm8;
-	ctx.mem().at(a8) = ctx.regs().a;
-
-	ctx.incTCycles(12);
-#if CPU_DEBUG
-	std::cout << std::format("ldh_imm8_a, set {} to {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(a8));
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});
+	pushToQueue({CPUMicroOpType::WRITE_A_TO_LDH_ADDR});
 }
 
+// 16 ticks
 void CPU::ld_imm16_a()
 {
-	u16 imm16 = ctx.regs().imm16();
-	ctx.mem().at(imm16) = ctx.regs().a;
-
-	ctx.incTCycles(16);
-#if CPU_DEBUG
-	std::cout << std::format("ld_imm16_a, set {} to addr {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(imm16));
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});
+	pushToQueue({CPUMicroOpType::READ_IMM8_HIGH});
+	pushToQueue({CPUMicroOpType::WRITE_A_TO_TMP_ADDR});
 }
 
+// 8 ticks
 void CPU::ldh_a_c()
 {
 	std::cout << "ldh_a_c not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 12 ticks
 void CPU::ldh_a_imm8()
 {
-	u8 imm8 = ctx.regs().imm8();
-	u16 a8 = 0xFF00 | imm8;
-	ctx.regs().a = ctx.mem().at(a8);
-
-	ctx.incTCycles(12);
-#if CPU_DEBUG
-	std::cout << std::format("ldh_a_imm8, A set to {} from {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(a8));
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});		// 4
+	pushToQueue({CPUMicroOpType::WRITE_LDH_ADDR_TO_A}); // 4
 }
 
+// 16 ticks
 void CPU::ld_a_imm16()
 {
-	u16 imm16 = ctx.regs().imm16();
-	ctx.regs().a = ctx.mem().at(imm16);
-
-	ctx.incTCycles(16);
-#if CPU_DEBUG
-	std::cout << std::format("ld_a_imm16, set A to {} from addr {}\n", Common::toHexStr(ctx.regs().a), Common::toHexStr(imm16));
-#endif
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});								  // 4
+	pushToQueue({CPUMicroOpType::READ_IMM8_HIGH});								  // 4
+	pushToQueue({.type = CPUMicroOpType::WRITE_TMP_ADDR_TO_A, .r8_dest = R8::A}); // 4
 }
 
+// 16 ticks
 void CPU::add_sp_imm8()
 {
 	std::cout << "add_sp_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 12 ticks
 void CPU::ld_hl_sp_imm8()
 {
 	std::cout << "ld_hl_sp_imm8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks
 void CPU::ld_sp_hl()
 {
 	std::cout << "ld_sp_hl not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 4 ticks
 void CPU::di()
 {
-	setIME(false);
-	ctx.incTCycles(4);
-#if CPU_DEBUG
-	std::cout << "di" << std::endl;
-#endif
+	pushToQueue({CPUMicroOpType::DI, 0}); // 0
 }
 
+// 4 ticks
 void CPU::ei()
 {
-	setIME(true);
-	ctx.incTCycles(4);
-#if CPU_DEBUG
-	std::cout << "ei" << std::endl;
-#endif
+	pushToQueue({CPUMicroOpType::EI, 0}); // 0
 }
 
 /**************************************/
 /**           $CB prefix             **/
 /**************************************/
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::rlc_r8()
 {
 	std::cout << "rlc_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::rrc_r8()
 {
 	std::cout << "rrc_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::rl_r8()
 {
 	std::cout << "rl_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::rr_r8()
 {
 	std::cout << "rr_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::sla_r8()
 {
 	std::cout << "sla_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::sra_r8()
 {
 	std::cout << "sra_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::swap_r8()
 {
+	u8 b3 = (cbPrefixOpCode() & 0b00111000) >> 3;
 	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
-	u8 regValue = ctx.regs().getFromR8(r8);
-	u8 swapped = ((regValue & 0xF) << 4) + ((regValue & 0xF0) >> 4);
-	ctx.regs().setRegFromR8(r8, swapped);
-
-	ctx.regs().setFlags(swapped == 0, 0, 0, 0);
-
-	ctx.incTCycles(8 + (r8 == R8::HL) ? 8 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("Swapped {} value to {}\n", R8_STR[(int)r8], swapped);
-#endif
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL});		// 4
+	pushToQueue({.type = CPUMicroOpType::SWAP, .cycles = 0, .r8_dest = r8, .bit = b3}); // 4
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R8, .r8_dest = R8::HL}); // 4
 }
 
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::srl_r8()
 {
 	std::cout << "srl_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks if not (HL), 12 ticks if (HL)
 void CPU::bit_b3_r8()
 {
 	std::cout << "bit_b3_r8 not implemented" << std::endl;
 	ctx.setRunning(false);
 }
 
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::res_b3_r8()
 {
 	u8 b3 = (cbPrefixOpCode() & 0b00111000) >> 3;
 	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
-	// Reset bit at index b3
-	u8 resVal = ctx.regs().getFromR8(r8) & (0xFF - (u8)pow(2, b3));
-	ctx.regs().setRegFromR8(r8, resVal);
-
-	ctx.incTCycles(8 + (r8 == R8::HL) ? 8 : 0);
-#if CPU_DEBUG
-	std::cout << std::format("res_b3_r8, Reset bit {} at {} to value {}\n", b3, R8_STR[(int)r8], Common::toHexStr(resVal));
-#endif
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL});		   // 4
+	pushToQueue({.type = CPUMicroOpType::RES_BIT, .cycles = 0, .r8_dest = r8, .bit = b3}); // 0
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R8, .r8_dest = R8::HL}); // 4
 }
 
+// 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::set_b3_r8()
 {
 	std::cout << "set_b3_r8 not implemented" << std::endl;

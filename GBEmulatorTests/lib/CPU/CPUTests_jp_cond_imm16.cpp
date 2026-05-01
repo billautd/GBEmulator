@@ -14,6 +14,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xC2", "[cpu_ops_jp_cond_imm16]")
     runOp(0xC2);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0, 0, 0, 0x103);
+    REQUIRE(ticks() == 12);
 
     // NZ -> Jump
     regs().pc = 0x200;
@@ -23,6 +24,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xC2", "[cpu_ops_jp_cond_imm16]")
     runOp(0xC2);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00000000, 0, 0, 0, 0, 0xCDAB);
+    REQUIRE(ticks() == 28);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCA", "[cpu_ops_jp_cond_imm16]")
@@ -36,6 +38,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCA", "[cpu_ops_jp_cond_imm16]")
     runOp(0xCA);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00000000, 0, 0, 0, 0, 0x103);
+    REQUIRE(ticks() == 12);
 
     // Z -> Jump
     regs().pc = 0x200;
@@ -45,6 +48,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCA", "[cpu_ops_jp_cond_imm16]")
     runOp(0xCA);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0, 0, 0, 0xCDAB);
+    REQUIRE(ticks() == 28);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xD2", "[cpu_ops_jp_cond_imm16]")
@@ -58,6 +62,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xD2", "[cpu_ops_jp_cond_imm16]")
     runOp(0xD2);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00010000, 0, 0, 0, 0, 0x103);
+    REQUIRE(ticks() == 12);
 
     // NC -> Jump
     regs().pc = 0x200;
@@ -67,6 +72,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xD2", "[cpu_ops_jp_cond_imm16]")
     runOp(0xD2);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00000000, 0, 0, 0, 0, 0xCDAB);
+    REQUIRE(ticks() == 28);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xDA", "[cpu_ops_jp_cond_imm16]")
@@ -80,6 +86,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xDA", "[cpu_ops_jp_cond_imm16]")
     runOp(0xDA);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00000000, 0, 0, 0, 0, 0x103);
+    REQUIRE(ticks() == 12);
 
     // C -> Jump
     regs().pc = 0x200;
@@ -89,4 +96,5 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xDA", "[cpu_ops_jp_cond_imm16]")
     runOp(0xDA);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00010000, 0, 0, 0, 0, 0xCDAB);
+    REQUIRE(ticks() == 28);
 }

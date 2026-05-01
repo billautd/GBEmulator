@@ -31,22 +31,3 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_cb_prefix_method_calls", "[cpu]")
 		REQUIRE_NOTHROW(runOp(0xCB));
 	}
 }
-
-TEST_CASE_METHOD(CPUTestsFixture, "cpu_popFromStack", "[cpu]")
-{
-	regs().sp = 0xCFFD;
-	mem(0xCFFD) = 0xAB;
-	mem(0xCFFE) = 0xCD;
-
-	REQUIRE(cpu().popFromStack() == 0xCDAB);
-}
-
-TEST_CASE_METHOD(CPUTestsFixture, "cpu_pushToStack", "[cpu]")
-{
-	regs().sp = 0xCFFF;
-	cpu().pushToStack(0xABCD);
-
-	REQUIRE(regs().sp == 0xCFFD);
-	REQUIRE(mem(0xCFFE) == 0xAB);
-	REQUIRE(mem(0xCFFD) == 0xCD);
-}

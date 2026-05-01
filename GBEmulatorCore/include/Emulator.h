@@ -7,7 +7,6 @@ class CORE_API Emulator
 {
 private:
 	Context ctx;
-	float fps;
 
 	void init();
 	void destroy();
@@ -16,7 +15,7 @@ public:
 	Emulator();
 	~Emulator();
 
-	void runEmulator();
+	void runEmulator(const char *romPath);
 
 	Context &getContext() { return ctx; }
 };

@@ -9,9 +9,11 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xFB", "[cpu_ops_ei]")
     runOp(0xFB);
     REQUIRE(cpu().isIME());
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01);
+    REQUIRE(ticks() == 4);
 
     cpu().setIME(false);
     runOp(0xFB);
     REQUIRE(cpu().isIME());
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02);
+    REQUIRE(ticks() == 8);
 }

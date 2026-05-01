@@ -9,6 +9,23 @@ Registers::~Registers()
 {
 }
 
+void Registers::init()
+{
+	a = 0x01;
+	b = 0x00;
+	c = 0x13;
+	d = 0x00;
+	e = 0xD8;
+	f = 0x00;
+	bool headerChecksumZero = ctx.getLoadedCartridge().getHeaderChecksum() == 0;
+	setFlags(1, 0, !headerChecksumZero, !headerChecksumZero);
+	g = 0x00;
+	h = 0x01;
+	l = 0x4D;
+	pc = 0x100;
+	sp = 0xFFFE;
+}
+
 std::string Registers::log()
 {
 	return std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{} -> {}{}{}{}], G[{}], H[{}], L[{}], PC[{}], SP[{}]",
@@ -81,11 +98,6 @@ void Registers::setRegFromR8(R8 reg, u8 value)
 		a = value;
 		break;
 	}
-	case R8::HL:
-	{
-		ctx.mem().at(getFromR16(R16::HL)) = value;
-		break;
-	}
 	default:
 		throw std::invalid_argument(std::string("Registers::setRegFromR8 -> Invalid R8 reg " + (int)reg));
 	}
@@ -109,8 +121,6 @@ u8 Registers::getFromR8(R8 reg)
 		return l;
 	case R8::A:
 		return a;
-	case R8::HL:
-		return ctx.mem().at(getFromR16(R16::HL));
 	}
 	throw std::invalid_argument(std::string("Registers::getFromR8 -> Invalid R8 reg " + (int)reg));
 }
@@ -201,7 +211,11 @@ R16_STK Registers::getR16StkFromCode(u8 data)
 void Registers::setRegFromR16Stk(R16_STK reg, u16 value)
 {
 	u8 first = value >> 8;
-	u8 second = value & 0xFF;
+	u8 second;
+	if (reg == R16_STK::AF)
+		second = value & 0xF0;
+	else
+		second = value & 0xFF;
 
 	switch (reg)
 	{
@@ -340,14 +354,16 @@ u16 Registers::getTGT3FromCode(u8 code)
 u8 Registers::imm8()
 {
 	// Read next 8 bits and increase PC by 1
-	return ctx.mem().at(pc++);
+	u8 val = ctx.mem().readMem(pc++);
+	ctx.tick(4);
+	return val;
 }
 
 u16 Registers::imm16()
 {
 	// Read next 16 bits and increase PC by 2
-	u8 littleValue = ctx.mem().at(pc++);
-	u8 bigValue = ctx.mem().at(pc++);
+	u8 littleValue = imm8();
+	u8 bigValue = imm8();
 	return bigValue * 256 + littleValue;
 }
 

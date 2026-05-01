@@ -14,6 +14,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xC7", "[cpu_ops_rst_tgt3]")
     // Store pointer after original function call
     REQUIRE(mem(0xCFFD) == 0x01);
     REQUIRE(mem(0xCFFE) == 0x01);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCF", "[cpu_ops_rst_tgt3]")
@@ -27,6 +28,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCF", "[cpu_ops_rst_tgt3]")
     // Store pointer after original function call
     REQUIRE(mem(0xCFFD) == 0x01);
     REQUIRE(mem(0xCFFE) == 0x01);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xD7", "[cpu_ops_rst_tgt3]")
@@ -40,6 +42,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xD7", "[cpu_ops_rst_tgt3]")
     // Store pointer after original function call
     REQUIRE(mem(0xCFFD) == 0x01);
     REQUIRE(mem(0xCFFE) == 0x01);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xDF", "[cpu_ops_rst_tgt3]")
@@ -53,6 +56,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xDF", "[cpu_ops_rst_tgt3]")
     // Store pointer after original function call
     REQUIRE(mem(0xCFFD) == 0x01);
     REQUIRE(mem(0xCFFE) == 0x01);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xE7", "[cpu_ops_rst_tgt3]")
@@ -66,6 +70,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xE7", "[cpu_ops_rst_tgt3]")
     // Store pointer after original function call
     REQUIRE(mem(0xCFFD) == 0x01);
     REQUIRE(mem(0xCFFE) == 0x01);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xEF", "[cpu_ops_rst_tgt3]")
@@ -79,6 +84,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xEF", "[cpu_ops_rst_tgt3]")
     // Store pointer after original function call
     REQUIRE(mem(0xCFFD) == 0x01);
     REQUIRE(mem(0xCFFE) == 0x01);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xF7", "[cpu_ops_rst_tgt3]")
@@ -92,6 +98,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xF7", "[cpu_ops_rst_tgt3]")
     // Store pointer after original function call
     REQUIRE(mem(0xCFFD) == 0x01);
     REQUIRE(mem(0xCFFE) == 0x01);
+    REQUIRE(ticks() == 16);
 }
 
 TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xFF", "[cpu_ops_rst_tgt3]")
@@ -105,4 +112,5 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xFF", "[cpu_ops_rst_tgt3]")
     // Store pointer after original function call
     REQUIRE(mem(0xCFFD) == 0x01);
     REQUIRE(mem(0xCFFE) == 0x01);
+    REQUIRE(ticks() == 16);
 }

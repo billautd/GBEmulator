@@ -1,9 +1,7 @@
 #include <Context.h>
-#include <fstream>
-#include <SDL3_ttf/SDL_ttf.h>
 
 Context::Context() : loadedCartridge(Cartridge(*this)), registers(Registers(*this)), currentCPU(CPU(*this)),
-					 currentPPU(PPU(*this))
+					 currentPPU(PPU(*this)), currentUI(UI(*this)), currentMemory(Mem(*this))
 {
 	init();
 }
@@ -16,24 +14,16 @@ void Context::init()
 {
 	tCycles = 0;
 
-	// Init memory
-	initMemory();
-	registers.pc = 0x100;
-	memory.at(PPU::LY_ADDR) = 0;
-
-	// Init window
-	SDL_Init(SDL_INIT_VIDEO);
-	SDL_CreateWindowAndRenderer("GBEmulator", 1920, 1080, 0, &window, &renderer);
-
-	// Init fonts
-	TTF_Init();
+	mem().init();
+	regs().init();
+	ppu().init();
 }
 
 void Context::destroy()
 {
-	logMemory();
+	mem().destroy();
 	setRunning(false);
-	SDL_DestroyWindow(window);
+	currentUI.destroy();
 }
 
 void Context::loadCartridge(const char *path)
@@ -41,28 +31,14 @@ void Context::loadCartridge(const char *path)
 	loadedCartridge.loadCartrige(path);
 }
 
-void Context::initMemory()
+void Context::tick(u64 inc)
 {
-	memory = {};
-	memory.resize(0x10000);
-}
-
-void Context::logMemory()
-{
-	std::ofstream logFile("memory.txt");
-	logFile << regs().log() << std::endl
-			<< std::endl;
-	logFile << "      00  01  02  03  04  05  06  07  08  09  0A  0B  0C  0D  0E  0F" << std::endl;
-	for (int i = 0; i < memory.size(); i++)
+	// Ticks CPU and PPU individually since PPU instructions can be run in between CPU steps
+	// Ticks T-Cycles, not M-Cycles so most instructions should be tick(4)
+	for (u64 i = 0; i < inc; i++)
 	{
-		if ((i % 16) == 0)
-		{
-			logFile << Common::toHexStr((u16)(i / 16)) << "  ";
-		}
-		logFile << Common::toHexStr(memory.at(i)) << "  ";
-		if ((i % 16) == 15)
-		{
-			logFile << std::endl;
-		}
+		tCycles++;
+		cpu().tick();
+		ppu().tick();
 	}
 }

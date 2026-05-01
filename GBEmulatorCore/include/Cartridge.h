@@ -48,4 +48,5 @@ public:
 	~Cartridge();
 
 	void loadCartrige(const char *path);
+	u8 getHeaderChecksum() { return headerChecksum.at(0); }
 };

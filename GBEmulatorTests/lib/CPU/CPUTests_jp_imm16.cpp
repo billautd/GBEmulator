@@ -10,4 +10,5 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xC3", "[cpu_ops_jp_imm16]")
     runOp(0xC3);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xCDAB);
+    REQUIRE(ticks() == 16);
 }

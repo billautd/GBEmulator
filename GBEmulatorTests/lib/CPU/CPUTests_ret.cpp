@@ -12,4 +12,5 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xC9", "[cpu_ops_ret]")
     runOp(0xC9);
 
     ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0xCFFF, 0x3412);
+    REQUIRE(ticks() == 16);
 }

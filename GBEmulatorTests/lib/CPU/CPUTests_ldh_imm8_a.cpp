@@ -12,4 +12,5 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xE0", "[cpu_ops_ldh_imm8_a]")
 
     ASSERT_REGISTERS(0xAB, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02);
     REQUIRE(mem(0xFF12) == 0xAB);
+    REQUIRE(ticks() == 12);
 }

@@ -11,4 +11,5 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xF0", "[cpu_ops_ldh_a_imm8]")
     runOp(0xF0);
 
     ASSERT_REGISTERS(0xAB, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02);
+    REQUIRE(ticks() == 12);
 }
