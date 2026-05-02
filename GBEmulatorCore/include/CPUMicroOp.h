@@ -6,6 +6,7 @@
 
 enum CPUMicroOpType
 {
+    ADD_A_IMM8,
     ADD_A_R8,
     ADD_R16_TO_HL,
     AND_A_IMM8,

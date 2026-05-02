@@ -20,6 +20,16 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
 #endif
     switch (op.type)
     {
+    case CPUMicroOpType::ADD_A_IMM8:
+    {
+        u8 previousAValue = ctx.regs().a;
+        u8 r8Value = tmp_low;
+        u16 newValue16 = previousAValue + r8Value;
+        u8 newValue8 = (u8)newValue16;
+        ctx.regs().a = newValue8;
+        ctx.regs().setFlags(newValue8 == 0, 0, ((previousAValue & 0xF) + (r8Value & 0xF)) > 0xF, newValue16 > 0xFF);
+        break;
+    }
     case CPUMicroOpType::ADD_A_R8:
     {
         u8 previousAValue = ctx.regs().a;

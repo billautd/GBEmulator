@@ -21,14 +21,14 @@ void CPU::tick()
 		stallCycles--;
 		return;
 	}
+	if (queue.empty())
+	{
+		fetchOp();
+	}
 	executeMicroOps();
 	if (instructionJustFinished)
 	{
 		interrupts.handle();
-	}
-	if (queue.empty())
-	{
-		fetchOp();
 	}
 }
 
@@ -604,8 +604,8 @@ void CPU::cp_a_r8()
 // 8 ticks
 void CPU::add_a_imm8()
 {
-	std::cout << "add_a_imm8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});					// 4
+	pushToQueue({.type = CPUMicroOpType::ADD_A_IMM8, .cycles = 0}); // 0
 }
 
 // 8 ticks

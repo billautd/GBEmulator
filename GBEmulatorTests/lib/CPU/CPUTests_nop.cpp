@@ -3,7 +3,7 @@
 #include <CPU.h>
 #include <Context.h>
 
-TEST_CASE_METHOD(CPUTestsFixture, "Test nop operation for code 0x00", "[nop_0x00]")
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x00", "[nop_0x00]")
 {
 	runOp(0x00);
 

@@ -23,6 +23,7 @@ void UI::init()
 
     // Init fonts
     TTF_Init();
+    font = TTF_OpenFont("NotoSansMono-Medium.ttf", 24);
 }
 
 void UI::handle()
@@ -53,11 +54,11 @@ void UI::updateDebugWindow()
     int tileSize = 8 + 2;
     int blockBlank = 4;
 
-    SDL_Surface *surface = SDL_CreateSurface(
-        scale * (16 * tileSize),
-        // 3*4 for blank between blocks
-        scale * (24 * tileSize + 3 * blockBlank),
-        SDL_PIXELFORMAT_RGBA8888);
+    int surfaceWidth = scale * (16 * tileSize);
+    // 3*4 for blank between blocks
+    int surfaceHeight = 50 + scale * (24 * tileSize + 3 * blockBlank);
+
+    SDL_Surface *surface = SDL_CreateSurface(surfaceWidth, surfaceHeight, SDL_PIXELFORMAT_RGBA8888);
     SDL_Rect rect;
     for (int tileX = 0; tileX < 16; tileX++)
     {
@@ -65,12 +66,13 @@ void UI::updateDebugWindow()
         {
             int block = tileY / 8;
             ctx.ppu().createTile(scale * (tileX * tileSize),
-                                 scale * (tileY * tileSize + block * blockBlank),
+                                 50 + scale * (tileY * tileSize + block * blockBlank),
                                  tileY * 16 + tileX,
                                  scale,
                                  surface);
         }
     }
+    displayText(std::to_string(fps).c_str(), surface, 0, 0, 100, 100);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(getDebugRenderer(), surface);
     SDL_RenderClear(getDebugRenderer());
     SDL_RenderTexture(getDebugRenderer(), texture, nullptr, nullptr);
@@ -84,4 +86,10 @@ void UI::destroy()
     {
         SDL_DestroyWindow(debugWindow);
     }
+}
+void UI::displayText(const char *text, SDL_Surface *parentWindow, int x, int y, int w, int h)
+{
+    SDL_Rect position = {x, y, w, h};
+    SDL_Surface *textSurface = TTF_RenderText_Solid(font, std::to_string(fps).c_str(), 0, {255, 255, 255});
+    SDL_BlitSurface(textSurface, &position, parentWindow, nullptr);
 }

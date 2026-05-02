@@ -9,6 +9,7 @@ private:
     Context &ctx;
 
     float fps;
+    TTF_Font *font;
 
     // Main window
     SDL_Window *mainWindow = nullptr;
@@ -18,6 +19,7 @@ private:
     SDL_Window *debugWindow = nullptr;
     SDL_Renderer *debugRenderer;
 
+    void displayText(const char *text, SDL_Surface *parentWindow, int x, int y, int w, int h);
     void updateDebugWindow();
 
 public:

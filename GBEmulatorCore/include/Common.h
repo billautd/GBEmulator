@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 // Signed
 typedef int8_t i8;

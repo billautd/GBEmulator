@@ -48,6 +48,7 @@ public:
 	void runOp(u8 code);
 	void runOpCBPrefix(u8 cbCode);
 
+	bool isInstructionJustFinished() { return instructionJustFinished; }
 	void pushToQueue(const CPUMicroOpStruct &op) { queue.push(op); }
 	std::queue<CPUMicroOpStruct> &getQueue() { return queue; }
 	void clearQueue()
