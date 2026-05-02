@@ -11,6 +11,14 @@ enum PPU_MODES
     DRAWING_PIXELS
 };
 
+struct Sprite
+{
+    u8 x;
+    u8 y;
+    u8 tileIndex;
+    u8 flags;
+};
+
 class Context;
 class CORE_API PPU
 {
@@ -20,6 +28,8 @@ private:
     u64 cycles;
     u64 frame;
     u16 lineTicks;
+
+    Sprite *oamScanResult = new Sprite[40];
 
 public:
     PPU(Context &ctx);
@@ -37,7 +47,7 @@ public:
 
     u64 getFrame() { return frame; };
 
-    void createTile(int x, int y, int tileIndex, int scale, SDL_Surface *surface);
+    void createTile(int x, int y, int tileIndex, SDL_Surface *surface);
 
     u8 getLY();
     void setLY(u8 ly);
@@ -50,10 +60,10 @@ public:
     u8 getMode();
     void setMode(u8 mode);
 
+    void dmaScan();
+
     void hblank();
     void vblank();
     void oamScan();
     void drawPixels();
-
-    bool isVRAMAccessible() { return true; }
 };

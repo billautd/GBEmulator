@@ -9,6 +9,7 @@ u64 Common::getTicks()
 
 void Common::delay(int ns)
 {
+	ZoneScoped("DELAY");
 	SDL_DelayNS(ns);
 }
 

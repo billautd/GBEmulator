@@ -5,6 +5,7 @@
 #include <Mem.h>
 #include <Registers.h>
 #include <CPU.h>
+#include <DMA.h>
 #include <PPU.h>
 #include <UI.h>
 #include <Joypad.h>
@@ -15,13 +16,14 @@ private:
 	bool running = false;
 	u64 tCycles;
 
-	Cartridge loadedCartridge;
-	Registers registers;
+	Cartridge currentCartridge;
+	Registers currentRegisters;
 	Mem currentMemory;
 	CPU currentCPU;
 	PPU currentPPU;
 	UI currentUI;
 	Joypad currentJoypad;
+	DMA currentDMA;
 
 public:
 	Context();
@@ -36,15 +38,12 @@ public:
 	bool isRunning() { return running; }
 	void setRunning(bool running) { this->running = running; }
 
-	Cartridge &getLoadedCartridge() { return loadedCartridge; }
-	void loadCartridge(const char *path);
-
-	Registers &regs() { return registers; }
+	Cartridge &cartridge() { return currentCartridge; }
+	Registers &regs() { return currentRegisters; }
 	CPU &cpu() { return currentCPU; }
 	PPU &ppu() { return currentPPU; }
 	UI &ui() { return currentUI; }
 	Mem &mem() { return currentMemory; }
 	Joypad &joypad() { return currentJoypad; }
-
-	void initMemory();
+	DMA &dma() { return currentDMA; }
 };

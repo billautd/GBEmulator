@@ -60,7 +60,7 @@ void CPU::executeMicroOps()
 		if (queue.empty())
 		{
 #if CPU_DEBUG
-			std::cout << std::format("Cycle {} - {} => {}\n", Common::toHexStr(cycles + stallCycles - 1), Common::toHexStr(currentOpCode), ctx.regs().log());
+			std::cout << std::format("Cycle {} - {} => {}\n", Common::toHexStr(cycles + stallCycles), Common::toHexStr(currentOpCode), ctx.regs().log());
 #endif
 			instructionJustFinished = true;
 		}

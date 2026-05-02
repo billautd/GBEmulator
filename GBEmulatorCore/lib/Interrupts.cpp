@@ -34,13 +34,12 @@ bool Interrupts::checkInterrupts()
         std::cout << "Detected VBLANK interrupt" << std::endl;
 #endif
         resetInterrupt(InterruptType::INT_VBLANK);
-        // ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
-        // ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
-        ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC, 0}); // 4
-        ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC, 0});  // 4
+        ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
+        ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
+        ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC}); // 4
+        ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC});  // 4
         ctx.cpu().pushToQueue({
             .type = CPUMicroOpType::WRITE_INTERRUPT_TO_PC,
-            .cycles = 0,
             .intType = InterruptType::INT_VBLANK,
         }); // 4
         setIME(false);

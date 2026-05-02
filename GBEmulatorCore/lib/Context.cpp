@@ -1,7 +1,8 @@
 #include <Context.h>
 
-Context::Context() : loadedCartridge(Cartridge(*this)), registers(Registers(*this)), currentCPU(CPU(*this)),
-					 currentPPU(PPU(*this)), currentUI(UI(*this)), currentMemory(Mem(*this)), currentJoypad(Joypad(*this))
+Context::Context() : currentCartridge(Cartridge(*this)), currentRegisters(Registers(*this)), currentCPU(CPU(*this)),
+					 currentPPU(PPU(*this)), currentUI(UI(*this)), currentMemory(Mem(*this)), currentJoypad(Joypad(*this)),
+					 currentDMA(DMA(*this))
 {
 	init();
 }
@@ -26,20 +27,14 @@ void Context::destroy()
 	currentUI.destroy();
 }
 
-void Context::loadCartridge(const char *path)
-{
-	loadedCartridge.loadCartrige(path);
-}
-
 void Context::tick(u64 inc)
 {
-	// Ticks CPU and PPU individually since PPU instructions can be run in between CPU steps
-	// Ticks T-Cycles, not M-Cycles so most instructions should be tick(4)
 	for (u64 i = 0; i < inc; i++)
 	{
 		tCycles++;
 		cpu().tick();
 		ppu().tick();
 		joypad().tick();
+		dma().tick();
 	}
 }

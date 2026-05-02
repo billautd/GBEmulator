@@ -33,47 +33,54 @@ void UI::handle()
     {
         if (evt.type == SDL_EVENT_QUIT)
         {
-            ctx.destroy();
+            ctx.setRunning(false);
         }
     }
 }
 
-int i = 0;
 void UI::update()
 {
+    if (mainWindow != nullptr)
+    {
+        int mainSurfaceWidth = UI::SCALE * (16 * UI::TILE_SIZE);
+        int mainSurfaceHeight = UI::SCALE * (24 * UI::TILE_SIZE);
+        mainSurface = SDL_CreateSurface(mainSurfaceWidth, mainSurfaceHeight, SDL_PIXELFORMAT_RGBA8888);
+        updateMainWindow();
+    }
     if (debugWindow != nullptr)
     {
+        int debugSurfaceWidth = UI::SCALE * (16 * (UI::TILE_SIZE + UI::BLOCK_BLANK));
+        // 3*4 for blank between blocks
+        int debugSurfaceHeight = 50 + UI::SCALE * (24 * (UI::TILE_SIZE + UI::BLOCK_BLANK) + 3 * UI::BLOCK_BLANK);
+        debugSurface = SDL_CreateSurface(debugSurfaceWidth, debugSurfaceHeight, SDL_PIXELFORMAT_RGBA8888);
         updateDebugWindow();
     }
 }
 
+void UI::updateMainWindow()
+{
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(getMainRenderer(), mainSurface);
+    SDL_RenderClear(getMainRenderer());
+    SDL_RenderTexture(getMainRenderer(), texture, nullptr, nullptr);
+    SDL_RenderPresent(getMainRenderer());
+}
+
 void UI::updateDebugWindow()
 {
-    // 0x8000 to 0x9FFF
-    int scale = 5;
-    int tileSize = 8 + 2;
-    int blockBlank = 4;
-
-    int surfaceWidth = scale * (16 * tileSize);
-    // 3*4 for blank between blocks
-    int surfaceHeight = 50 + scale * (24 * tileSize + 3 * blockBlank);
-
-    SDL_Surface *surface = SDL_CreateSurface(surfaceWidth, surfaceHeight, SDL_PIXELFORMAT_RGBA8888);
     SDL_Rect rect;
     for (int tileX = 0; tileX < 16; tileX++)
     {
         for (int tileY = 0; tileY < 24; tileY++)
         {
             int block = tileY / 8;
-            ctx.ppu().createTile(scale * (tileX * tileSize),
-                                 50 + scale * (tileY * tileSize + block * blockBlank),
+            ctx.ppu().createTile(UI::SCALE * (tileX * (UI::TILE_SIZE + UI::BLOCK_BLANK)),
+                                 50 + UI::SCALE * (tileY * (UI::TILE_SIZE + UI::BLOCK_BLANK) + block * UI::BLOCK_BLANK),
                                  tileY * 16 + tileX,
-                                 scale,
-                                 surface);
+                                 debugSurface);
         }
     }
-    displayText(std::to_string(fps).c_str(), surface, 0, 0, 100, 100);
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(getDebugRenderer(), surface);
+    displayText(std::to_string(fps).c_str(), debugSurface, 0, 0, 100, 100);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(getDebugRenderer(), debugSurface);
     SDL_RenderClear(getDebugRenderer());
     SDL_RenderTexture(getDebugRenderer(), texture, nullptr, nullptr);
     SDL_RenderPresent(getDebugRenderer());
@@ -81,11 +88,10 @@ void UI::updateDebugWindow()
 
 void UI::destroy()
 {
-    SDL_DestroyWindow(mainWindow);
+    if (mainWindow != nullptr)
+        SDL_DestroyWindow(mainWindow);
     if (debugWindow != nullptr)
-    {
         SDL_DestroyWindow(debugWindow);
-    }
 }
 void UI::displayText(const char *text, SDL_Surface *parentWindow, int x, int y, int w, int h)
 {

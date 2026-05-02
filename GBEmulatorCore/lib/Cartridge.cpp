@@ -14,7 +14,10 @@ Cartridge::~Cartridge()
 
 void Cartridge::readBytesFromRomData(size_t offset, const std::span<u8> &array)
 {
-	std::copy_n(ctx.mem().getMem().begin() + offset, array.size(), array.begin());
+	for (int i = 0; i < array.size(); i++)
+	{
+		array[i] = ctx.mem().readMem(offset + i);
+	}
 }
 
 bool Cartridge::checkHeaderChecksum()
@@ -43,7 +46,7 @@ bool Cartridge::checkGlobalChecksum()
 	return checksum == (globalChecksum.at(1) + 256 * globalChecksum.at(0));
 }
 
-void Cartridge::loadCartrige(const char *path)
+void Cartridge::load(const char *path)
 {
 	std::cout << std::format("Loading cartridge from path: {}\n", path);
 
@@ -58,7 +61,13 @@ void Cartridge::loadCartrige(const char *path)
 	file.seekg(0, file.end);
 	actualRomSize = file.tellg();
 	file.seekg(0);
-	file.read(reinterpret_cast<char *>(ctx.mem().getMem().data()), actualRomSize);
+	char ch;
+	int i = 0;
+	while (file.get(ch))
+	{
+		ctx.mem().writeMem(i, (u8)ch);
+		i++;
+	}
 
 	// Read header from ROM data
 	readBytesFromRomData(0x100, entryPoint);

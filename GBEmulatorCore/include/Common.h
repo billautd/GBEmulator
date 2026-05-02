@@ -10,10 +10,11 @@
 #include <iostream>
 #include <span>
 #include <string>
-#include <vector>
 
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
+#include <Tracy.hpp>
 
 // Signed
 typedef int8_t i8;

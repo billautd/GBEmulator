@@ -12,9 +12,7 @@ Mem::~Mem()
 
 void Mem::init()
 {
-    data = {};
-    data.resize(0x10000);
-
+    data = new u8[MEM_SIZE];
     writeMem(0xFF00, 0xCF);
     writeMem(0xFF01, 0x00);
     writeMem(0xFF02, 0x7E);
@@ -69,13 +67,13 @@ void Mem::logMem()
     logFile << ctx.regs().log() << std::endl
             << std::endl;
     logFile << "       0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F" << std::endl;
-    for (int i = 0; i < data.size(); i++)
+    for (int i = 0; i < MEM_SIZE; i++)
     {
         if ((i % 16) == 0)
         {
             logFile << Common::toHexStr((u16)((i / 16) << 4)) << "  ";
         }
-        logFile << Common::toHexStr(data.at(i)) << "  ";
+        logFile << Common::toHexStr(data[i]) << "  ";
         if ((i % 16) == 15)
         {
             logFile << std::endl;
@@ -85,20 +83,12 @@ void Mem::logMem()
 
 void Mem::writeMem(u16 address, u8 value)
 {
-    bool inVRAM = address >= 0x8000 && address <= 0x9FFF;
-    if (inVRAM && !ctx.ppu().isVRAMAccessible())
-    {
-        return;
-    }
-    data.at(address) = value;
+    data[address] = value;
+    if (address == 0xFF46)
+        ctx.dma().start();
 }
 
 u8 Mem::readMem(u16 address)
 {
-    bool inVRAM = address >= 0x8000 && address <= 0x9FFF;
-    if (inVRAM && !ctx.ppu().isVRAMAccessible())
-    {
-        return 0xFF;
-    }
-    return data.at(address);
+    return data[address];
 }

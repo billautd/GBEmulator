@@ -26,12 +26,12 @@ void Emulator::init()
 void Emulator::runEmulator(const char *romPath)
 {
 	init();
-	ctx.loadCartridge(romPath);
+	ctx.cartridge().load(romPath);
 
 	u64 nextTCyclesTarget = CYCLES_PER_FRAME;
 	while (ctx.isRunning())
 	{
-		u64 previousFrame = ctx.ppu().getFrame();
+		ZoneScoped("MAIN");
 		/*****************/
 		/*****MAIN LOOP***/
 		/*****************/
@@ -49,12 +49,10 @@ void Emulator::runEmulator(const char *romPath)
 		nextTCyclesTarget += CYCLES_PER_FRAME;
 
 		// Render UI
-		if (ctx.ppu().getFrame() != previousFrame)
-		{
-			ctx.ui().handle();
-			ctx.ui().update();
-			ctx.ui().setFPS((float)1'000'000'000 / (Common::getTicks() - ticksStart));
-		}
+		ctx.ui().handle();
+		ctx.ui().update();
+		ctx.ui().setFPS((float)1'000'000'000 / (Common::getTicks() - ticksStart));
+		FrameMark;
 	}
 	destroy();
 	return;

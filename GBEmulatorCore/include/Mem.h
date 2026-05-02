@@ -37,16 +37,18 @@ class CORE_API Mem
 {
 private:
     Context &ctx;
-    std::vector<u8> data = {};
+    u8 *data;
 
 public:
     Mem(Context &ctx);
     ~Mem();
 
+    const static int MEM_SIZE = 0x10000;
+
     void init();
     void destroy();
 
-    std::vector<u8> &getMem() { return data; }
+    u8 *getMem() { return data; }
 
     void logMem();
     // Writes value to memory, checks for PPU mode if address in VRAM

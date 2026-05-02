@@ -17,7 +17,7 @@ void Registers::init()
 	d = 0x00;
 	e = 0xD8;
 	f = 0x00;
-	bool headerChecksumZero = ctx.getLoadedCartridge().getHeaderChecksum() == 0;
+	bool headerChecksumZero = ctx.cartridge().getHeaderChecksum() == 0;
 	setFlags(1, 0, !headerChecksumZero, !headerChecksumZero);
 	g = 0x00;
 	h = 0x01;

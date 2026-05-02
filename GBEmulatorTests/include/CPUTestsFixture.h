@@ -33,7 +33,7 @@ public:
     // Shortcut getters
     Registers &regs() { return ctx->regs(); }
     CPU &cpu() { return ctx->cpu(); }
-    std::vector<u8> &mem() { return ctx->mem().getMem(); }
+    u8 *mem() { return ctx->mem().getMem(); }
     void runOp(u8 code)
     {
         std::cout << "Running test for code " << Common::toHexStr(code) << std::endl;
