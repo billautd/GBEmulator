@@ -86,10 +86,6 @@ void Mem::logMem()
 void Mem::writeMem(u16 address, u8 value)
 {
     bool inVRAM = address >= 0x8000 && address <= 0x9FFF;
-    if (address == 0x8002)
-    {
-        std::cout << std::format("Writing {} in mode {} with LY {}\n", Common::toHexStr(value), ctx.ppu().getMode(), ctx.ppu().getLY());
-    }
     if (inVRAM && !ctx.ppu().isVRAMAccessible())
     {
         return;

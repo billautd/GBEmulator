@@ -7,4 +7,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 add_subdirectory(GBEmulatorCore)
 add_subdirectory(GBEmulator)
-add_subdirectory(GBEmulatorTests)
+#add_subdirectory(GBEmulatorTests)

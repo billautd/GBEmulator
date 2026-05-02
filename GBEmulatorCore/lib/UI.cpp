@@ -37,6 +37,7 @@ void UI::handle()
     }
 }
 
+int i = 0;
 void UI::update()
 {
     if (debugWindow != nullptr)
@@ -47,10 +48,6 @@ void UI::update()
 
 void UI::updateDebugWindow()
 {
-    if (!ctx.ppu().isVRAMAccessible())
-    {
-        return;
-    }
     // 0x8000 to 0x9FFF
     int scale = 5;
     int tileSize = 8 + 2;

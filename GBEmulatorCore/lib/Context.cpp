@@ -1,7 +1,7 @@
 #include <Context.h>
 
 Context::Context() : loadedCartridge(Cartridge(*this)), registers(Registers(*this)), currentCPU(CPU(*this)),
-					 currentPPU(PPU(*this)), currentUI(UI(*this)), currentMemory(Mem(*this))
+					 currentPPU(PPU(*this)), currentUI(UI(*this)), currentMemory(Mem(*this)), currentJoypad(Joypad(*this))
 {
 	init();
 }
@@ -40,5 +40,6 @@ void Context::tick(u64 inc)
 		tCycles++;
 		cpu().tick();
 		ppu().tick();
+		joypad().tick();
 	}
 }

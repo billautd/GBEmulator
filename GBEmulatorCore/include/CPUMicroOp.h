@@ -2,6 +2,7 @@
 
 #include <Common.h>
 #include <Registers.h>
+#include <Interrupts.h>
 
 enum CPUMicroOpType
 {
@@ -42,6 +43,7 @@ enum CPUMicroOpType
     WRITE_A_TO_TMP_ADDR,
     WRITE_A_TO_R16MEM_ADDR,
     WRITE_A_TO_LDH_ADDR,
+    WRITE_INTERRUPT_TO_PC,
     WRITE_LDH_ADDR_TO_A,
     WRITE_R16MEM_ADDR_TO_A,
     WRITE_TMP_ADDR_TO_A,
@@ -62,6 +64,7 @@ struct CPUMicroOpStruct
     R16_MEM r16Mem = R16_MEM::BC;
     R16_STK r16Stk = R16_STK::BC;
     COND cond = COND::NZ;
+    InterruptType intType = InterruptType::INT_VBLANK;
     u8 bit = 0;
     u8 tgt3 = 0;
 };

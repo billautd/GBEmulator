@@ -8,13 +8,13 @@ class UI
 private:
     Context &ctx;
 
+    float fps;
+
     // Main window
-    float mainWindowFps;
     SDL_Window *mainWindow = nullptr;
     SDL_Renderer *mainRenderer;
 
     // Debug window
-    float debugWindowFps;
     SDL_Window *debugWindow = nullptr;
     SDL_Renderer *debugRenderer;
 
@@ -29,9 +29,10 @@ public:
     void update();
     void destroy();
 
+    void setFPS(float fps) { this->fps = fps; }
+
     SDL_Window *getMainWindow() { return mainWindow; }
     SDL_Renderer *getMainRenderer() { return mainRenderer; }
-    void setMainWindowFPS(float fps) { mainWindowFps = fps; }
 
     SDL_Window *getDebugWindow() { return debugWindow; }
     SDL_Renderer *getDebugRenderer() { return debugRenderer; }

@@ -100,12 +100,13 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
     }
     case CPUMicroOpType::DI:
     {
-        ctx.cpu().setIME(false);
+        ctx.cpu().getInterrupts().setIME(false);
         break;
     }
     case CPUMicroOpType::EI:
     {
-        ctx.cpu().setIME(true);
+        ctx.cpu().getInterrupts().setEnablingIME(true);
+        ctx.cpu().getInterrupts().setIMEDelay(1);
         break;
     }
     case CPUMicroOpType::FETCH_DECODE_SCHEDULE:
@@ -322,6 +323,11 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
     {
         u16 address = (tmp_high << 8) | tmp_low;
         ctx.mem().writeMem(address, ctx.regs().a);
+        break;
+    }
+    case CPUMicroOpType::WRITE_INTERRUPT_TO_PC:
+    {
+        ctx.regs().pc = Interrupts::getAddressFromType(op.intType);
         break;
     }
     case CPUMicroOpType::WRITE_LDH_ADDR_TO_A:

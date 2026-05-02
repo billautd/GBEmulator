@@ -7,6 +7,7 @@
 #include <CPU.h>
 #include <PPU.h>
 #include <UI.h>
+#include <Joypad.h>
 
 class CORE_API Context
 {
@@ -20,6 +21,7 @@ private:
 	CPU currentCPU;
 	PPU currentPPU;
 	UI currentUI;
+	Joypad currentJoypad;
 
 public:
 	Context();
@@ -42,6 +44,7 @@ public:
 	PPU &ppu() { return currentPPU; }
 	UI &ui() { return currentUI; }
 	Mem &mem() { return currentMemory; }
+	Joypad &joypad() { return currentJoypad; }
 
 	void initMemory();
 };

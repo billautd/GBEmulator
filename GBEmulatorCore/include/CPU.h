@@ -4,12 +4,14 @@
 #include <queue>
 #include <Common.h>
 #include <CPUMicroOp.h>
+#include <Interrupts.h>
 
 class Context;
 class CORE_API CPU
 {
 private:
 	Context &ctx;
+	Interrupts interrupts;
 	CPUMicroOp microOp;
 	u8 currentOpCode;
 	u8 currentCBPrefixOpCode;
@@ -18,10 +20,10 @@ private:
 	u64 cycles = 0;
 	u64 stallCycles = 0;
 	std::queue<CPUMicroOpStruct> queue = {};
+	bool instructionJustFinished = false;
 
-	bool ime = false;
-
-	void scheduleMicroOps();
+	void fetchOp();
+	void executeMicroOps();
 
 public:
 	CPU(Context &ctx);
@@ -41,15 +43,18 @@ public:
 	u8 cbPrefixOpCode() { return currentCBPrefixOpCode; }
 	void setCurrentCBPRefixOpCode(u8 opCode) { currentCBPrefixOpCode = opCode; }
 
-	bool isIME() { return ime; }
-	void setIME(bool ime) { this->ime = ime; }
-	void handleInterrupts();
+	Interrupts &getInterrupts() { return interrupts; }
 
 	void runOp(u8 code);
 	void runOpCBPrefix(u8 cbCode);
 
 	void pushToQueue(const CPUMicroOpStruct &op) { queue.push(op); }
 	std::queue<CPUMicroOpStruct> &getQueue() { return queue; }
+	void clearQueue()
+	{
+		std::queue<CPUMicroOpStruct> empty;
+		std::swap(queue, empty);
+	};
 
 	// Block 0
 	void nop();

@@ -2,9 +2,9 @@
 #include <Context.h>
 #include <math.h>
 
-#define CPU_DEBUG true
+#define CPU_DEBUG false
 
-CPU::CPU(Context &ctx) : ctx(ctx), microOp(CPUMicroOp(ctx))
+CPU::CPU(Context &ctx) : ctx(ctx), microOp(CPUMicroOp(ctx)), interrupts(Interrupts(ctx))
 {
 }
 
@@ -14,28 +14,35 @@ CPU::~CPU()
 
 void CPU::tick()
 {
-	scheduleMicroOps();
 	cycles++;
-	handleInterrupts();
-}
-
-void CPU::scheduleMicroOps()
-{
 	// Stall T-cycles
 	if (stallCycles > 0)
 	{
 		stallCycles--;
 		return;
 	}
-	// If queue empty, scheduling next CPU operation
-	// Each instruction in queue = 4 T-Cycles = 1 M-Cycle
+	executeMicroOps();
+	if (instructionJustFinished)
+	{
+		interrupts.handle();
+	}
 	if (queue.empty())
 	{
-#if CPU_DEBUG
-		std::cout << std::format("Cycle {} - {} => {}\n", Common::toHexStr(cycles), Common::toHexStr(ctx.mem().readMem(ctx.regs().pc)), ctx.regs().log());
-#endif
-		pushToQueue({CPUMicroOpType::FETCH_DECODE_SCHEDULE}); // 4
+		fetchOp();
 	}
+}
+
+void CPU::fetchOp()
+{
+	// If queue empty, scheduling next CPU operation
+	// Each instruction in queue = 4 T-Cycles = 1 M-Cycle
+	pushToQueue({CPUMicroOpType::FETCH_DECODE_SCHEDULE}); // 4
+}
+
+void CPU::executeMicroOps()
+{
+	instructionJustFinished = false;
+
 	// Pop next instruction in queue and run it, until CPU operation is fully processed (empty queue)
 	// If instruction takes no cycle, go to next without waiting for tick
 	while (!queue.empty())
@@ -47,8 +54,16 @@ void CPU::scheduleMicroOps()
 		queue.pop();
 		microOp.runMicroOp(op);
 
+		// FIXME : If all cycles are 0, a cycle is consumed when it should not be
 		if (op.cycles > 0 && stallCycles == 0)
 			stall(op.cycles * 3);
+		if (queue.empty())
+		{
+#if CPU_DEBUG
+			std::cout << std::format("Cycle {} - {} => {}\n", Common::toHexStr(cycles + stallCycles - 1), Common::toHexStr(currentOpCode), ctx.regs().log());
+#endif
+			instructionJustFinished = true;
+		}
 	}
 }
 
@@ -326,11 +341,6 @@ void CPU::runOpCBPrefix(u8 cbCode)
 		set_b3_r8();
 	else
 		throw std::runtime_error(std::string("Op code " + Common::toHexStr(cbCode) + "with CB prefix not managed"));
-}
-
-void CPU::handleInterrupts()
-{
-	// TODO
 }
 
 /**************************************/
@@ -665,8 +675,10 @@ void CPU::ret()
 // 16 ticks
 void CPU::reti()
 {
-	std::cout << "reti not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::READ_SP_LOW});		// 4
+	pushToQueue({CPUMicroOpType::READ_SP_HIGH});	// 4
+	pushToQueue({CPUMicroOpType::WRITE_TMP_TO_PC}); // 4
+	pushToQueue({CPUMicroOpType::EI, 0});			// 0
 }
 
 // 12 ticks if cond false, 16 ticks if cond true

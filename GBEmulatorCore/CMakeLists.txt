@@ -14,6 +14,8 @@ target_sources(GBEmulatorCore
 		lib/CPU.cpp
 		lib/CPUMicroOp.cpp
 		lib/Emulator.cpp
+		lib/Interrupts.cpp
+		lib/Joypad.cpp
 		lib/Mem.cpp
 		lib/PPU.cpp
 		lib/Registers.cpp
@@ -29,6 +31,8 @@ target_sources(GBEmulatorCore
 			include/CPU.h
 			include/CPUMicroOp.h
 			include/Emulator.h
+			include/Interrupts.h
+			include/Joypad.h
 			include/Mem.h
 			include/PPU.h
 			include/Registers.h
