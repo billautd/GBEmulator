@@ -253,9 +253,9 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_imm8", "[regs]")
 {
 	regs->pc = 0x1020;
 
-	ctx->mem().getMem().at(0x1020) = 0x01;
-	ctx->mem().getMem().at(0x1021) = 0x02;
-	ctx->mem().getMem().at(0x1022) = 0x03;
+	ctx->mem().getMem()[0x1020] = 0x01;
+	ctx->mem().getMem()[0x1021] = 0x02;
+	ctx->mem().getMem()[0x1022] = 0x03;
 
 	REQUIRE(regs->imm8() == 0x01);
 	REQUIRE(regs->imm8() == 0x02);
@@ -266,10 +266,10 @@ TEST_CASE_METHOD(RegisterTestsFixture, "regs_imm16", "[regs]")
 {
 	regs->pc = 0x1020;
 
-	ctx->mem().getMem().at(0x1020) = 0x01;
-	ctx->mem().getMem().at(0x1021) = 0x02;
-	ctx->mem().getMem().at(0x1022) = 0x03;
-	ctx->mem().getMem().at(0x1023) = 0x04;
+	ctx->mem().getMem()[0x1020] = 0x01;
+	ctx->mem().getMem()[0x1021] = 0x02;
+	ctx->mem().getMem()[0x1022] = 0x03;
+	ctx->mem().getMem()[0x1023] = 0x04;
 
 	REQUIRE(regs->imm16() == 0x0201);
 	REQUIRE(regs->imm16() == 0x0403);

@@ -203,6 +203,13 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
             ctx.regs().setRegFromR8(op.r8_dest, newValue);
         break;
     }
+    case CPUMicroOpType::OR_A_IMM8:
+    {
+        u8 newValue = ctx.regs().a | tmp_low;
+        ctx.regs().a = newValue;
+        ctx.regs().setFlags(newValue == 0, 0, 0, 0);
+        break;
+    }
     case CPUMicroOpType::OR_A_R8:
     {
         u8 r8Value;
@@ -281,11 +288,11 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
     case CPUMicroOpType::RES_BIT:
     {
         if (op.r8_dest == R8::HL)
-            tmp_low &= (0xFF - (u8)pow(2, op.bit));
+            tmp_low = Common::resetBit(tmp_low, op.bit);
         else
         {
             u8 r8Value = ctx.regs().getFromR8(op.r8_dest);
-            u8 newValue = r8Value & (0xFF - (u8)pow(2, op.bit));
+            u8 newValue = Common::resetBit(r8Value, op.bit);
             ctx.regs().setRegFromR8(op.r8_dest, newValue);
         }
         break;
@@ -301,7 +308,43 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
         ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});
         break;
     }
-    case SWAP:
+    case CPUMicroOpType::SLA:
+    {
+        if (op.r8_dest == R8::HL)
+        {
+            bool carry = Common::getBit(tmp_low, 7);
+            tmp_low = (tmp_low << 1);
+            ctx.regs().setFlags(tmp_low == 0, 0, 0, carry);
+        }
+        else
+        {
+            u8 r8Value = ctx.regs().getFromR8(op.r8_dest);
+            bool carry = Common::getBit(r8Value, 7);
+            u8 newValue = (r8Value << 1);
+            ctx.regs().setRegFromR8(op.r8_dest, newValue);
+            ctx.regs().setFlags(newValue == 0, 0, 0, carry);
+        }
+        break;
+    }
+    case CPUMicroOpType::SRL:
+    {
+        if (op.r8_dest == R8::HL)
+        {
+            bool carry = Common::getBit(tmp_low, 0);
+            tmp_low = (tmp_low >> 1);
+            ctx.regs().setFlags(tmp_low == 0, 0, 0, carry);
+        }
+        else
+        {
+            u8 r8Value = ctx.regs().getFromR8(op.r8_dest);
+            bool carry = Common::getBit(r8Value, 0);
+            u8 newValue = (r8Value >> 1);
+            ctx.regs().setRegFromR8(op.r8_dest, newValue);
+            ctx.regs().setFlags(newValue == 0, 0, 0, carry);
+        }
+        break;
+    }
+    case CPUMicroOpType::SWAP:
     {
         if (op.r8_dest == R8::HL)
         {
@@ -315,6 +358,18 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
             ctx.regs().setRegFromR8(op.r8_dest, newValue);
             ctx.regs().setFlags(newValue == 0, 0, 0, 0);
         }
+        break;
+    }
+    case CPUMicroOpType::TEST_BIT:
+    {
+        u8 r8Value;
+        if (op.r8_src == R8::HL)
+            r8Value = tmp_low;
+        else
+            r8Value = ctx.regs().getFromR8(op.r8_src);
+
+        bool isBitSet = Common::getBit(r8Value, op.bit);
+        ctx.regs().setFlags(!isBitSet, 0, 1, -1);
         break;
     }
     case CPUMicroOpType::WRITE_A_TO_LDH_ADDR:

@@ -23,19 +23,21 @@ void PPU::init()
 
 void PPU::tick()
 {
+    cycles++;
+    lineTicks++;
     u8 mode = getMode();
     switch (mode)
     {
-    case PPU_MODES::HBLANK:
+    case PPUModes::HBLANK:
         hblank();
         break;
-    case PPU_MODES::VBLANK:
+    case PPUModes::VBLANK:
         vblank();
         break;
-    case PPU_MODES::OAM_SCAN:
+    case PPUModes::OAM_SCAN:
         oamScan();
         break;
-    case PPU_MODES::DRAWING_PIXELS:
+    case PPUModes::DRAWING_PIXELS:
         drawPixels();
         break;
     default:
@@ -46,8 +48,6 @@ void PPU::tick()
 #if PPU_DEBUG
     std::cout << std::format("Cycle {}, mode {}, ly {}\n", cycles, getMode(), getLY());
 #endif
-    cycles++;
-    lineTicks++;
 }
 
 void PPU::hblank()
@@ -58,11 +58,11 @@ void PPU::hblank()
         incrementLY();
         if (getLY() > 143)
         {
-            setMode(PPU_MODES::VBLANK);
+            setMode(PPUModes::VBLANK);
             ctx.cpu().getInterrupts().requestInterrupt(InterruptType::INT_VBLANK);
         }
         else
-            setMode(PPU_MODES::OAM_SCAN);
+            setMode(PPUModes::OAM_SCAN);
     }
 }
 
@@ -76,7 +76,7 @@ void PPU::vblank()
         {
             setLY(0);
             frame++;
-            setMode(PPU_MODES::OAM_SCAN);
+            setMode(PPUModes::OAM_SCAN);
         }
     }
 }
@@ -95,11 +95,12 @@ void PPU::oamScan()
         u8 xPos = ctx.mem().readMem(0xFE01 + lineTicks * 2);
         u8 tileIndex = ctx.mem().readMem(0xFE02 + lineTicks * 2);
         u8 flags = ctx.mem().readMem(0xFE03 + lineTicks * 2);
+        // std::cout << (int)ctx.mem().readMem(0xFF45) << " ";
     }
 
     if (lineTicks >= 80)
     {
-        setMode(PPU_MODES::DRAWING_PIXELS);
+        setMode(PPUModes::DRAWING_PIXELS);
     }
 }
 
@@ -107,7 +108,7 @@ void PPU::drawPixels()
 {
     if (lineTicks >= 172)
     {
-        setMode(PPU_MODES::HBLANK);
+        setMode(PPUModes::HBLANK);
     }
 }
 
@@ -149,6 +150,19 @@ void PPU::incrementLY()
 {
     setLY(getLY() + 1);
 }
+
+u8 PPU::getLYC()
+{
+    return ctx.mem().readMem(LYC_ADDR);
+}
+
+// void PPU::setLCDStatus(LCDStatuses status, bool active)
+// {
+//     if (active)
+//         ctx.mem().writeMem(STAT_ADDR, (Common::setBit(ctx.mem().readMem(STAT_ADDR), status)));
+//     else
+//         ctx.mem().writeMem(STAT_ADDR, (Common::resetBit(ctx.mem().readMem(STAT_ADDR), status)));
+// }
 
 u8 PPU::getMode()
 {

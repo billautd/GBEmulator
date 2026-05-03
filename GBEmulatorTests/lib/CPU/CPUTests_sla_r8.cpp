@@ -2,3 +2,152 @@
 #include <CPUTestsFixture.h>
 #include <CPU.h>
 #include <Context.h>
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCB20", "[cpu_ops_sla_r8]")
+{
+    regs().b = 0b11000011;
+    runCBPrefixOp(0x20);
+    ASSERT_REGISTERS(0, 0b10000110, 0, 0, 0, 0b00010000, 0, 0, 0, 0, 2);
+    REQUIRE(ticks() == 8);
+
+    regs().b = 0;
+    runCBPrefixOp(0x20);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0, 0, 0, 4);
+    REQUIRE(ticks() == 16);
+
+    regs().b = 0b01110000;
+    runCBPrefixOp(0x20);
+    ASSERT_REGISTERS(0, 0b11100000, 0, 0, 0, 0b00000000, 0, 0, 0, 0, 6);
+    REQUIRE(ticks() == 24);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCB21", "[cpu_ops_sla_r8]")
+{
+    regs().c = 0b11000011;
+    runCBPrefixOp(0x21);
+    ASSERT_REGISTERS(0, 0, 0b10000110, 0, 0, 0b00010000, 0, 0, 0, 0, 2);
+    REQUIRE(ticks() == 8);
+
+    regs().c = 0;
+    runCBPrefixOp(0x21);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0, 0, 0, 4);
+    REQUIRE(ticks() == 16);
+
+    regs().c = 0b01110000;
+    runCBPrefixOp(0x21);
+    ASSERT_REGISTERS(0, 0, 0b11100000, 0, 0, 0b00000000, 0, 0, 0, 0, 6);
+    REQUIRE(ticks() == 24);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCB22", "[cpu_ops_sla_r8]")
+{
+    regs().d = 0b11000011;
+    runCBPrefixOp(0x22);
+    ASSERT_REGISTERS(0, 0, 0, 0b10000110, 0, 0b00010000, 0, 0, 0, 0, 2);
+    REQUIRE(ticks() == 8);
+
+    regs().d = 0;
+    runCBPrefixOp(0x22);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0, 0, 0, 4);
+    REQUIRE(ticks() == 16);
+
+    regs().d = 0b01110000;
+    runCBPrefixOp(0x22);
+    ASSERT_REGISTERS(0, 0, 0, 0b11100000, 0, 0b00000000, 0, 0, 0, 0, 6);
+    REQUIRE(ticks() == 24);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCB23", "[cpu_ops_sla_r8]")
+{
+    regs().e = 0b11000011;
+    runCBPrefixOp(0x23);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0b10000110, 0b00010000, 0, 0, 0, 0, 2);
+    REQUIRE(ticks() == 8);
+
+    regs().e = 0;
+    runCBPrefixOp(0x23);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0, 0, 0, 4);
+    REQUIRE(ticks() == 16);
+
+    regs().e = 0b01110000;
+    runCBPrefixOp(0x23);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0b11100000, 0b00000000, 0, 0, 0, 0, 6);
+    REQUIRE(ticks() == 24);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCB24", "[cpu_ops_sla_r8]")
+{
+    regs().h = 0b11000011;
+    runCBPrefixOp(0x24);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00010000, 0, 0b10000110, 0, 0, 2);
+    REQUIRE(ticks() == 8);
+
+    regs().h = 0;
+    runCBPrefixOp(0x24);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0, 0, 0, 4);
+    REQUIRE(ticks() == 16);
+
+    regs().h = 0b01110000;
+    runCBPrefixOp(0x24);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00000000, 0, 0b11100000, 0, 0, 6);
+    REQUIRE(ticks() == 24);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCB25", "[cpu_ops_sla_r8]")
+{
+    regs().l = 0b11000011;
+    runCBPrefixOp(0x25);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00010000, 0, 0, 0b10000110, 0, 2);
+    REQUIRE(ticks() == 8);
+
+    regs().l = 0;
+    runCBPrefixOp(0x25);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0, 0, 0, 4);
+    REQUIRE(ticks() == 16);
+
+    regs().l = 0b01110000;
+    runCBPrefixOp(0x25);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00000000, 0, 0, 0b11100000, 0, 6);
+    REQUIRE(ticks() == 24);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCB26", "[cpu_ops_sla_r8]")
+{
+    regs().h = 0x12;
+    regs().l = 0x34;
+    mem(0x1234) = 0b11000011;
+    runCBPrefixOp(0x26);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00010000, 0, 0x12, 0x34, 0, 2);
+    REQUIRE(mem(0x1234) == 0b10000110);
+    REQUIRE(ticks() == 16);
+
+    mem(0x1234) = 0;
+    runCBPrefixOp(0x26);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0x12, 0x34, 0, 4);
+    REQUIRE(mem(0x1234) == 0);
+    REQUIRE(ticks() == 32);
+
+    mem(0x1234) = 0b01110000;
+    runCBPrefixOp(0x26);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b00000000, 0, 0x12, 0x34, 0, 6);
+    REQUIRE(mem(0x1234) == 0b11100000);
+    REQUIRE(ticks() == 48);
+}
+
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0xCB27", "[cpu_ops_sla_r8]")
+{
+    regs().a = 0b11000011;
+    runCBPrefixOp(0x27);
+    ASSERT_REGISTERS(0b10000110, 0, 0, 0, 0, 0b00010000, 0, 0, 0, 0, 2);
+    REQUIRE(ticks() == 8);
+
+    regs().a = 0;
+    runCBPrefixOp(0x27);
+    ASSERT_REGISTERS(0, 0, 0, 0, 0, 0b10000000, 0, 0, 0, 0, 4);
+    REQUIRE(ticks() == 16);
+
+    regs().a = 0b01110000;
+    runCBPrefixOp(0x27);
+    ASSERT_REGISTERS(0b11100000, 0, 0, 0, 0, 0b00000000, 0, 0, 0, 0, 6);
+    REQUIRE(ticks() == 24);
+}

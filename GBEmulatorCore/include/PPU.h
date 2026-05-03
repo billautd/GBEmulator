@@ -3,12 +3,21 @@
 #include <Common.h>
 
 const static u32 colors[4] = {0xFFFFFFFF, 0xAAAAAAFF, 0x555555FF, 0x00000000};
-enum PPU_MODES
+enum PPUModes
 {
-    HBLANK,
-    VBLANK,
-    OAM_SCAN,
-    DRAWING_PIXELS
+    HBLANK = 0,
+    VBLANK = 1,
+    OAM_SCAN = 2,
+    DRAWING_PIXELS = 3
+};
+
+enum LCDStatuses
+{
+    LYC_EQ_LY = 2,
+    MODE_0 = 3,
+    MODE_1 = 4,
+    MODE_2 = 5,
+    LYC_INT = 5
 };
 
 struct Sprite
@@ -38,6 +47,7 @@ public:
     const static u16 TICKS_PER_LINE = 456;
     const static u16 LINES_PER_FRAME = 153;
 
+    const static u16 LCDC_ADDR = 0xFF40;
     const static u16 STAT_ADDR = 0xFF41;
     const static u16 LY_ADDR = 0xFF44;
     const static u16 LYC_ADDR = 0xFF45;
@@ -52,6 +62,10 @@ public:
     u8 getLY();
     void setLY(u8 ly);
     void incrementLY();
+
+    u8 getLYC();
+
+    void setLCDStatus(LCDStatuses status, bool active);
 
     // Mode 0 : Horizontal blank
     // Mode 1 : Vertical blank

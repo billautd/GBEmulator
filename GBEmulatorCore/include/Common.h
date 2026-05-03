@@ -38,4 +38,8 @@ public:
 	static std::string toHexStr(u64 data);
 	static std::string toHexStr(const u8 *data, const size_t size);
 	static std::string toHexStr(const std::span<u8> &array);
+
+	static bool getBit(u8 value, int index);
+	static u8 setBit(u8 value, int index);
+	static u8 resetBit(u8 value, int index);
 };

@@ -646,8 +646,8 @@ void CPU::xor_a_imm8()
 // 8 ticks
 void CPU::or_a_imm8()
 {
-	std::cout << "or_a_imm8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});				   // 4
+	pushToQueue({.type = CPUMicroOpType::OR_A_IMM8, .cycles = 0}); // 0
 }
 
 // 8 ticks
@@ -860,8 +860,13 @@ void CPU::rr_r8()
 // 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::sla_r8()
 {
-	std::cout << "sla_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u8 b3 = (cbPrefixOpCode() & 0b00111000) >> 3;
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL});	   // 4
+	pushToQueue({.type = CPUMicroOpType::SLA, .cycles = 0, .r8_dest = r8, .bit = b3}); // 4
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R8, .r8_dest = R8::HL}); // 4
 }
 
 // 8 ticks if not (HL), 16 ticks if (HL)
@@ -886,15 +891,23 @@ void CPU::swap_r8()
 // 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::srl_r8()
 {
-	std::cout << "srl_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u8 b3 = (cbPrefixOpCode() & 0b00111000) >> 3;
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL});	   // 4
+	pushToQueue({.type = CPUMicroOpType::SRL, .cycles = 0, .r8_dest = r8, .bit = b3}); // 4
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R8, .r8_dest = R8::HL}); // 4
 }
 
 // 8 ticks if not (HL), 12 ticks if (HL)
 void CPU::bit_b3_r8()
 {
-	std::cout << "bit_b3_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u8 b3 = (cbPrefixOpCode() & 0b00111000) >> 3;
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL});		   // 4
+	pushToQueue({.type = CPUMicroOpType::TEST_BIT, .cycles = 0, .r8_src = r8, .bit = b3}); // 0
 }
 
 // 8 ticks if not (HL), 16 ticks if (HL)

@@ -52,3 +52,18 @@ std::string Common::toHexStr(const std::span<u8> &array)
 	}
 	return oss.str();
 }
+
+bool Common::getBit(u8 value, int index)
+{
+	return (bool)((value & (1 << index)) >> index);
+}
+
+u8 Common::setBit(u8 value, int index)
+{
+	return value | (1 << index);
+}
+
+u8 Common::resetBit(u8 value, int index)
+{
+	return value & ~(1 << index);
+}
