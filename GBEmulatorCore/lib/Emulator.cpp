@@ -21,6 +21,13 @@ void Emulator::runEmulator(const char *romPath)
 		while (ctx.getTCycles() < nextTCyclesTarget)
 			ctx.tick(1);
 
+		// Update next frame target
+		nextTCyclesTarget += CYCLES_PER_FRAME;
+
+		// Render UI
+		ctx.ui().handle();
+		ctx.ui().update();
+
 		i64 remaining = NS_PER_FRAME - (i64)(Common::getTicks() - ticksStart);
 		// Sleep for most part of loop but not the last 2 ms
 		if (remaining > 2'000'000)
@@ -29,13 +36,7 @@ void Emulator::runEmulator(const char *romPath)
 		while (NS_PER_FRAME - (i64)(Common::getTicks() - ticksStart) > 0)
 			;
 
-		// Update next frame target
-		nextTCyclesTarget += CYCLES_PER_FRAME;
-
-		// Render UI
 		ctx.ui().setFPS(1'000'000'000.0f / (Common::getTicks() - ticksStart));
-		ctx.ui().handle();
-		ctx.ui().update();
 		FrameMark;
 	}
 	destroy();
