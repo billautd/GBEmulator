@@ -15,13 +15,20 @@ private:
     SDL_Window *mainWindow = nullptr;
     SDL_Renderer *mainRenderer = nullptr;
     SDL_Surface *mainSurface = nullptr;
+    SDL_Texture *mainTexture = nullptr;
 
     // Debug window
     SDL_Window *debugWindow = nullptr;
     SDL_Renderer *debugRenderer = nullptr;
     SDL_Surface *debugSurface = nullptr;
+    SDL_Surface *fpsTextSurface = nullptr;
+    SDL_Texture *debugTexture = nullptr;
 
-    void displayText(const char *text, SDL_Surface *parentWindow, int x, int y, int w, int h);
+    void displayText(const char *text, SDL_Surface *parentWindow, SDL_Surface *textSurface, SDL_Color color, int x, int y, int w, int h);
+
+    void initMainWindow();
+    void initDebugWindow();
+
     void updateMainWindow();
     void updateDebugWindow();
 

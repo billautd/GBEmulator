@@ -4,9 +4,6 @@
 
 #define PPU_DEBUG false
 
-bool oamScanDone = false;
-bool drawDone = false;
-
 PPU::PPU(Context &ctx) : ctx(ctx)
 {
 }
@@ -26,8 +23,6 @@ void PPU::init()
 
 void PPU::tick()
 {
-    cycles++;
-    lineTicks++;
     u8 mode = getMode();
     switch (mode)
     {
@@ -38,11 +33,9 @@ void PPU::tick()
         vblank();
         break;
     case PPU_MODES::OAM_SCAN:
-        oamScanDone = false;
         oamScan();
         break;
     case PPU_MODES::DRAWING_PIXELS:
-        drawDone = false;
         drawPixels();
         break;
     default:
@@ -53,11 +46,12 @@ void PPU::tick()
 #if PPU_DEBUG
     std::cout << std::format("Cycle {}, mode {}, ly {}\n", cycles, getMode(), getLY());
 #endif
+    cycles++;
+    lineTicks++;
 }
 
 void PPU::hblank()
 {
-    ZoneScoped("HBLANK");
     if (lineTicks >= TICKS_PER_LINE)
     {
         lineTicks = 0;
@@ -74,7 +68,6 @@ void PPU::hblank()
 
 void PPU::vblank()
 {
-    ZoneScoped("VBLANK");
     if (lineTicks >= TICKS_PER_LINE)
     {
         lineTicks = 0;
@@ -90,26 +83,21 @@ void PPU::vblank()
 
 void PPU::oamScan()
 {
-    ZoneScoped("OAMSCAN");
-
-    for (int i = 0; i < 40; i++)
+    // Do one OAM scan every other dot, to space out within 80 dots
+    // Line tick 0 == 0xFE00-0xFE03
+    // Line tick 2 == 0xFE04 - 0xFE07
+    //...
+    // Line tick 78 == 0xFE9C - 0xFE9F
+    // Line tick n = (0xFE00 + lineTick * 2) - (0xFE03 + lineTick * 2)
+    if (lineTicks % 2 == 0)
     {
-        if (oamScanDone)
-        {
-            break;
-        }
-        u8 yPos = ctx.mem().readMem(0xFE00 + i * 4);
-        u8 xPos = ctx.mem().readMem(0xFE01 + i * 4);
-        u8 tileIndex = ctx.mem().readMem(0xFE02 + i * 4);
-        u8 flags = ctx.mem().readMem(0xFE03 + i * 4);
-        if (yPos == getLY())
-        {
-            oamScanResult[i] = Sprite{xPos, yPos, tileIndex, flags};
-        }
+        u8 yPos = ctx.mem().readMem(0xFE00 + lineTicks * 2);
+        u8 xPos = ctx.mem().readMem(0xFE01 + lineTicks * 2);
+        u8 tileIndex = ctx.mem().readMem(0xFE02 + lineTicks * 2);
+        u8 flags = ctx.mem().readMem(0xFE03 + lineTicks * 2);
     }
-    oamScanDone = true;
 
-    if (lineTicks > 80)
+    if (lineTicks >= 80)
     {
         setMode(PPU_MODES::DRAWING_PIXELS);
     }
@@ -117,19 +105,7 @@ void PPU::oamScan()
 
 void PPU::drawPixels()
 {
-    ZoneScoped("DRAW");
-    for (int i = 0; i < 40; i++)
-    {
-        if (drawDone)
-        {
-            break;
-        }
-        Sprite sprite = oamScanResult[i];
-        if (sprite.y == getLY())
-            createTile(sprite.x - 8, sprite.y - 16, sprite.tileIndex, ctx.ui().getMainSurface());
-    }
-    drawDone = true;
-    if (lineTicks > 172)
+    if (lineTicks >= 172)
     {
         setMode(PPU_MODES::HBLANK);
     }
@@ -137,7 +113,6 @@ void PPU::drawPixels()
 
 void PPU::createTile(int x, int y, int tileIndex, SDL_Surface *surface)
 {
-    ZoneScoped("CREATETILE");
     if (surface == nullptr)
         return;
     SDL_Rect rect;
@@ -155,7 +130,6 @@ void PPU::createTile(int x, int y, int tileIndex, SDL_Surface *surface)
             rect.y = y + (UI::SCALE * (i / 2));
             rect.w = UI::SCALE;
             rect.h = UI::SCALE;
-            ZoneScoped("FILLRECT");
             SDL_FillSurfaceRect(surface, &rect, colors[(color1 << 1) | color2]);
         }
     }
