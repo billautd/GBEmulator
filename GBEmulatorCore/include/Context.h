@@ -2,7 +2,7 @@
 
 #include <Common.h>
 #include <Cartridge.h>
-#include <Mem.h>
+#include <EmulatorMem.h>
 #include <Registers.h>
 #include <CPU.h>
 #include <DMA.h>
@@ -18,7 +18,7 @@ private:
 
 	Cartridge currentCartridge;
 	Registers currentRegisters;
-	Mem currentMemory;
+	EmulatorMem currentMemory;
 	CPU currentCPU;
 	PPU currentPPU;
 	UI currentUI;
@@ -43,7 +43,7 @@ public:
 	CPU &cpu() { return currentCPU; }
 	PPU &ppu() { return currentPPU; }
 	UI &ui() { return currentUI; }
-	Mem &mem() { return currentMemory; }
+	EmulatorMem &mem() { return currentMemory; }
 	Joypad &joypad() { return currentJoypad; }
 	DMA &dma() { return currentDMA; }
 };

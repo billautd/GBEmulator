@@ -6,7 +6,6 @@ set_target_properties(GBEmulatorCore PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 target_compile_definitions(GBEmulatorCore PRIVATE CORE_EXPORTS)
-target_compile_definitions(GBEmulatorCore PRIVATE TRACY_ENABLE)
 target_sources(GBEmulatorCore
 	PRIVATE
 
@@ -19,7 +18,7 @@ target_sources(GBEmulatorCore
 		lib/Emulator.cpp
 		lib/Interrupts.cpp
 		lib/Joypad.cpp
-		lib/Mem.cpp
+		lib/EmulatorMem.cpp
 		lib/PPU.cpp
 		lib/Registers.cpp
 		lib/UI.cpp
@@ -38,22 +37,10 @@ target_sources(GBEmulatorCore
 			include/Emulator.h
 			include/Interrupts.h
 			include/Joypad.h
-			include/Mem.h
+			include/EmulatorMem.h
 			include/PPU.h
 			include/Registers.h
 			include/UI.h
-)
-
-target_sources(GBEmulatorCore
-	PRIVATE
-		../tracy/public/TracyClient.cpp
-	PUBLIC
-		FILE_SET tracy
-		TYPE HEADERS
-		BASE_DIRS
-			../tracy/public/tracy
-		FILES
-			../tracy/public/tracy/Tracy.hpp
 )
 target_include_directories(GBEmulatorCore PUBLIC include)
 target_link_libraries(GBEmulatorCore PUBLIC SDL3::SDL3)

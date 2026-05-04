@@ -33,15 +33,15 @@
 // $FF6C			Object priority mode
 // $FF70			WRAM Bank Select
 class Context;
-class CORE_API Mem
+class CORE_API EmulatorMem
 {
 private:
     Context &ctx;
     u8 *data;
 
 public:
-    Mem(Context &ctx);
-    ~Mem();
+    EmulatorMem(Context &ctx);
+    ~EmulatorMem();
 
     const static int MEM_SIZE = 0x10000;
 

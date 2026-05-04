@@ -13,7 +13,6 @@ enum PPUModes
 
 enum LCDStatuses
 {
-    LYC_EQ_LY = 2,
     MODE_0 = 3,
     MODE_1 = 4,
     MODE_2 = 5,
@@ -65,12 +64,12 @@ public:
 
     u8 getLYC();
 
-    void setLCDStatus(LCDStatuses status, bool active);
+    bool getLCDStatus(LCDStatuses status);
 
     // Mode 0 : Horizontal blank
     // Mode 1 : Vertical blank
     // Mode 2 : OAM scan
-    // Mode 3 : Drawing pixels -> VRAM is read only
+    // Mode 3 : Drawing pixels
     u8 getMode();
     void setMode(u8 mode);
 

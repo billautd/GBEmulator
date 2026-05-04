@@ -1,16 +1,16 @@
-#include <Mem.h>
+#include <EmulatorMem.h>
 #include <Context.h>
 #include <fstream>
 
-Mem::Mem(Context &ctx) : ctx(ctx)
+EmulatorMem::EmulatorMem(Context &ctx) : ctx(ctx)
 {
 }
 
-Mem::~Mem()
+EmulatorMem::~EmulatorMem()
 {
 }
 
-void Mem::init()
+void EmulatorMem::init()
 {
     data = new u8[MEM_SIZE];
     writeMem(0xFF00, 0xCF);
@@ -56,12 +56,12 @@ void Mem::init()
     writeMem(0xFFFF, 0x00);
 }
 
-void Mem::destroy()
+void EmulatorMem::destroy()
 {
     logMem();
 }
 
-void Mem::logMem()
+void EmulatorMem::logMem()
 {
     std::ofstream logFile("memory.txt");
     logFile << ctx.regs().log() << std::endl
@@ -81,14 +81,14 @@ void Mem::logMem()
     }
 }
 
-void Mem::writeMem(u16 address, u8 value)
+void EmulatorMem::writeMem(u16 address, u8 value)
 {
     data[address] = value;
     if (address == 0xFF46)
         ctx.dma().start();
 }
 
-u8 Mem::readMem(u16 address)
+u8 EmulatorMem::readMem(u16 address)
 {
     return data[address];
 }

@@ -33,44 +33,39 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected VBLANK interrupt" << std::endl;
 #endif
-        resetInterrupt(InterruptType::INT_VBLANK);
-        ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
-        ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
-        ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC}); // 4
-        ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC});  // 4
-        ctx.cpu().pushToQueue({
-            .type = CPUMicroOpType::WRITE_INTERRUPT_TO_PC,
-            .intType = InterruptType::INT_VBLANK,
-        }); // 4
-        setIME(false);
+        processInterrupt(InterruptType::INT_VBLANK);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_LCD))
     {
+#if INTERRUPTS_DEBUG
         std::cout << "Detected LCD interrupt" << std::endl;
-        resetInterrupt(InterruptType::INT_LCD);
-        setIME(false);
+#endif
+        processInterrupt(InterruptType::INT_LCD);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_TIMER))
     {
+#if INTERRUPTS_DEBUG
         std::cout << "Detected TIMER interrupt" << std::endl;
-        resetInterrupt(InterruptType::INT_TIMER);
-        setIME(false);
+#endif
+        processInterrupt(InterruptType::INT_TIMER);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_SERIAL))
     {
+#if INTERRUPTS_DEBUG
         std::cout << "Detected SERIAL interrupt" << std::endl;
-        resetInterrupt(InterruptType::INT_SERIAL);
-        setIME(false);
+#endif
+        processInterrupt(InterruptType::INT_SERIAL);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_JOYPAD))
     {
+#if INTERRUPTS_DEBUG
         std::cout << "Detected JOYPAD interrupt" << std::endl;
-        resetInterrupt(InterruptType::INT_JOYPAD);
-        setIME(false);
+#endif
+        processInterrupt(InterruptType::INT_JOYPAD);
         return true;
     }
     return false;
@@ -83,6 +78,20 @@ bool Interrupts::checkInterrupt(InterruptType type)
     bool isIE = ctx.mem().readMem(IE) & (0b1 << type);
     bool isIF = ctx.mem().readMem(IF) & (0b1 << type);
     return isIE && isIF;
+}
+
+void Interrupts::processInterrupt(InterruptType type)
+{
+    resetInterrupt(type);
+    ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
+    ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
+    ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC}); // 4
+    ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC});  // 4
+    ctx.cpu().pushToQueue({
+        .type = CPUMicroOpType::WRITE_INTERRUPT_TO_PC,
+        .intType = type,
+    }); // 4
+    setIME(false);
 }
 
 void Interrupts::requestInterrupt(InterruptType type)

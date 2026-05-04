@@ -18,7 +18,7 @@ void PPU::init()
     lineTicks = 0;
     frame = 0;
     setLY(0);
-    setMode(2);
+    setMode(PPUModes::OAM_SCAN);
 }
 
 void PPU::tick()
@@ -41,7 +41,7 @@ void PPU::tick()
         drawPixels();
         break;
     default:
-        std::cerr << std::format("Unknown PPU mode {}\n", getMode());
+        std::cerr << std::format("Unknown PPU mode {}\n", (int)getMode());
         ctx.setRunning(false);
         break;
     }
@@ -95,7 +95,6 @@ void PPU::oamScan()
         u8 xPos = ctx.mem().readMem(0xFE01 + lineTicks * 2);
         u8 tileIndex = ctx.mem().readMem(0xFE02 + lineTicks * 2);
         u8 flags = ctx.mem().readMem(0xFE03 + lineTicks * 2);
-        // std::cout << (int)ctx.mem().readMem(0xFF45) << " ";
     }
 
     if (lineTicks >= 80)
@@ -149,6 +148,15 @@ void PPU::setLY(u8 ly)
 void PPU::incrementLY()
 {
     setLY(getLY() + 1);
+
+    if (getLY() == getLYC())
+    {
+        ctx.mem().writeMem(STAT_ADDR, Common::setBit(ctx.mem().readMem(STAT_ADDR), 2));
+        if (getLCDStatus(LCDStatuses::LYC_INT))
+            ctx.cpu().getInterrupts().requestInterrupt(InterruptType::INT_LCD);
+    }
+    else
+        ctx.mem().writeMem(STAT_ADDR, Common::resetBit(ctx.mem().readMem(STAT_ADDR), 2));
 }
 
 u8 PPU::getLYC()
@@ -156,13 +164,10 @@ u8 PPU::getLYC()
     return ctx.mem().readMem(LYC_ADDR);
 }
 
-// void PPU::setLCDStatus(LCDStatuses status, bool active)
-// {
-//     if (active)
-//         ctx.mem().writeMem(STAT_ADDR, (Common::setBit(ctx.mem().readMem(STAT_ADDR), status)));
-//     else
-//         ctx.mem().writeMem(STAT_ADDR, (Common::resetBit(ctx.mem().readMem(STAT_ADDR), status)));
-// }
+bool PPU::getLCDStatus(LCDStatuses status)
+{
+    return Common::getBit(ctx.mem().readMem(STAT_ADDR), status);
+}
 
 u8 PPU::getMode()
 {
@@ -172,5 +177,16 @@ u8 PPU::getMode()
 void PPU::setMode(u8 mode)
 {
     // Reset last 2 bits and set new bits
+    u8 previousMode = getMode();
     ctx.mem().writeMem(STAT_ADDR, (ctx.mem().readMem(STAT_ADDR) & 0b11111100) + mode);
+
+    // Request interrupt if mode changed and interrupt bit enabled
+    bool modeChanged = previousMode != mode;
+    if (modeChanged)
+    {
+        if (mode == PPUModes::HBLANK && getLCDStatus(LCDStatuses::MODE_0) ||
+            mode == PPUModes::VBLANK && getLCDStatus(LCDStatuses::MODE_1) ||
+            mode == PPUModes::OAM_SCAN && getLCDStatus(LCDStatuses::MODE_2))
+            ctx.cpu().getInterrupts().requestInterrupt(InterruptType::INT_LCD);
+    }
 }

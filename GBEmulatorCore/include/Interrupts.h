@@ -42,6 +42,7 @@ public:
 
     bool checkInterrupts();
     bool checkInterrupt(InterruptType type);
+    void processInterrupt(InterruptType type);
 
     void requestInterrupt(InterruptType type);
     void resetInterrupt(InterruptType type);

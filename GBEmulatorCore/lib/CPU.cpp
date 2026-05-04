@@ -1,6 +1,5 @@
 #include <CPU.h>
 #include <Context.h>
-#include <math.h>
 
 #define CPU_DEBUG false
 

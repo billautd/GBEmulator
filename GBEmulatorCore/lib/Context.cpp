@@ -1,7 +1,7 @@
 #include <Context.h>
 
 Context::Context() : currentCartridge(Cartridge(*this)), currentRegisters(Registers(*this)), currentCPU(CPU(*this)),
-					 currentPPU(PPU(*this)), currentUI(UI(*this)), currentMemory(Mem(*this)), currentJoypad(Joypad(*this)),
+					 currentPPU(PPU(*this)), currentUI(UI(*this)), currentMemory(EmulatorMem(*this)), currentJoypad(Joypad(*this)),
 					 currentDMA(DMA(*this))
 {
 	init();

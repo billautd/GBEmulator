@@ -6,9 +6,12 @@
       "displayName": "GBEmulator",
       "description": "Preset to use for GBEmulator",
       "binaryDir": "${sourceDir}/build",
+      "generator": "MinGW Makefiles",
       "cacheVariables": {
+        "CMAKE_C_COMPILER":"gcc",
+        "CMAKE_CXX_COMPILER":"g++",
         "CMAKE_CXX_STANDARD": "20",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        "CMAKE_PREFIX_PATH":"$env{MSYS_PATH}/mingw64"
       }
     }
   ]
