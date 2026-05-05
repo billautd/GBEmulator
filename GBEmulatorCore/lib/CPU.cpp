@@ -277,9 +277,9 @@ void CPU::runOp(u8 code)
 			 code == 0xE3 || code == 0xE4 || code == 0xEB ||
 			 code == 0xEC || code == 0xED || code == 0xF4 ||
 			 code == 0xFC || code == 0xFD)
-		throw std::runtime_error(std::string("Invalid op code " + Common::toHexStr(code)));
+		throw std::runtime_error(std::string("Invalid op code " + Common::toHexStr(code) + " from PC " + Common::toHexStr(ctx.regs().pc)));
 	else
-		throw std::runtime_error(std::string("Op code " + Common::toHexStr(code) + " not managed"));
+		throw std::runtime_error(std::string("Op code " + Common::toHexStr(code) + " not managed from PC " + Common::toHexStr(ctx.regs().pc)));
 }
 
 void CPU::runOpCBPrefix(u8 cbCode)

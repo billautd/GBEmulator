@@ -11,7 +11,8 @@
         "CMAKE_C_COMPILER":"gcc",
         "CMAKE_CXX_COMPILER":"g++",
         "CMAKE_CXX_STANDARD": "20",
-        "CMAKE_PREFIX_PATH":"$env{MSYS_PATH}/mingw64"
+        "CMAKE_PREFIX_PATH":"$env{MSYS_PATH}/mingw64",
+        "CMAKE_BUILD_TYPE":"Debug"
       }
     }
   ]

@@ -1,7 +1,7 @@
 #include <Interrupts.h>
 #include <Context.h>
 
-#define INTERRUPTS_DEBUG false
+#define INTERRUPTS_DEBUG true
 
 Interrupts::Interrupts(Context &ctx) : ctx(ctx)
 {
@@ -31,7 +31,7 @@ bool Interrupts::checkInterrupts()
     if (checkInterrupt(InterruptType::INT_VBLANK))
     {
 #if INTERRUPTS_DEBUG
-        std::cout << "Detected VBLANK interrupt" << std::endl;
+        //std::cout << "Detected VBLANK interrupt" << std::endl;
 #endif
         processInterrupt(InterruptType::INT_VBLANK);
         return true;
@@ -39,9 +39,9 @@ bool Interrupts::checkInterrupts()
     else if (checkInterrupt(InterruptType::INT_LCD))
     {
 #if INTERRUPTS_DEBUG
-        std::cout << "Detected LCD interrupt" << std::endl;
+        std::cout << "Detected LCD interrupt PC " << ctx.regs().pc << std::endl;
 #endif
-        processInterrupt(InterruptType::INT_LCD);
+        //processInterrupt(InterruptType::INT_LCD);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_TIMER))
@@ -49,7 +49,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected TIMER interrupt" << std::endl;
 #endif
-        processInterrupt(InterruptType::INT_TIMER);
+        //processInterrupt(InterruptType::INT_TIMER);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_SERIAL))
@@ -57,7 +57,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected SERIAL interrupt" << std::endl;
 #endif
-        processInterrupt(InterruptType::INT_SERIAL);
+        //processInterrupt(InterruptType::INT_SERIAL);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_JOYPAD))
@@ -65,7 +65,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected JOYPAD interrupt" << std::endl;
 #endif
-        processInterrupt(InterruptType::INT_JOYPAD);
+        //processInterrupt(InterruptType::INT_JOYPAD);
         return true;
     }
     return false;

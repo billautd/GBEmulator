@@ -184,9 +184,9 @@ void PPU::setMode(u8 mode)
     bool modeChanged = previousMode != mode;
     if (modeChanged)
     {
-        if (mode == PPUModes::HBLANK && getLCDStatus(LCDStatuses::MODE_0) ||
-            mode == PPUModes::VBLANK && getLCDStatus(LCDStatuses::MODE_1) ||
-            mode == PPUModes::OAM_SCAN && getLCDStatus(LCDStatuses::MODE_2))
+        if ((mode == PPUModes::HBLANK && getLCDStatus(LCDStatuses::MODE_0)) ||
+            (mode == PPUModes::VBLANK && getLCDStatus(LCDStatuses::MODE_1)) ||
+            (mode == PPUModes::OAM_SCAN && getLCDStatus(LCDStatuses::MODE_2)))
             ctx.cpu().getInterrupts().requestInterrupt(InterruptType::INT_LCD);
     }
 }

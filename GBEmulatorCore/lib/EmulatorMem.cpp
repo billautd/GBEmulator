@@ -12,7 +12,7 @@ EmulatorMem::~EmulatorMem()
 
 void EmulatorMem::init()
 {
-    data = new u8[MEM_SIZE];
+    data.resize(MEM_SIZE);
     writeMem(0xFF00, 0xCF);
     writeMem(0xFF01, 0x00);
     writeMem(0xFF02, 0x7E);
@@ -67,13 +67,13 @@ void EmulatorMem::logMem()
     logFile << ctx.regs().log() << std::endl
             << std::endl;
     logFile << "       0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F" << std::endl;
-    for (int i = 0; i < MEM_SIZE; i++)
+    for (int i = 0; i < data.size(); i++)
     {
         if ((i % 16) == 0)
         {
             logFile << Common::toHexStr((u16)((i / 16) << 4)) << "  ";
         }
-        logFile << Common::toHexStr(data[i]) << "  ";
+        logFile << Common::toHexStr(data.at(i)) << "  ";
         if ((i % 16) == 15)
         {
             logFile << std::endl;
@@ -83,12 +83,12 @@ void EmulatorMem::logMem()
 
 void EmulatorMem::writeMem(u16 address, u8 value)
 {
-    data[address] = value;
+    data.at(address) = value;
     if (address == 0xFF46)
         ctx.dma().start();
 }
 
 u8 EmulatorMem::readMem(u16 address)
 {
-    return data[address];
+    return data.at(address);
 }
