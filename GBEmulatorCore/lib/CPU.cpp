@@ -617,8 +617,8 @@ void CPU::adc_a_imm8()
 // 8 ticks
 void CPU::sub_a_imm8()
 {
-	std::cout << "sub_a_imm8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});					// 4
+	pushToQueue({.type = CPUMicroOpType::SUB_A_IMM8, .cycles = 0}); // 0
 }
 
 // 8 ticks
@@ -706,8 +706,10 @@ void CPU::jp_hl()
 // 12 ticks if cond false, 24 ticks if cond true
 void CPU::call_cond_imm16()
 {
-	std::cout << "call_cond_imm16 not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});  // 4
+	pushToQueue({CPUMicroOpType::READ_IMM8_HIGH}); // 4
+	COND cond = Registers::getCONDFromCode((opCode() & 0b00011000) >> 3);
+	pushToQueue({.type = CPUMicroOpType::CALL_CONDITIONAL, .cycles = 0, .cond = cond}); // 0 or 12
 }
 
 // 24 ticks

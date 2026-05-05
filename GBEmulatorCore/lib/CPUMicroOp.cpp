@@ -73,6 +73,16 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
         ctx.regs().setFlags(newValue == 0, 0, 1, 0);
         break;
     }
+    case CPUMicroOpType::CALL_CONDITIONAL:
+    {
+        if (ctx.regs().checkCOND(op.cond))
+        {
+            ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC}); // 4
+            ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC});  // 4
+            ctx.cpu().pushToQueue({CPUMicroOpType::WRITE_TMP_TO_PC});      // 4
+        }
+        break;
+    }
     case CPUMicroOpType::CP_A_IMM8:
     {
         u8 r8Value = tmp_low;
@@ -342,6 +352,15 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
             ctx.regs().setRegFromR8(op.r8_dest, newValue);
             ctx.regs().setFlags(newValue == 0, 0, 0, carry);
         }
+        break;
+    }
+    case CPUMicroOpType::SUB_A_IMM8:
+    {
+        u8 previousAValue = ctx.regs().a;
+        u8 r8Value = tmp_low;
+        u8 newValue8 = previousAValue - r8Value;
+        ctx.regs().a = newValue8;
+        ctx.regs().setFlags(newValue8 == 0, 1, ((int)(previousAValue & 0xF) - (int)(r8Value & 0xF)) < 0, ((int)previousAValue - (int)r8Value) < 0);
         break;
     }
     case CPUMicroOpType::SWAP:
