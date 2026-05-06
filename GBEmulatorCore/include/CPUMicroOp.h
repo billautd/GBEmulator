@@ -6,6 +6,7 @@
 
 enum CPUMicroOpType
 {
+    ADC_A_IMM8,
     ADD_A_IMM8,
     ADD_A_R8,
     ADD_R16_TO_HL,
@@ -14,6 +15,7 @@ enum CPUMicroOpType
     CALL_CONDITIONAL,
     CCF,
     CP_A_IMM8,
+    CP_A_R8,
     CPL,
     DEC_R8,
     DEC_R16,
@@ -67,6 +69,7 @@ enum CPUMicroOpType
     WRITE_TMP_TO_R8,
     WRITE_TMP_TO_R16,
     WRITE_TMP_TO_R16STK,
+    XOR_A_IMM8,
     XOR_A_R8,
 };
 
