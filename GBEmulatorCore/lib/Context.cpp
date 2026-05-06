@@ -36,5 +36,11 @@ void Context::tick(u64 inc)
 		ppu().tick();
 		joypad().tick();
 		dma().tick();
+
+		if (mem().readMem(0xFF02) == 0x81)
+		{
+			std::cout << mem().readMem(0xFF01);
+			mem().writeMem(0xFF02, 0);
+		}
 	}
 }

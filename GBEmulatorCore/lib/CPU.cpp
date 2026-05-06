@@ -68,6 +68,7 @@ void CPU::executeMicroOps()
 
 void CPU::runOp(u8 code)
 {
+	std::cout << ctx.mem().readMem(0xFF01);
 	// Block 0
 	// 0x00
 	if (code == 0)
@@ -377,8 +378,10 @@ void CPU::ld_a_r16mem()
 // 20 ticks
 void CPU::ld_imm16_sp()
 {
-	std::cout << "ld_imm16_sp not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});			  // 4
+	pushToQueue({CPUMicroOpType::READ_IMM8_HIGH});			  // 4
+	pushToQueue({CPUMicroOpType::WRITE_SP_LOW_TO_TMP_ADDR});  // 4
+	pushToQueue({CPUMicroOpType::WRITE_SP_HIGH_TO_TMP_ADDR}); // 4
 }
 
 // 8 ticks
@@ -438,29 +441,25 @@ void CPU::ld_r8_imm8()
 // 4 ticks
 void CPU::rlca()
 {
-	std::cout << "rlca not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::RLCA, 0}); // 0
 }
 
 // 4 ticks
 void CPU::rrca()
 {
-	std::cout << "rrca not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::RRCA, 0}); // 0
 }
 
 // 4 ticks
 void CPU::rla()
 {
-	std::cout << "rla not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::RLA, 0}); // 0
 }
 
 // 4 ticks
 void CPU::rra()
 {
-	std::cout << "rra not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::RRA, 0}); // 0
 }
 
 // 4 ticks
@@ -479,15 +478,13 @@ void CPU::cpl()
 // 4 ticks
 void CPU::scf()
 {
-	std::cout << "scf not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::SCF, 0});
 }
 
 // 4 ticks
 void CPU::ccf()
 {
-	std::cout << "ccf not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::CCF, 0});
 }
 
 // 12 ticks
@@ -854,8 +851,13 @@ void CPU::rl_r8()
 // 8 ticks if not (HL), 16 ticks if (HL)
 void CPU::rr_r8()
 {
-	std::cout << "rr_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	u8 b3 = (cbPrefixOpCode() & 0b00111000) >> 3;
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL});	  // 4
+	pushToQueue({.type = CPUMicroOpType::RR, .cycles = 0, .r8_dest = r8, .bit = b3}); // 4
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::WRITE_TMP_TO_R8, .r8_dest = R8::HL}); // 4
 }
 
 // 8 ticks if not (HL), 16 ticks if (HL)

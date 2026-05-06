@@ -83,6 +83,12 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
         }
         break;
     }
+    case CPUMicroOpType::CCF:
+    {
+        bool carry = Common::getBit(ctx.regs().f, 4);
+        ctx.regs().setFlags(-1, 0, 0, !carry);
+        break;
+    }
     case CPUMicroOpType::CP_A_IMM8:
     {
         u8 r8Value = tmp_low;
@@ -318,6 +324,69 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
         ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});
         break;
     }
+    case CPUMicroOpType::RLA:
+    {
+        u8 r8Value = ctx.regs().a;
+        bool b7 = Common::getBit(r8Value, 7);
+        bool carry = Common::getBit(ctx.regs().f, 4);
+        r8Value = (r8Value << 1 | carry);
+        ctx.regs().a = r8Value;
+        ctx.regs().setFlags(0, 0, 0, b7);
+        break;
+    }
+    case CPUMicroOpType::RLCA:
+    {
+        u8 r8Value = ctx.regs().a;
+        bool b7 = Common::getBit(r8Value, 7);
+        r8Value = (r8Value << 1 | b7);
+        ctx.regs().a = r8Value;
+        ctx.regs().setFlags(0, 0, 0, b7);
+        break;
+    }
+    case CPUMicroOpType::RR:
+    {
+        if (op.r8_dest == R8::HL)
+        {
+            bool b0 = Common::getBit(tmp_low, 0);
+            bool carry = Common::getBit(ctx.regs().f, 4);
+            tmp_low = (tmp_low >> 1) | (carry << 7);
+            ctx.regs().setFlags(tmp_low == 0, 0, 0, b0);
+        }
+        else
+        {
+            u8 r8Value = ctx.regs().getFromR8(op.r8_dest);
+            bool b0 = Common::getBit(r8Value, 0);
+            bool carry = Common::getBit(ctx.regs().f, 4);
+            u8 newValue = (r8Value >> 1) | (carry << 7);
+            ctx.regs().setRegFromR8(op.r8_dest, newValue);
+            ctx.regs().setFlags(newValue == 0, 0, 0, b0);
+        }
+        break;
+    }
+    case CPUMicroOpType::RRA:
+    {
+        u8 r8Value = ctx.regs().a;
+        bool b0 = Common::getBit(r8Value, 0);
+        bool carry = Common::getBit(ctx.regs().f, 4);
+        r8Value = (r8Value >> 1 | (carry << 7));
+        ctx.regs().a = r8Value;
+        ctx.regs().setFlags(0, 0, 0, b0);
+        break;
+    }
+    case CPUMicroOpType::RRCA:
+    {
+        u8 r8Value = ctx.regs().a;
+        bool b0 = Common::getBit(r8Value, 0);
+        r8Value = (r8Value >> 1 | (b0 << 7));
+        ctx.regs().a = r8Value;
+        ctx.regs().setFlags(0, 0, 0, b0);
+        break;
+    }
+    case CPUMicroOpType::SCF:
+    {
+        ctx.regs().setFlags(-1, 0, 0, 1);
+        break;
+    }
     case CPUMicroOpType::SLA:
     {
         if (op.r8_dest == R8::HL)
@@ -424,6 +493,19 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
     {
         ctx.regs().a = ctx.mem().readMem(ctx.regs().getPointerFromR16Mem(op.r16Mem));
         ctx.regs().updateHLMem(op.r16Mem);
+        break;
+    }
+    case CPUMicroOpType::WRITE_SP_LOW_TO_TMP_ADDR:
+    {
+        u16 address = (tmp_high << 8) | tmp_low;
+        ctx.mem().writeMem(address, ctx.regs().sp & 0xFF);
+        break;
+    }
+    case CPUMicroOpType::WRITE_SP_HIGH_TO_TMP_ADDR:
+    {
+        u16 address = (tmp_high << 8) | tmp_low;
+        address++;
+        ctx.mem().writeMem(address, ctx.regs().sp >> 8);
         break;
     }
     case CPUMicroOpType::WRITE_TMP_ADDR_TO_A:
