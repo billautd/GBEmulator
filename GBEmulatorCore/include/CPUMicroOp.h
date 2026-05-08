@@ -7,6 +7,7 @@
 enum CPUMicroOpType
 {
     ADC_A_IMM8,
+    ADC_A_R8,
     ADD_A_IMM8,
     ADD_A_R8,
     ADD_R16_TO_HL,
@@ -50,10 +51,13 @@ enum CPUMicroOpType
     RRA,
     RRCA,
     RR,
+    SBC_A_IMM8,
+    SBC_A_R8,
     SCF,
     SLA,
     SRL,
     SUB_A_IMM8,
+    SUB_A_R8,
     SWAP,
     TEST_BIT,
     WRITE_A_TO_TMP_ADDR,

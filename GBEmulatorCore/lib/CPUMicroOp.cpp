@@ -31,6 +31,21 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
         ctx.regs().setFlags(newValue8 == 0, 0, ((previousAValue & 0xF) + (r8Value & 0xF) + carry) > 0xF, newValue16 > 0xFF);
         break;
     }
+    case CPUMicroOpType::ADC_A_R8:
+    {
+        u8 previousAValue = ctx.regs().a;
+        u8 r8Value;
+        if (op.r8_src == R8::HL)
+            r8Value = tmp_low;
+        else
+            r8Value = ctx.regs().getFromR8(op.r8_src);
+        bool carry = Common::getBit(ctx.regs().f, 4);
+        u16 newValue16 = previousAValue + r8Value + carry;
+        u8 newValue8 = (u8)newValue16;
+        ctx.regs().a = newValue8;
+        ctx.regs().setFlags(newValue8 == 0, 0, ((previousAValue & 0xF) + (r8Value & 0xF) + carry) > 0xF, newValue16 > 0xFF);
+        break;
+    }
     case CPUMicroOpType::ADD_A_IMM8:
     {
         u8 previousAValue = ctx.regs().a;
@@ -404,6 +419,30 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
         ctx.regs().setFlags(0, 0, 0, b0);
         break;
     }
+    case CPUMicroOpType::SBC_A_IMM8:
+    {
+        u8 previousAValue = ctx.regs().a;
+        u8 r8Value = tmp_low;
+        bool carry = Common::getBit(ctx.regs().f, 4);
+        u8 newValue8 = previousAValue - r8Value - carry;
+        ctx.regs().a = newValue8;
+        ctx.regs().setFlags(newValue8 == 0, 1, ((int)(previousAValue & 0xF) - (int)(r8Value & 0xF) - carry) < 0, ((int)previousAValue - (int)r8Value - carry) < 0);
+        break;
+    }
+    case CPUMicroOpType::SBC_A_R8:
+    {
+        u8 previousAValue = ctx.regs().a;
+        u8 r8Value;
+        if (op.r8_src == R8::HL)
+            r8Value = tmp_low;
+        else
+            r8Value = ctx.regs().getFromR8(op.r8_src);
+        bool carry = Common::getBit(ctx.regs().f, 4);
+        u8 newValue8 = previousAValue - r8Value - carry;
+        ctx.regs().a = newValue8;
+        ctx.regs().setFlags(newValue8 == 0, 1, ((int)(previousAValue & 0xF) - (int)(r8Value & 0xF) - carry) < 0, ((int)previousAValue - (int)r8Value - carry) < 0);
+        break;
+    }
     case CPUMicroOpType::SCF:
     {
         ctx.regs().setFlags(-1, 0, 0, 1);
@@ -449,6 +488,19 @@ void CPUMicroOp::runMicroOp(const CPUMicroOpStruct &op)
     {
         u8 previousAValue = ctx.regs().a;
         u8 r8Value = tmp_low;
+        u8 newValue8 = previousAValue - r8Value;
+        ctx.regs().a = newValue8;
+        ctx.regs().setFlags(newValue8 == 0, 1, ((int)(previousAValue & 0xF) - (int)(r8Value & 0xF)) < 0, ((int)previousAValue - (int)r8Value) < 0);
+        break;
+    }
+    case CPUMicroOpType::SUB_A_R8:
+    {
+        u8 previousAValue = ctx.regs().a;
+        u8 r8Value;
+        if (op.r8_src == R8::HL)
+            r8Value = tmp_low;
+        else
+            r8Value = ctx.regs().getFromR8(op.r8_src);
         u8 newValue8 = previousAValue - r8Value;
         ctx.regs().a = newValue8;
         ctx.regs().setFlags(newValue8 == 0, 1, ((int)(previousAValue & 0xF) - (int)(r8Value & 0xF)) < 0, ((int)previousAValue - (int)r8Value) < 0);

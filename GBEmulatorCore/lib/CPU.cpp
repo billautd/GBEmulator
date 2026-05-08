@@ -537,28 +537,34 @@ void CPU::add_a_r8()
 	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
 	if (r8 == R8::HL)
 		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
-	pushToQueue({CPUMicroOpType::ADD_A_R8, 0, r8});								   // 0
+	pushToQueue({.type = CPUMicroOpType::ADD_A_R8, .cycles = 0, .r8_src = r8});	   // 0
 }
 
 // 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::adc_a_r8()
 {
-	std::cout << "adc_a_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
+	pushToQueue({.type = CPUMicroOpType::ADC_A_R8, .cycles = 0, .r8_src = r8});	   // 0
 }
 
 // 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::sub_a_r8()
 {
-	std::cout << "sub_a_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
+	pushToQueue({.type = CPUMicroOpType::SUB_A_R8, .cycles = 0, .r8_src = r8});	   // 0
 }
 
 // 4 ticks if not (HL), 8 ticks if (HL)
 void CPU::sbc_a_r8()
 {
-	std::cout << "sbc_a_r8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
+	if (r8 == R8::HL)
+		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
+	pushToQueue({.type = CPUMicroOpType::SBC_A_R8, .cycles = 0, .r8_src = r8});	   // 0
 }
 
 // 4 ticks if not (HL), 8 ticks if (HL)
@@ -567,7 +573,7 @@ void CPU::and_a_r8()
 	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
 	if (r8 == R8::HL)
 		pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .r8_src = R8::HL}); // 4
-	pushToQueue({CPUMicroOpType::AND_A_R8, 0, r8});								   // 0
+	pushToQueue({.type = CPUMicroOpType::AND_A_R8, .cycles = 0, .r8_src = r8});	   // 0
 }
 
 // 4 ticks if not (HL), 8 ticks if (HL)
@@ -623,8 +629,8 @@ void CPU::sub_a_imm8()
 // 8 ticks
 void CPU::sbc_a_imm8()
 {
-	std::cout << "sbc_a_imm8 not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({CPUMicroOpType::READ_IMM8_LOW});					// 4
+	pushToQueue({.type = CPUMicroOpType::SBC_A_IMM8, .cycles = 0}); // 0
 }
 
 // 8 ticks
@@ -774,8 +780,8 @@ void CPU::ld_imm16_a()
 // 8 ticks
 void CPU::ldh_a_c()
 {
-	std::cout << "ldh_a_c not implemented" << std::endl;
-	ctx.setRunning(false);
+	pushToQueue({.type = CPUMicroOpType::READ_TMP_FROM_R8, .cycles = 0, .r8_src = R8::C}); // 0
+	pushToQueue({CPUMicroOpType::WRITE_LDH_ADDR_TO_A});									   // 4
 }
 
 // 12 ticks
