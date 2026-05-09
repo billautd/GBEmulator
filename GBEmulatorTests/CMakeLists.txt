@@ -17,7 +17,7 @@ PRIVATE
     lib/CPU/CPUTests_add_hl_rr.cpp
     lib/CPU/CPUTests_add_n.cpp
     lib/CPU/CPUTests_add_r.cpp
-    lib/CPU/CPUTests_add_sp_nn.cpp
+    lib/CPU/CPUTests_add_sp_e.cpp
     lib/CPU/CPUTests_and_hl.cpp
     lib/CPU/CPUTests_and_n.cpp
     lib/CPU/CPUTests_and_r.cpp

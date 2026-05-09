@@ -1220,8 +1220,20 @@ void CPU::ld_a_nn()
 
 void CPU::add_sp_e()
 {
-	std::cout << "add_sp_e not implemented" << std::endl;
-	ctx.setRunning(false);
+	auto low = std::make_shared<u8>();
+	auto valueToSet = std::make_shared<u16>();
+	// Read low
+	pushToQueue([&, low]()
+				{ *low = ctx.mem().readMem(ctx.regs().pc++); });
+	// Update value to set to SP
+	pushToQueue([&, low, valueToSet]()
+				{ i8 r8Value = (i8)*low; 
+				u16 sp = ctx.regs().sp;
+				*valueToSet = sp + r8Value; 
+				ctx.regs().setFlags(0, 0, ((sp & 0xF) + (r8Value & 0xF)) > 0xF, ((sp & 0xFF) + (r8Value & 0xFF)) > 0xFF); });
+	// Set value to SP
+	pushToQueue([&, valueToSet]()
+				{ ctx.regs().sp = *valueToSet; });
 }
 
 void CPU::ld_hl_sp_e()
@@ -1234,8 +1246,8 @@ void CPU::ld_hl_sp_e()
 	pushToQueue([&, low]()
 				{ u16 sp = ctx.regs().sp;
 				i8 r8Value = (i8)*low;
-				ctx.regs().setRegFromR16(R16::HL, sp +r8Value);
-				ctx.regs().setFlags(0, 0, ((sp & 0xF) + (r8Value & 0xF)) > 0xF, ((sp & 0xFF) + r8Value) > 0xFF); });
+				ctx.regs().setRegFromR16(R16::HL, sp + r8Value);
+				ctx.regs().setFlags(0, 0, ((sp & 0xF) + (r8Value & 0xF)) > 0xF, ((sp & 0xFF) + (r8Value & 0xFF)) > 0xFF); });
 }
 
 void CPU::ld_sp_hl()
