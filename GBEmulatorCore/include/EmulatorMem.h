@@ -38,6 +38,7 @@ class CORE_API EmulatorMem
 private:
     Context &ctx;
     std::vector<u8> data = {};
+
 public:
     EmulatorMem(Context &ctx);
     ~EmulatorMem();
@@ -48,10 +49,10 @@ public:
     void destroy();
 
     std::vector<u8> &getMem() { return data; }
-    
+
     void logMem();
     // Writes value to memory, checks for PPU mode if address in VRAM
     void writeMem(u16 address, u8 value);
     // Reads value from memory, checks for PPU mode if address in VRAM
-    u8 readMem(u16 address);
+    u8 &readMem(u16 address);
 };

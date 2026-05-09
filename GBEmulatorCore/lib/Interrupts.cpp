@@ -1,7 +1,7 @@
 #include <Interrupts.h>
 #include <Context.h>
 
-#define INTERRUPTS_DEBUG true
+#define INTERRUPTS_DEBUG false
 
 Interrupts::Interrupts(Context &ctx) : ctx(ctx)
 {
@@ -31,7 +31,7 @@ bool Interrupts::checkInterrupts()
     if (checkInterrupt(InterruptType::INT_VBLANK))
     {
 #if INTERRUPTS_DEBUG
-        //std::cout << "Detected VBLANK interrupt" << std::endl;
+        // std::cout << "Detected VBLANK interrupt" << std::endl;
 #endif
         processInterrupt(InterruptType::INT_VBLANK);
         return true;
@@ -41,7 +41,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected LCD interrupt PC " << ctx.regs().pc << std::endl;
 #endif
-        //processInterrupt(InterruptType::INT_LCD);
+        // processInterrupt(InterruptType::INT_LCD);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_TIMER))
@@ -49,7 +49,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected TIMER interrupt" << std::endl;
 #endif
-        //processInterrupt(InterruptType::INT_TIMER);
+        // processInterrupt(InterruptType::INT_TIMER);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_SERIAL))
@@ -57,7 +57,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected SERIAL interrupt" << std::endl;
 #endif
-        //processInterrupt(InterruptType::INT_SERIAL);
+        // processInterrupt(InterruptType::INT_SERIAL);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_JOYPAD))
@@ -65,7 +65,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected JOYPAD interrupt" << std::endl;
 #endif
-        //processInterrupt(InterruptType::INT_JOYPAD);
+        // processInterrupt(InterruptType::INT_JOYPAD);
         return true;
     }
     return false;
@@ -83,14 +83,14 @@ bool Interrupts::checkInterrupt(InterruptType type)
 void Interrupts::processInterrupt(InterruptType type)
 {
     resetInterrupt(type);
-    ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
-    ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
-    ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC}); // 4
-    ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC});  // 4
-    ctx.cpu().pushToQueue({
-        .type = CPUMicroOpType::WRITE_INTERRUPT_TO_PC,
-        .intType = type,
-    }); // 4
+    // ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
+    // ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
+    // ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC}); // 4
+    // ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC});  // 4
+    // ctx.cpu().pushToQueue({
+    //     .type = CPUMicroOpType::WRITE_INTERRUPT_TO_PC,
+    //     .intType = type,
+    // }); // 4
     setIME(false);
 }
 

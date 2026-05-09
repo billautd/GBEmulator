@@ -10,79 +10,108 @@ PRIVATE
 	lib/Registers/RegistersTests.cpp
     #CPU
     lib/CPU/CPUTests.cpp
-    lib/CPU/CPUTests_adc_a_imm8.cpp
-    lib/CPU/CPUTests_adc_a_r8.cpp
-    lib/CPU/CPUTests_add_a_imm8.cpp
-    lib/CPU/CPUTests_add_a_r8.cpp
-    lib/CPU/CPUTests_add_hl_r16.cpp
-    lib/CPU/CPUTests_add_sp_imm8.cpp
-    lib/CPU/CPUTests_and_a_imm8.cpp
-    lib/CPU/CPUTests_and_a_r8.cpp
-    lib/CPU/CPUTests_bit_b3_r8.cpp
-    lib/CPU/CPUTests_call_cond_imm16.cpp
-    lib/CPU/CPUTests_call_imm16.cpp
+    lib/CPU/CPUTests_adc_hl.cpp
+    lib/CPU/CPUTests_adc_n.cpp
+    lib/CPU/CPUTests_adc_r.cpp
+    lib/CPU/CPUTests_add_hl.cpp
+    lib/CPU/CPUTests_add_hl_rr.cpp
+    lib/CPU/CPUTests_add_n.cpp
+    lib/CPU/CPUTests_add_r.cpp
+    lib/CPU/CPUTests_add_sp_nn.cpp
+    lib/CPU/CPUTests_and_hl.cpp
+    lib/CPU/CPUTests_and_n.cpp
+    lib/CPU/CPUTests_and_r.cpp
+    lib/CPU/CPUTests_bit_b_hl.cpp
+    lib/CPU/CPUTests_bit_b_r.cpp
+    lib/CPU/CPUTests_call_cc_nn.cpp
+    lib/CPU/CPUTests_call_nn.cpp
     lib/CPU/CPUTests_ccf.cpp
-    lib/CPU/CPUTests_cp_a_imm8.cpp
-    lib/CPU/CPUTests_cp_a_r8.cpp
+    lib/CPU/CPUTests_cp_hl.cpp
+    lib/CPU/CPUTests_cp_n.cpp
+    lib/CPU/CPUTests_cp_r.cpp
     lib/CPU/CPUTests_cpl.cpp
     lib/CPU/CPUTests_daa.cpp
-    lib/CPU/CPUTests_dec_r16.cpp
-    lib/CPU/CPUTests_dec_r8.cpp
+    lib/CPU/CPUTests_dec_hl.cpp
+    lib/CPU/CPUTests_dec_r.cpp
+    lib/CPU/CPUTests_dec_rr.cpp
     lib/CPU/CPUTests_di.cpp
     lib/CPU/CPUTests_ei.cpp
     lib/CPU/CPUTests_halt.cpp
-    lib/CPU/CPUTests_inc_r16.cpp
-    lib/CPU/CPUTests_inc_r8.cpp
-    lib/CPU/CPUTests_jp_cond_imm16.cpp
+    lib/CPU/CPUTests_inc_r.cpp
+    lib/CPU/CPUTests_inc_rr.cpp
+    lib/CPU/CPUTests_inc_hl.cpp
+    lib/CPU/CPUTests_jp_cc_nn.cpp
     lib/CPU/CPUTests_jp_hl.cpp
-    lib/CPU/CPUTests_jp_imm16.cpp
-    lib/CPU/CPUTests_jr_cond_imm8.cpp
-    lib/CPU/CPUTests_jr_imm8.cpp
-    lib/CPU/CPUTests_ld_a_imm16.cpp
-    lib/CPU/CPUTests_ld_a_r16mem.cpp
-    lib/CPU/CPUTests_ld_hl_sp_imm8.cpp
-    lib/CPU/CPUTests_ld_imm16_a.cpp
-    lib/CPU/CPUTests_ld_imm16_sp.cpp
-    lib/CPU/CPUTests_ld_r16_imm16.cpp
-    lib/CPU/CPUTests_ld_r16mem_a.cpp
-    lib/CPU/CPUTests_ld_r8_imm8.cpp
-    lib/CPU/CPUTests_ld_r8_r8.cpp
+    lib/CPU/CPUTests_jp_nn.cpp
+    lib/CPU/CPUTests_jr_cc_e.cpp
+    lib/CPU/CPUTests_jr_e.cpp
+    lib/CPU/CPUTests_ld_a_nn.cpp
+    lib/CPU/CPUTests_ld_a_bc.cpp
+    lib/CPU/CPUTests_ld_a_de.cpp
+    lib/CPU/CPUTests_ld_a_hld.cpp
+    lib/CPU/CPUTests_ld_a_hli.cpp
+    lib/CPU/CPUTests_ld_hl_sp_e.cpp
+    lib/CPU/CPUTests_ld_nn_a.cpp
+    lib/CPU/CPUTests_ld_bc_a.cpp
+    lib/CPU/CPUTests_ld_de_a.cpp
+    lib/CPU/CPUTests_ld_hl_n.cpp
+    lib/CPU/CPUTests_ld_hl_r.cpp
+    lib/CPU/CPUTests_ld_hld_a.cpp
+    lib/CPU/CPUTests_ld_hli_a.cpp
+    lib/CPU/CPUTests_ld_nn_sp.cpp
+    lib/CPU/CPUTests_ld_r_hl.cpp
+    lib/CPU/CPUTests_ld_r_n.cpp
+    lib/CPU/CPUTests_ld_r1_r2.cpp
+    lib/CPU/CPUTests_ld_rr_nn.cpp
     lib/CPU/CPUTests_ld_sp_hl.cpp
     lib/CPU/CPUTests_ldh_a_c.cpp
-    lib/CPU/CPUTests_ldh_a_imm8.cpp
+    lib/CPU/CPUTests_ldh_a_n.cpp
     lib/CPU/CPUTests_ldh_c_a.cpp
-    lib/CPU/CPUTests_ldh_imm8_a.cpp
+    lib/CPU/CPUTests_ldh_n_a.cpp
     lib/CPU/CPUTests_nop.cpp
-    lib/CPU/CPUTests_or_a_imm8.cpp
-    lib/CPU/CPUTests_or_a_r8.cpp
-    lib/CPU/CPUTests_pop_r16stk.cpp
-    lib/CPU/CPUTests_push_r16stk.cpp
-    lib/CPU/CPUTests_res_b3_r8.cpp
+    lib/CPU/CPUTests_or_hl.cpp
+    lib/CPU/CPUTests_or_n.cpp
+    lib/CPU/CPUTests_or_r.cpp
+    lib/CPU/CPUTests_pop_rr.cpp
+    lib/CPU/CPUTests_push_rr.cpp
+    lib/CPU/CPUTests_res_b_hl.cpp
+    lib/CPU/CPUTests_res_b_r.cpp
     lib/CPU/CPUTests_ret.cpp
-    lib/CPU/CPUTests_ret_cond.cpp
+    lib/CPU/CPUTests_ret_cc.cpp
     lib/CPU/CPUTests_reti.cpp
-    lib/CPU/CPUTests_rl_r8.cpp
+    lib/CPU/CPUTests_rl_r.cpp
     lib/CPU/CPUTests_rla.cpp
-    lib/CPU/CPUTests_rlc_r8.cpp
+    lib/CPU/CPUTests_rlc_hl.cpp
+    lib/CPU/CPUTests_rlc_r.cpp
     lib/CPU/CPUTests_rlca.cpp
-    lib/CPU/CPUTests_rr_r8.cpp
+    lib/CPU/CPUTests_rr_hl.cpp
+    lib/CPU/CPUTests_rr_r.cpp
     lib/CPU/CPUTests_rra.cpp
-    lib/CPU/CPUTests_rrc_r8.cpp
+    lib/CPU/CPUTests_rrc_hl.cpp
+    lib/CPU/CPUTests_rrc_r.cpp
     lib/CPU/CPUTests_rrca.cpp
-    lib/CPU/CPUTests_rst_tgt3.cpp
-    lib/CPU/CPUTests_sbc_a_imm8.cpp
-    lib/CPU/CPUTests_sbc_a_r8.cpp
+    lib/CPU/CPUTests_rst_n.cpp
+    lib/CPU/CPUTests_sbc_hl.cpp
+    lib/CPU/CPUTests_sbc_n.cpp
+    lib/CPU/CPUTests_sbc_r.cpp
     lib/CPU/CPUTests_scf.cpp
-    lib/CPU/CPUTests_set_b3_r8.cpp
-    lib/CPU/CPUTests_sla_r8.cpp
-    lib/CPU/CPUTests_sra_r8.cpp
-    lib/CPU/CPUTests_srl_r8.cpp
+    lib/CPU/CPUTests_set_b_hl.cpp
+    lib/CPU/CPUTests_set_b_r.cpp
+    lib/CPU/CPUTests_sla_hl.cpp
+    lib/CPU/CPUTests_sla_r.cpp
+    lib/CPU/CPUTests_sra_hl.cpp
+    lib/CPU/CPUTests_sra_r.cpp
+    lib/CPU/CPUTests_srl_hl.cpp
+    lib/CPU/CPUTests_srl_r.cpp
     lib/CPU/CPUTests_stop.cpp
-    lib/CPU/CPUTests_sub_a_imm8.cpp
-    lib/CPU/CPUTests_sub_a_r8.cpp
-    lib/CPU/CPUTests_swap_r8.cpp
-    lib/CPU/CPUTests_xor_a_imm8.cpp
-    lib/CPU/CPUTests_xor_a_r8.cpp
+    lib/CPU/CPUTests_sub_hl.cpp
+    lib/CPU/CPUTests_sub_n.cpp
+    lib/CPU/CPUTests_sub_r.cpp
+    lib/CPU/CPUTests_swap_hl.cpp
+    lib/CPU/CPUTests_swap_r.cpp
+    lib/CPU/CPUTests_xor_hl.cpp
+    lib/CPU/CPUTests_xor_n.cpp
+    lib/CPU/CPUTests_xor_r.cpp
 )
 target_include_directories(GBEmulatorTests PRIVATE include)
 target_link_libraries(GBEmulatorTests PRIVATE Catch2::Catch2WithMain)

@@ -91,22 +91,36 @@ void PPU::oamScan()
     // Line tick n = (0xFE00 + lineTick * 2) - (0xFE03 + lineTick * 2)
     if (lineTicks % 2 == 0)
     {
-        u8 yPos = ctx.mem().readMem(0xFE00 + lineTicks * 2);
-        u8 xPos = ctx.mem().readMem(0xFE01 + lineTicks * 2);
-        u8 tileIndex = ctx.mem().readMem(0xFE02 + lineTicks * 2);
-        u8 flags = ctx.mem().readMem(0xFE03 + lineTicks * 2);
+        u16 addr = 0xFE00 + lineTicks * 2;
+        u8 yPos = ctx.mem().readMem(addr);
+        if ((yPos - 8) == getLY())
+        {
+            u8 xPos = ctx.mem().readMem(addr + 1);
+            u8 tileIndex = ctx.mem().readMem(addr + 2);
+            u8 flags = ctx.mem().readMem(addr + 3);
+            oamScanResult.emplace_back(Sprite{xPos, yPos, tileIndex, flags});
+        }
     }
 
     if (lineTicks >= 80)
     {
+        lineTicks -= 80;
         setMode(PPUModes::DRAWING_PIXELS);
     }
 }
 
 void PPU::drawPixels()
 {
+    // TODO : Time within drawPixels length properly
+    if (!oamScanResult.empty())
+    {
+        const Sprite &sprite = oamScanResult.front();
+        createTile(sprite.x, sprite.y, sprite.tileIndex, ctx.ui().getMainSurface());
+        oamScanResult.erase(oamScanResult.begin());
+    }
     if (lineTicks >= 172)
     {
+        lineTicks -= 172;
         setMode(PPUModes::HBLANK);
     }
 }

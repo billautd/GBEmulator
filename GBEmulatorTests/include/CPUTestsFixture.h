@@ -1,5 +1,10 @@
 #include <Registers.h>
 #include <Context.h>
+#include <CPU.h>
+#include <Context.h>
+#include <catch2/catch_test_macros.hpp>
+
+#define CPU_TESTS_DEBUG false
 
 class CPUTestsFixture
 {
@@ -22,41 +27,42 @@ public:
         regs().d = 0;
         regs().e = 0;
         regs().f = 0;
-        regs().g = 0;
         regs().h = 0;
         regs().l = 0;
         regs().pc = 0;
         regs().sp = 0;
         cpu().setCycles(0);
+        cpu().setCurrentTCycles(0);
+        cpu().clearQueue();
     }
 
     // Shortcut getters
     Registers &regs() { return ctx->regs(); }
     CPU &cpu() { return ctx->cpu(); }
-    u8 *mem() { return ctx->mem().getMem().data(); }
+    EmulatorMem &mem() { return ctx->mem(); }
     void runOp(u8 code)
     {
+#if CPU_TESTS_DEBUG
         std::cout << "Running test for code " << Common::toHexStr(code) << std::endl;
+#endif
         mem(regs().pc) = code;
-
-        cpu().tick();
-        while (!cpu().getQueue().empty() || cpu().getStallCycles() > 0)
+        do
         {
             cpu().tick();
-        }
-
-        // cpu().setCycles(cpu().getCycles() - 1);
+        } while (!cpu().getQueue().empty() || cpu().getCurrentTCycles() != 0);
     }
     void runCBPrefixOp(u8 code)
     {
-        mem(regs().pc) = 0xCB;
+#if CPU_TESTS_DEBUG
+        std::cout << "Running test for CB prefix code " << Common::toHexStr(code) << std::endl;
+#endif
         mem(regs().pc + 1) = code;
         runOp(0xCB);
     }
-    u8 &mem(u16 at) { return mem()[at]; }
+    u8 &mem(u16 at) { return mem().readMem(at); }
     u64 ticks() { return cpu().getCycles(); }
 
-    void ASSERT_REGISTERS(u8 a, u8 b, u8 c, u8 d, u8 e, u8 f, u8 g, u8 h, u8 l, u16 sp, u16 pc)
+    void ASSERT_REGISTERS(u8 a, u8 b, u8 c, u8 d, u8 e, u8 f, u8 h, u8 l, u16 sp, u16 pc)
     {
         REQUIRE(regs().a == a);
         REQUIRE(regs().b == b);
@@ -64,7 +70,6 @@ public:
         REQUIRE(regs().d == d);
         REQUIRE(regs().e == e);
         REQUIRE(regs().f == f);
-        REQUIRE(regs().g == g);
         REQUIRE(regs().h == h);
         REQUIRE(regs().l == l);
         REQUIRE(regs().sp == sp);

@@ -69,7 +69,6 @@ public:
 	u8 e = 0x00;
 	// Flags : ZNHC 0000
 	u8 f = 0x00;
-	u8 g = 0x00;
 	u8 h = 0x00;
 	u8 l = 0x00;
 	// Program Counter
@@ -127,13 +126,18 @@ public:
 	//  OTHER = UNCHANGED
 	void setFlags(u8 z, u8 n, u8 h, u8 c);
 
-	void setZFlag() { f |= 0b10000000; }
-	void setNFlag() { f |= 0b01000000; }
-	void setHFlag() { f |= 0b00100000; }
-	void setCFlag() { f |= 0b00010000; }
+	bool getZFlag() { return Common::getBit(f, 7); }
+	bool getNFlag() { return Common::getBit(f, 6); }
+	bool getHFlag() { return Common::getBit(f, 5); }
+	bool getCFlag() { return Common::getBit(f, 4); }
 
-	void resetZFlag() { f &= 0b01111111; }
-	void resetNFlag() { f &= 0b10111111; }
-	void resetHFlag() { f &= 0b11011111; }
-	void resetCFlag() { f &= 0b11101111; }
+	void setZFlag() { f = Common::setBit(f, 7); }
+	void setNFlag() { f = Common::setBit(f, 6); }
+	void setHFlag() { f = Common::setBit(f, 5); }
+	void setCFlag() { f = Common::setBit(f, 4); }
+
+	void resetZFlag() { f = Common::resetBit(f, 7); }
+	void resetNFlag() { f = Common::resetBit(f, 6); }
+	void resetHFlag() { f = Common::resetBit(f, 5); }
+	void resetCFlag() { f = Common::resetBit(f, 4); }
 };

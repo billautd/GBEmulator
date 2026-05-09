@@ -1,13 +1,10 @@
-#include <catch2/catch_test_macros.hpp>
 #include <CPUTestsFixture.h>
-#include <CPU.h>
-#include <Context.h>
 
-TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x00", "[nop_0x00]")
+TEST_CASE_METHOD(CPUTestsFixture, "cpu_0x00", "[cpu_ops_nop]")
 {
 	runOp(0x00);
 
 	// Check registers and PC
-	ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+	ASSERT_REGISTERS(0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 	REQUIRE(ticks() == 4);
 }

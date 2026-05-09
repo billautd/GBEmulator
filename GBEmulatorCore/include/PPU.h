@@ -37,7 +37,7 @@ private:
     u64 frame;
     u16 lineTicks;
 
-    Sprite *oamScanResult = new Sprite[40];
+    std::vector<Sprite> oamScanResult = {};
 
 public:
     PPU(Context &ctx);

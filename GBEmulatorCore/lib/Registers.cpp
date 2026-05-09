@@ -19,7 +19,6 @@ void Registers::init()
 	f = 0x00;
 	bool headerChecksumZero = ctx.cartridge().getHeaderChecksum() == 0;
 	setFlags(1, 0, !headerChecksumZero, !headerChecksumZero);
-	g = 0x00;
 	h = 0x01;
 	l = 0x4D;
 	pc = 0x100;
@@ -28,11 +27,11 @@ void Registers::init()
 
 std::string Registers::log()
 {
-	return std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{} -> {}{}{}{}], G[{}], H[{}], L[{}], PC[{}], SP[{}]",
+	return std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{} -> {}{}{}{}], H[{}], L[{}], PC[{}], SP[{}]",
 					   Common::toHexStr(a), Common::toHexStr(b), Common::toHexStr(c), Common::toHexStr(d), Common::toHexStr(e),
 					   Common::toHexStr(f),
 					   (f & 0b10000000) ? "Z" : "-", (f & 0b01000000) ? "N" : "-", (f & 0b00100000) ? "H" : "-", (f & 0b00010000) ? "C" : "-",
-					   Common::toHexStr(g), Common::toHexStr(h), Common::toHexStr(l), Common::toHexStr(pc), Common::toHexStr(sp));
+					   Common::toHexStr(h), Common::toHexStr(l), Common::toHexStr(pc), Common::toHexStr(sp));
 }
 
 R8 Registers::getR8FromCode(u8 data)

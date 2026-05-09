@@ -45,6 +45,8 @@ void Emulator::runEmulator(const char *romPath)
 			;
 
 		ctx.ui().setFPS(1'000'000'000.0f / (Common::getTicks() - ticksStart));
+
+		FrameMark;
 	}
 	destroy();
 	return;
