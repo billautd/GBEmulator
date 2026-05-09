@@ -3,7 +3,6 @@
 #include <functional>
 #include <queue>
 #include <Common.h>
-// #include <CPUMicroOp.h>
 #include <Interrupts.h>
 
 using CPUMicroOp = std::function<void()>;
@@ -18,8 +17,8 @@ private:
 	u8 currentCBPrefixOpCode;
 
 	// Scheduler, starts at cycle 0 because tick increments cycles in first line
-	u64 cycles = 1;
-	int currentTCycles = 1;
+	u64 cycles = 0;
+	int currentTCycles = 0;
 	std::queue<CPUMicroOp> queue = {};
 	bool instructionJustFinished = false;
 
@@ -38,6 +37,7 @@ public:
 	u64 getCycles() { return cycles; }
 	void setCycles(u64 cycles) { this->cycles = cycles; }
 
+	std::string opCodeToString();
 	u8 opCode() { return currentOpCode; }
 	void setCurrentOpCode(u8 opCode) { currentOpCode = opCode; }
 

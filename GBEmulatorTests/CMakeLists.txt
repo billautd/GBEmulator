@@ -79,6 +79,7 @@ PRIVATE
     lib/CPU/CPUTests_ret.cpp
     lib/CPU/CPUTests_ret_cc.cpp
     lib/CPU/CPUTests_reti.cpp
+    lib/CPU/CPUTests_rl_hl.cpp
     lib/CPU/CPUTests_rl_r.cpp
     lib/CPU/CPUTests_rla.cpp
     lib/CPU/CPUTests_rlc_hl.cpp

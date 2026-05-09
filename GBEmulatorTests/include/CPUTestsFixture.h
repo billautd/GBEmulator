@@ -4,7 +4,7 @@
 #include <Context.h>
 #include <catch2/catch_test_macros.hpp>
 
-#define CPU_TESTS_DEBUG false
+#define CPU_TESTS_DEBUG true
 
 class CPUTestsFixture
 {

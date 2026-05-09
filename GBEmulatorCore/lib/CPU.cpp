@@ -39,6 +39,8 @@ void CPU::tick()
 
 void CPU::fetchDecodeOp()
 {
+	instructionJustFinished = false;
+
 	// If queue empty, scheduling next CPU operation
 	// Each instruction in queue = 4 T-Cycles = 1 M-Cycle
 	setCurrentOpCode(ctx.mem().readMem(ctx.regs().pc++));
@@ -48,13 +50,14 @@ void CPU::fetchDecodeOp()
 		// Simulate 8 T-cycles for CB prefix
 		pushToQueue([]() { /*Internal*/ });
 	}
+#if CPU_DEBUG
+	std::cout << std::format("Cycle {} - {} => {}\n", Common::toHexStr(cycles), Common::toHexStr(currentOpCode), ctx.regs().log());
+#endif
 	runOp(currentOpCode);
 }
 
 void CPU::executeMicroOps()
 {
-	instructionJustFinished = false;
-
 	// Pop next instruction in queue and run it, until CPU operation is fully processed (empty queue)
 	CPUMicroOp microOp = queue.front();
 	queue.pop();
@@ -62,9 +65,7 @@ void CPU::executeMicroOps()
 
 	if (queue.empty())
 	{
-#if CPU_DEBUG
-		std::cout << std::format("Cycle {} - {} => {}\n", Common::toHexStr(cycles + 4), Common::toHexStr(currentOpCode), ctx.regs().log());
-#endif
+
 		instructionJustFinished = true;
 	}
 }
@@ -544,7 +545,7 @@ void CPU::rla()
 	// Do directly
 	u8 r8Value = ctx.regs().a;
 	bool b7 = Common::getBit(r8Value, 7);
-	bool carry = Common::getBit(ctx.regs().f, 4);
+	bool carry = ctx.regs().getCFlag();
 	r8Value = (r8Value << 1 | carry);
 	ctx.regs().a = r8Value;
 	ctx.regs().setFlags(0, 0, 0, b7);
@@ -555,7 +556,7 @@ void CPU::rra()
 	// Do directly
 	u8 r8Value = ctx.regs().a;
 	bool b0 = Common::getBit(r8Value, 0);
-	bool carry = Common::getBit(ctx.regs().f, 4);
+	bool carry = ctx.regs().getCFlag();
 	r8Value = (r8Value >> 1 | (carry << 7));
 	ctx.regs().a = r8Value;
 	ctx.regs().setFlags(0, 0, 0, b0);
@@ -589,6 +590,7 @@ void CPU::cpl()
 {
 	// Do directly
 	ctx.regs().a = ~ctx.regs().a;
+	ctx.regs().setFlags(-1, 1, 1, -1);
 }
 
 void CPU::scf()
@@ -600,7 +602,7 @@ void CPU::scf()
 void CPU::ccf()
 {
 	// Do directly
-	bool carry = Common::getBit(ctx.regs().f, 4);
+	bool carry = ctx.regs().getCFlag();
 	ctx.regs().setFlags(-1, 0, 0, !carry);
 }
 
@@ -698,7 +700,7 @@ void CPU::adc_r()
 	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
 	u8 previousAValue = ctx.regs().a;
 	u8 r8Value = ctx.regs().getFromR8(r8);
-	bool carry = Common::getBit(ctx.regs().f, 4);
+	bool carry = ctx.regs().getCFlag();
 	u16 newValue16 = previousAValue + r8Value + carry;
 	u8 newValue8 = (u8)newValue16;
 	ctx.regs().a = newValue8;
@@ -712,7 +714,7 @@ void CPU::adc_hl()
 				{ 	u8 previousAValue = ctx.regs().a;
 				R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
 				u8 r8Value = ctx.mem().readMem(ctx.regs().getFromR16(R16::HL));
-				bool carry = Common::getBit(ctx.regs().f, 4);
+				bool carry = ctx.regs().getCFlag();
 				u16 newValue16 = previousAValue + r8Value + carry;
 				u8 newValue8 = (u8)newValue16;
 				ctx.regs().a = newValue8;
@@ -748,7 +750,7 @@ void CPU::sbc_r()
 	R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
 	u8 previousAValue = ctx.regs().a;
 	u8 r8Value = ctx.regs().getFromR8(r8);
-	bool carry = Common::getBit(ctx.regs().f, 4);
+	bool carry = ctx.regs().getCFlag();
 	u8 newValue8 = previousAValue - r8Value - carry;
 	ctx.regs().a = newValue8;
 	ctx.regs().setFlags(newValue8 == 0, 1, ((int)(previousAValue & 0xF) - (int)(r8Value & 0xF) - carry) < 0, ((int)previousAValue - (int)r8Value - carry) < 0);
@@ -761,7 +763,7 @@ void CPU::sbc_hl()
 				{ R8 r8 = Registers::getR8FromCode(opCode() & 0b111);
 				u8 previousAValue = ctx.regs().a;
 				u8 r8Value = ctx.mem().readMem(ctx.regs().getFromR16(R16::HL));
-				bool carry = Common::getBit(ctx.regs().f, 4);
+				bool carry = ctx.regs().getCFlag();
 				u8 newValue8 = previousAValue - r8Value - carry;
 				ctx.regs().a = newValue8;
 				ctx.regs().setFlags(newValue8 == 0, 1, ((int)(previousAValue & 0xF) - (int)(r8Value & 0xF) - carry) < 0, ((int)previousAValue - (int)r8Value - carry) < 0); });
@@ -867,7 +869,7 @@ void CPU::adc_n()
 	pushToQueue([&]()
 				{ u8 previousAValue = ctx.regs().a;
         u8 r8Value = ctx.mem().readMem(ctx.regs().pc++);
-        bool carry = Common::getBit(ctx.regs().f, 4);
+        bool carry = ctx.regs().getCFlag();
         u16 newValue16 = previousAValue + r8Value + carry;
         u8 newValue8 = (u8)newValue16;
         ctx.regs().a = newValue8;
@@ -891,7 +893,7 @@ void CPU::sbc_n()
 	pushToQueue([&]()
 				{   u8 previousAValue = ctx.regs().a;
         u8 r8Value = ctx.mem().readMem(ctx.regs().pc++);
-        bool carry = Common::getBit(ctx.regs().f, 4);
+        bool carry = ctx.regs().getCFlag();
         u8 newValue8 = previousAValue - r8Value - carry;
         ctx.regs().a = newValue8;
         ctx.regs().setFlags(newValue8 == 0, 1, ((int)(previousAValue & 0xF) - (int)(r8Value & 0xF) - carry) < 0, ((int)previousAValue - (int)r8Value - carry) < 0); });
@@ -1224,61 +1226,119 @@ void CPU::add_sp_e()
 
 void CPU::ld_hl_sp_e()
 {
-	std::cout << "ld_hl_sp_e not implemented" << std::endl;
-	ctx.setRunning(false);
+	auto low = std::make_shared<u8>();
+	// Read value at address
+	pushToQueue([&, low]()
+				{ *low = ctx.mem().readMem(ctx.regs().pc++); });
+	// Set (HL)
+	pushToQueue([&, low]()
+				{ u16 sp = ctx.regs().sp;
+				i8 r8Value = (i8)*low;
+				ctx.regs().setRegFromR16(R16::HL, sp +r8Value);
+				ctx.regs().setFlags(0, 0, ((sp & 0xF) + (r8Value & 0xF)) > 0xF, ((sp & 0xFF) + r8Value) > 0xFF); });
 }
 
 void CPU::ld_sp_hl()
 {
-	std::cout << "ld_sp_hl not implemented" << std::endl;
-	ctx.setRunning(false);
+	// Set HL to SP
+	pushToQueue([&]()
+				{ ctx.regs().sp = (ctx.regs().h << 8) | ctx.regs().l; });
 }
 
 void CPU::di()
 {
+	// Cancel EI scheduling
+	ctx.cpu().getInterrupts().setEnablingIME(false);
+	ctx.cpu().getInterrupts().setIMEDelay(0);
+	// Disable interrupts
 	ctx.cpu().getInterrupts().setIME(false);
 }
 
 void CPU::ei()
 {
+	// Schedule enable interrupts
 	ctx.cpu().getInterrupts().setEnablingIME(true);
 	ctx.cpu().getInterrupts().setIMEDelay(1);
 }
 
 void CPU::rlc_r()
 {
-	std::cout << "rlc_r not implemented" << std::endl;
-	ctx.setRunning(false);
+	// Update value directly
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	u8 r8Value = ctx.regs().getFromR8(r8);
+	bool b7 = Common::getBit(r8Value, 7);
+	u8 newValue = (r8Value << 1) | b7;
+	ctx.regs().setRegFromR8(r8, newValue);
+	ctx.regs().setFlags(newValue == 0, 0, 0, b7);
 }
 
 void CPU::rlc_hl()
 {
-	std::cout << "rlc_hl not implemented" << std::endl;
-	ctx.setRunning(false);
+	auto low = std::make_shared<u8>();
+	// Update value at (HL)
+	pushToQueue([&, low]()
+				{ u8 r8Value = ctx.mem().readMem(ctx.regs().getFromR16(R16::HL));
+				bool b7 = Common::getBit(r8Value, 7);
+				u8 newValue = (r8Value << 1) | b7;
+				*low = newValue;
+				ctx.regs().setFlags(newValue == 0, 0, 0, b7); });
+	// Write value to (HL)
+	pushToQueue([&, low]()
+				{ ctx.mem().writeMem(ctx.regs().getFromR16(R16::HL), *low); });
 }
 
 void CPU::rrc_r()
 {
-	std::cout << "rrc_r not implemented" << std::endl;
-	ctx.setRunning(false);
+	// Update value directly
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	u8 r8Value = ctx.regs().getFromR8(r8);
+	bool b0 = Common::getBit(r8Value, 0);
+	u8 newValue = (r8Value >> 1) | (b0 << 7);
+	ctx.regs().setRegFromR8(r8, newValue);
+	ctx.regs().setFlags(newValue == 0, 0, 0, b0);
 }
 
 void CPU::rrc_hl()
 {
-	std::cout << "rrc_hl not implemented" << std::endl;
-	ctx.setRunning(false);
+	auto low = std::make_shared<u8>();
+	// Update value at (HL)
+	pushToQueue([&, low]()
+				{ u8 r8Value = ctx.mem().readMem(ctx.regs().getFromR16(R16::HL));
+				bool b0 = Common::getBit(r8Value, 0);
+				u8 newValue = (r8Value >> 1) | (b0 << 7);
+				*low = newValue;
+				ctx.regs().setFlags(newValue == 0, 0, 0, b0); });
+	// Write value to (HL)
+	pushToQueue([&, low]()
+				{ ctx.mem().writeMem(ctx.regs().getFromR16(R16::HL), *low); });
 }
 
 void CPU::rl_r()
 {
-	std::cout << "rl_r not implemented" << std::endl;
-	ctx.setRunning(false);
+	// Update value directly
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	u8 r8Value = ctx.regs().getFromR8(r8);
+	bool b7 = Common::getBit(r8Value, 7);
+	bool carry = ctx.regs().getCFlag();
+	u8 newValue = (r8Value << 1) | carry;
+	ctx.regs().setRegFromR8(r8, newValue);
+	ctx.regs().setFlags(newValue == 0, 0, 0, b7);
 }
 
 void CPU::rl_hl()
 {
-	std::cout << "rl_hl not implemented" << std::endl;
-	ctx.setRunning(false);
+	auto low = std::make_shared<u8>();
+	// Update value at (HL)
+	pushToQueue([&, low]()
+				{ u8 r8Value = ctx.mem().readMem(ctx.regs().getFromR16(R16::HL));
+				bool b7 = Common::getBit(r8Value, 7);
+				bool carry = ctx.regs().getCFlag();
+				u8 newValue = (r8Value << 1) | carry;
+				*low = newValue;
+				ctx.regs().setFlags(newValue == 0, 0, 0, b7); });
+	// Write value to (HL)
+	pushToQueue([&, low]()
+				{ ctx.mem().writeMem(ctx.regs().getFromR16(R16::HL), *low); });
 }
 
 void CPU::rr_r()
@@ -1287,7 +1347,7 @@ void CPU::rr_r()
 	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
 	u8 r8Value = ctx.regs().getFromR8(r8);
 	bool b0 = Common::getBit(r8Value, 0);
-	bool carry = Common::getBit(ctx.regs().f, 4);
+	bool carry = ctx.regs().getCFlag();
 	u8 newValue = (r8Value >> 1) | (carry << 7);
 	ctx.regs().setRegFromR8(r8, newValue);
 	ctx.regs().setFlags(newValue == 0, 0, 0, b0);
@@ -1300,7 +1360,7 @@ void CPU::rr_hl()
 	pushToQueue([&, low]()
 				{ u8 r8Value = ctx.mem().readMem(ctx.regs().getFromR16(R16::HL));
 				bool b0 = Common::getBit(r8Value, 0);
-				bool carry = Common::getBit(ctx.regs().f, 4);
+				bool carry = ctx.regs().getCFlag();
 				u8 newValue = (r8Value >> 1) | (carry << 7);
 				*low = newValue;
 				ctx.regs().setFlags(newValue == 0, 0, 0, b0); });
@@ -1311,6 +1371,7 @@ void CPU::rr_hl()
 
 void CPU::sla_r()
 {
+	// Update value directly
 	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
 	u8 r8Value = ctx.regs().getFromR8(r8);
 	bool carry = Common::getBit(r8Value, 7);
@@ -1336,14 +1397,29 @@ void CPU::sla_hl()
 
 void CPU::sra_r()
 {
-	std::cout << "sra_r not implemented" << std::endl;
-	ctx.setRunning(false);
+	R8 r8 = Registers::getR8FromCode(cbPrefixOpCode() & 0b111);
+	u8 r8Value = ctx.regs().getFromR8(r8);
+	bool b0 = Common::getBit(r8Value, 0);
+	bool b7 = Common::getBit(r8Value, 7);
+	u8 newValue = (r8Value >> 1) | (b7 << 7);
+	ctx.regs().setRegFromR8(r8, newValue);
+	ctx.regs().setFlags(newValue == 0, 0, 0, b0);
 }
 
 void CPU::sra_hl()
 {
-	std::cout << "sra_hl not implemented" << std::endl;
-	ctx.setRunning(false);
+	auto low = std::make_shared<u8>();
+	// Update value at (HL)
+	pushToQueue([&, low]()
+				{ u8 r8Value = ctx.mem().readMem(ctx.regs().getFromR16(R16::HL));
+				bool b0 = Common::getBit(r8Value, 0);
+				bool b7 = Common::getBit(r8Value, 7);
+				u8 newValue = (r8Value >> 1) | (b7 << 7);
+				*low = newValue;
+				ctx.regs().setFlags(newValue == 0, 0, 0, b0); });
+	// Write value to (HL)
+	pushToQueue([&, low]()
+				{ ctx.mem().writeMem(ctx.regs().getFromR16(R16::HL), *low); });
 }
 
 void CPU::swap_r()
