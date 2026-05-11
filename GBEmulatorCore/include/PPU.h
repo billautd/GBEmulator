@@ -56,7 +56,7 @@ public:
 
     u64 getFrame() { return frame; };
 
-    void createTile(int x, int y, int tileIndex, SDL_Surface *surface);
+    void createTile(int x, int y, int tileIndex, int flags, SDL_Surface *surface);
 
     u8 getLY();
     void setLY(u8 ly);

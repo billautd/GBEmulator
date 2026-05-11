@@ -83,8 +83,14 @@ void EmulatorMem::logMem()
 
 void EmulatorMem::writeMem(u16 address, u8 value)
 {
+    // Writing DIV sets it to 0
+    if (address == Timer::DIV)
+    {
+        data[address] = 0;
+        return;
+    }
     data[address] = value;
-    if (address == 0xFF46)
+    if (address == DMA::DMA_ADDR)
         ctx.dma().start();
 }
 

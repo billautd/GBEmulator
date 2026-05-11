@@ -91,20 +91,20 @@ void PPU::oamScan()
     // Line tick n = (0xFE00 + lineTick * 2) - (0xFE03 + lineTick * 2)
     if (lineTicks % 2 == 0)
     {
-        u16 addr = 0xFE00 + lineTicks * 2;
+        u16 addr = 0xFE00 + (lineTicks / 2) * 4;
         u8 yPos = ctx.mem().readMem(addr);
-        if ((yPos - 8) == getLY())
+        if (getLY() >= ((int)yPos - 16) && getLY() < ((int)yPos - 8))
         {
             u8 xPos = ctx.mem().readMem(addr + 1);
             u8 tileIndex = ctx.mem().readMem(addr + 2);
             u8 flags = ctx.mem().readMem(addr + 3);
             oamScanResult.emplace_back(Sprite{xPos, yPos, tileIndex, flags});
+            std::cout << std::format("{} => x {} y {} tileIndex {}\n", (int)getLY(), (int)xPos, (int)yPos, (int)tileIndex);
         }
     }
 
     if (lineTicks >= 80)
     {
-        lineTicks -= 80;
         setMode(PPUModes::DRAWING_PIXELS);
     }
 }
@@ -115,17 +115,16 @@ void PPU::drawPixels()
     if (!oamScanResult.empty())
     {
         const Sprite &sprite = oamScanResult.front();
-        createTile(sprite.x, sprite.y, sprite.tileIndex, ctx.ui().getMainSurface());
+        createTile(sprite.x, sprite.y, sprite.tileIndex, sprite.flags, ctx.ui().getMainSurface());
         oamScanResult.erase(oamScanResult.begin());
     }
-    if (lineTicks >= 172)
+    if (lineTicks >= 160 + 80)
     {
-        lineTicks -= 172;
         setMode(PPUModes::HBLANK);
     }
 }
 
-void PPU::createTile(int x, int y, int tileIndex, SDL_Surface *surface)
+void PPU::createTile(int x, int y, int tileIndex, int flags, SDL_Surface *surface)
 {
     if (surface == nullptr)
         return;
@@ -140,8 +139,8 @@ void PPU::createTile(int x, int y, int tileIndex, SDL_Surface *surface)
             u8 color1 = (colorData1 >> bit) & 1;
             u8 color2 = (colorData2 >> bit) & 1;
 
-            rect.x = x + (UI::SCALE * (7 - bit));
-            rect.y = y + (UI::SCALE * (i / 2));
+            rect.x = UI::SCALE * (x + 7 - bit);
+            rect.y = UI::SCALE * (y + i / 2);
             rect.w = UI::SCALE;
             rect.h = UI::SCALE;
             SDL_FillSurfaceRect(surface, &rect, colors[(color1 << 1) | color2]);

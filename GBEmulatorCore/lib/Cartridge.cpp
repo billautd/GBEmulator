@@ -46,7 +46,7 @@ bool Cartridge::checkGlobalChecksum()
 	return checksum == (globalChecksum.at(1) + 256 * globalChecksum.at(0));
 }
 
-void Cartridge::load(const char *path)
+void Cartridge::init(const char *path)
 {
 	std::cout << std::format("Loading cartridge from path: {}\n", path);
 

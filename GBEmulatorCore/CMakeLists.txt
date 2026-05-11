@@ -21,6 +21,7 @@ target_sources(GBEmulatorCore
 		lib/EmulatorMem.cpp
 		lib/PPU.cpp
 		lib/Registers.cpp
+		lib/Timer.cpp
 		lib/UI.cpp
 	PUBLIC
 		FILE_SET main
@@ -39,6 +40,7 @@ target_sources(GBEmulatorCore
 			include/EmulatorMem.h
 			include/PPU.h
 			include/Registers.h
+			include/Timer.h
 			include/UI.h
 )
 target_sources(GBEmulatorCore

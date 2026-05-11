@@ -2,22 +2,23 @@
 
 Context::Context() : currentCartridge(Cartridge(*this)), currentRegisters(Registers(*this)), currentCPU(CPU(*this)),
 					 currentPPU(PPU(*this)), currentUI(UI(*this)), currentMemory(EmulatorMem(*this)), currentJoypad(Joypad(*this)),
-					 currentDMA(DMA(*this))
+					 currentDMA(DMA(*this)), currentTimer(Timer(*this))
 {
-	init();
 }
 
 Context::~Context()
 {
 }
 
-void Context::init()
+void Context::init(const char *romPath)
 {
 	tCycles = 0;
 
 	mem().init();
+	cartridge().init(romPath);
 	regs().init();
 	ppu().init();
+	timer().init();
 }
 
 void Context::destroy()
@@ -36,6 +37,7 @@ void Context::tick(u64 inc)
 		ppu().tick();
 		joypad().tick();
 		dma().tick();
+		timer().tick();
 
 		if (mem().readMem(0xFF02) == 0x81)
 		{

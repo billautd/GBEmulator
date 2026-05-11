@@ -47,6 +47,6 @@ public:
 	Cartridge(Context &ctx);
 	~Cartridge();
 
-	void load(const char *path);
-	u8 getHeaderChecksum() { return headerChecksum.at(0); }
+	void init(const char *path);
+	u8 getHeaderChecksum() { return headerChecksum[0]; }
 };

@@ -7,8 +7,7 @@ const static i64 NS_PER_FRAME = 16'742'706;
 
 void Emulator::runEmulator(const char *romPath)
 {
-	init();
-	ctx.cartridge().load(romPath);
+	init(romPath);
 
 	u64 nextTCyclesTarget = CYCLES_PER_FRAME;
 	while (ctx.isRunning())
@@ -60,9 +59,9 @@ Emulator::~Emulator()
 {
 }
 
-void Emulator::init()
+void Emulator::init(const char *romPath)
 {
-	ctx.init();
+	ctx.init(romPath);
 	ctx.setRunning(true);
 	ctx.ui().init();
 	return;

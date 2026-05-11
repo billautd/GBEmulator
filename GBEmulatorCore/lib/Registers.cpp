@@ -30,7 +30,7 @@ std::string Registers::log()
 	return std::format("A[{}], B[{}], C[{}], D[{}], E[{}], F[{} -> {}{}{}{}], H[{}], L[{}], PC[{}], SP[{}]",
 					   Common::toHexStr(a), Common::toHexStr(b), Common::toHexStr(c), Common::toHexStr(d), Common::toHexStr(e),
 					   Common::toHexStr(f),
-					   (f & 0b10000000) ? "Z" : "-", (f & 0b01000000) ? "N" : "-", (f & 0b00100000) ? "H" : "-", (f & 0b00010000) ? "C" : "-",
+					   getZFlag() ? "Z" : "-", getNFlag() ? "N" : "-", getHFlag() ? "H" : "-", getCFlag() ? "C" : "-",
 					   Common::toHexStr(h), Common::toHexStr(l), Common::toHexStr(pc), Common::toHexStr(sp));
 }
 

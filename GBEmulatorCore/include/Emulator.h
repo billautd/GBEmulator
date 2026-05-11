@@ -8,7 +8,7 @@ class CORE_API Emulator
 private:
 	Context ctx;
 
-	void init();
+	void init(const char *romPath);
 	void destroy();
 
 public:

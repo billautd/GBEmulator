@@ -65,7 +65,7 @@ void UI::handle()
 void UI::update()
 {
     // Update main window
-    updateMainWindow();
+    // updateMainWindow();
 
 // Update debug window
 #if UI_DEBUG
@@ -75,10 +75,11 @@ void UI::update()
 
 void UI::updateMainWindow()
 {
-    SDL_ClearSurface(mainSurface, 0, 0, 0, 0);
+    SDL_UpdateTexture(mainTexture, nullptr, mainSurface->pixels, mainSurface->pitch);
     SDL_RenderClear(getMainRenderer());
     SDL_RenderTexture(getMainRenderer(), mainTexture, nullptr, nullptr);
     SDL_RenderPresent(getMainRenderer());
+    SDL_ClearSurface(mainSurface, 0, 0, 0, 0);
 }
 
 void UI::updateDebugWindow()
@@ -92,9 +93,10 @@ void UI::updateDebugWindow()
         for (int tileY = 0; tileY < 24; tileY++)
         {
             int block = tileY / 8;
-            ctx.ppu().createTile(UI::SCALE * (tileX * (UI::TILE_SIZE + UI::BLOCK_BLANK)),
-                                 50 + UI::SCALE * (tileY * (UI::TILE_SIZE + UI::BLOCK_BLANK) + block * UI::BLOCK_BLANK),
+            ctx.ppu().createTile(tileX * (UI::TILE_SIZE + UI::BLOCK_BLANK),
+                                 10 + tileY * (UI::TILE_SIZE + UI::BLOCK_BLANK) + block * UI::BLOCK_BLANK,
                                  tileY * 16 + tileX,
+                                 0,
                                  debugSurface);
         }
     }

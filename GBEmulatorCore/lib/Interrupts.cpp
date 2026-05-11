@@ -1,7 +1,7 @@
 #include <Interrupts.h>
 #include <Context.h>
 
-#define INTERRUPTS_DEBUG true
+#define INTERRUPTS_DEBUG false
 
 Interrupts::Interrupts(Context &ctx) : ctx(ctx)
 {

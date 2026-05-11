@@ -1,14 +1,15 @@
 #pragma once
 
-#include <Common.h>
 #include <Cartridge.h>
-#include <EmulatorMem.h>
-#include <Registers.h>
+#include <Common.h>
 #include <CPU.h>
 #include <DMA.h>
-#include <PPU.h>
-#include <UI.h>
+#include <EmulatorMem.h>
 #include <Joypad.h>
+#include <PPU.h>
+#include <Registers.h>
+#include <Timer.h>
+#include <UI.h>
 
 class CORE_API Context
 {
@@ -17,19 +18,20 @@ private:
 	u64 tCycles;
 
 	Cartridge currentCartridge;
-	Registers currentRegisters;
-	EmulatorMem currentMemory;
 	CPU currentCPU;
-	PPU currentPPU;
-	UI currentUI;
-	Joypad currentJoypad;
 	DMA currentDMA;
+	Joypad currentJoypad;
+	EmulatorMem currentMemory;
+	PPU currentPPU;
+	Registers currentRegisters;
+	Timer currentTimer;
+	UI currentUI;
 
 public:
 	Context();
 	~Context();
 
-	void init();
+	void init(const char *romPath);
 	void destroy();
 
 	u64 getTCycles() { return tCycles; }
@@ -39,11 +41,12 @@ public:
 	void setRunning(bool running) { this->running = running; }
 
 	Cartridge &cartridge() { return currentCartridge; }
-	Registers &regs() { return currentRegisters; }
 	CPU &cpu() { return currentCPU; }
-	PPU &ppu() { return currentPPU; }
-	UI &ui() { return currentUI; }
+	DMA &dma() { return currentDMA; }
 	EmulatorMem &mem() { return currentMemory; }
 	Joypad &joypad() { return currentJoypad; }
-	DMA &dma() { return currentDMA; }
+	PPU &ppu() { return currentPPU; }
+	Registers &regs() { return currentRegisters; }
+	Timer &timer() { return currentTimer; }
+	UI &ui() { return currentUI; }
 };
