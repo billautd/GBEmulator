@@ -21,6 +21,8 @@ protected:
 public:
     CPUTestsFixture() : ctx(new Context())
     {
+        if (mem().getMem().size() != EmulatorMem::MEM_SIZE)
+            mem().getMem().resize(EmulatorMem::MEM_SIZE);
         regs().a = 0;
         regs().b = 0;
         regs().c = 0;
@@ -59,7 +61,7 @@ public:
         mem(regs().pc + 1) = code;
         runOp(0xCB);
     }
-    u8 &mem(u16 at) { return mem().readMem(at); }
+    u8 &mem(u16 at) { return mem().simpleRead(at); }
     u64 ticks() { return cpu().getCycles(); }
 
     void ASSERT_REGISTERS(u8 a, u8 b, u8 c, u8 d, u8 e, u8 f, u8 h, u8 l, u16 sp, u16 pc)

@@ -51,8 +51,13 @@ public:
     std::vector<u8> &getMem() { return data; }
 
     void logMem();
-    // Writes value to memory, checks for PPU mode if address in VRAM
+
+    // Simple read methods, to abstract memory container type
+    void simpleWrite(u16 address, u8 value);
+    u8 &simpleRead(u16 address);
+
+    // Redirects to each object to write mem
     void writeMem(u16 address, u8 value);
-    // Reads value from memory, checks for PPU mode if address in VRAM
-    u8 &readMem(u16 address);
+    // Redirects to each object to read mem
+    u8 readMem(u16 address);
 };

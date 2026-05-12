@@ -9,6 +9,7 @@ TEST_CASE_METHOD(CPUTestsFixture, "cpu_method_calls", "[cpu]")
 		cpu().clearQueue();
 		cpu().setCycles(0);
 		cpu().setCurrentTCycles(0);
+		cpu().setHalted(false);
 		if (i == 0xCB)
 			continue;
 		// Invalid op codes

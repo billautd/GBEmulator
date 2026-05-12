@@ -55,8 +55,9 @@ void UI::handle()
     SDL_Event evt;
     while (SDL_PollEvent(&evt))
     {
-        if (evt.type == SDL_EVENT_QUIT)
+        if (evt.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED || evt.type == SDL_EVENT_QUIT)
         {
+            std::cout << "Handle UI exit" << std::endl;
             ctx.setRunning(false);
         }
     }
@@ -65,7 +66,7 @@ void UI::handle()
 void UI::update()
 {
     // Update main window
-    // updateMainWindow();
+    updateMainWindow();
 
 // Update debug window
 #if UI_DEBUG
@@ -87,17 +88,31 @@ void UI::updateDebugWindow()
     SDL_ClearSurface(debugSurface, 0, 0, 0, 0);
     SDL_ClearSurface(fpsTextSurface, 0, 0, 0, 0);
 
-    SDL_Rect rect;
+    // SDL_Rect rect;
     for (int tileX = 0; tileX < 16; tileX++)
     {
         for (int tileY = 0; tileY < 24; tileY++)
         {
             int block = tileY / 8;
-            ctx.ppu().createTile(tileX * (UI::TILE_SIZE + UI::BLOCK_BLANK),
-                                 10 + tileY * (UI::TILE_SIZE + UI::BLOCK_BLANK) + block * UI::BLOCK_BLANK,
-                                 tileY * 16 + tileX,
-                                 0,
-                                 debugSurface);
+            int tileIndex = tileY * 16 + tileX;
+            // 8 pixels, each 16 bytes
+            for (int i = 0; i < 16; i += 2)
+            {
+                int offset = tileIndex * 16;
+                u8 colorData1 = ctx.mem().readMem(0x8000 + offset + i);
+                u8 colorData2 = ctx.mem().readMem(0x8001 + offset + i);
+                for (int bit = 7; bit >= 0; bit--)
+                {
+                    u8 color1 = (colorData1 >> bit) & 1;
+                    u8 color2 = (colorData2 >> bit) & 1;
+
+                    int x = tileX * (UI::TILE_SIZE + UI::BLOCK_BLANK) + 7 - bit;
+                    int y = 10 + tileY * (UI::TILE_SIZE + UI::BLOCK_BLANK) + block * UI::BLOCK_BLANK + i / 2;
+                    u8 color = (color1 << 1) | color2;
+
+                    ctx.ppu().createPixel(x, y, color, debugSurface);
+                }
+            }
         }
     }
     displayText(std::to_string(fps).c_str(), debugSurface, fpsTextSurface, {255, 255, 255}, 0, 0, 100, 100);

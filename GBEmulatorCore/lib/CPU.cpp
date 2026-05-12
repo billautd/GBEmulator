@@ -11,6 +11,15 @@ CPU::~CPU()
 {
 }
 
+void CPU::logInstr()
+{
+#if CPU_DEBUG
+	std::cout << std::format("Cycle {} - {} ({} {} {})=> {}\n", Common::toHexStr(cycles + 4), Common::toHexStr(currentOpCode),
+							 Common::toHexStr(ctx.mem().simpleRead(startInstrPC)), Common::toHexStr(ctx.mem().simpleRead(startInstrPC + 1)), Common::toHexStr(ctx.mem().simpleRead(startInstrPC + 2)),
+							 ctx.regs().log());
+#endif
+}
+
 void CPU::tick()
 {
 	// Stall T-cycles for each M-cycle
@@ -22,12 +31,18 @@ void CPU::tick()
 		return;
 	}
 
-	// If no scheduled op, fetch and decode next op
-	if (queue.empty())
-		fetchDecodeOp();
-	// If scheduled op, run it
-	else
-		executeMicroOps();
+	if (!isHalted())
+	{
+		// If no scheduled op, fetch and decode next op
+		if (queue.empty())
+			fetchDecodeOp();
+		// If scheduled op, run it
+		else
+			executeMicroOps();
+	}
+
+	if (ctx.mem().readMem(Interrupts::IF) != 0)
+		setHalted(false);
 
 	// Manage interrupts
 	if (instructionJustFinished)
@@ -43,6 +58,7 @@ void CPU::fetchDecodeOp()
 
 	// If queue empty, scheduling next CPU operation
 	// Each instruction in queue = 4 T-Cycles = 1 M-Cycle
+	startInstrPC = ctx.regs().pc;
 	setCurrentOpCode(ctx.mem().readMem(ctx.regs().pc++));
 	if (currentOpCode == 0xCB)
 	{
@@ -50,10 +66,11 @@ void CPU::fetchDecodeOp()
 		// Simulate 8 T-cycles for CB prefix
 		pushToQueue([]() { /*Internal*/ });
 	}
-#if CPU_DEBUG
-	std::cout << std::format("Cycle {} - {} => {}\n", Common::toHexStr(cycles), Common::toHexStr(currentOpCode), ctx.regs().log());
-#endif
+
 	runOp(currentOpCode);
+
+	if (queue.empty())
+		logInstr();
 }
 
 void CPU::executeMicroOps()
@@ -65,7 +82,7 @@ void CPU::executeMicroOps()
 
 	if (queue.empty())
 	{
-
+		logInstr();
 		instructionJustFinished = true;
 	}
 }
@@ -632,8 +649,7 @@ void CPU::jr_cc_e()
 
 void CPU::stop()
 {
-	std::cout << "stop not implemented" << std::endl;
-	ctx.setRunning(false);
+	ctx.regs().pc++;
 }
 
 void CPU::ld_r1_r2()
@@ -665,8 +681,7 @@ void CPU::ld_hl_r()
 
 void CPU::halt()
 {
-	std::cout << "halt not implemented" << std::endl;
-	ctx.setRunning(false);
+	setHalted(true);
 }
 
 void CPU::add_r()
@@ -1134,12 +1149,12 @@ void CPU::push_rr()
 {
 	R16_STK r16Stk = Registers::getR16StkFromCode((opCode() & 0b00110000) >> 4);
 	pushToQueue([]() { /*Internal*/ });
-	// Push low RR to SP
+	// Push high RR to SP
 	pushToQueue([&, r16Stk]()
 				{ u16 r16StkValue = ctx.regs().getFromR16Stk(r16Stk);
         	ctx.regs().sp--;
         	ctx.mem().writeMem(ctx.regs().sp, r16StkValue >> 8); });
-	// Push high RR to SP
+	// Push low RR to SP
 	pushToQueue([&, r16Stk]()
 				{ u16 r16StkValue = ctx.regs().getFromR16Stk(r16Stk);
         	ctx.regs().sp--;
@@ -1545,4 +1560,20 @@ void CPU::set_b_hl()
 	// Write value to (HL)
 	pushToQueue([&, low]()
 				{ ctx.mem().writeMem(ctx.regs().getFromR16(R16::HL), *low); });
+}
+
+void CPU::processInterrupt(u16 address)
+{
+	pushToQueue([]() { /*Internal*/ });
+	pushToQueue([]() { /*Internal*/ });
+	// Write high PC to SP
+	pushToQueue([&]()
+				{ ctx.regs().sp--;
+        		ctx.mem().writeMem(ctx.regs().sp, ctx.regs().pc >> 8); });
+	// Write low PC to SP
+	pushToQueue([&]()
+				{ ctx.regs().sp--;
+        		ctx.mem().writeMem(ctx.regs().sp, ctx.regs().pc & 0XFF); });
+	pushToQueue([&, address]()
+				{ ctx.regs().pc = address; });
 }

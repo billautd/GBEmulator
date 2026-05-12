@@ -46,3 +46,14 @@ void DMA::tick()
     currentByte++;
     running = currentByte <= 0x9F;
 }
+
+void DMA::write(u16 address, u8 value)
+{
+    ctx.mem().simpleWrite(address, value);
+    start();
+}
+
+u8 &DMA::read(u16 address)
+{
+    return ctx.mem().simpleRead(address);
+}

@@ -20,7 +20,9 @@ void Interrupts::handle()
     }
     if (isIME())
     {
-        checkInterrupts();
+        bool isInterrupt = checkInterrupts();
+        if (isInterrupt)
+            ctx.cpu().setHalted(false);
     }
     if (imeDelay > 0)
         imeDelay--;
@@ -31,7 +33,7 @@ bool Interrupts::checkInterrupts()
     if (checkInterrupt(InterruptType::INT_VBLANK))
     {
 #if INTERRUPTS_DEBUG
-        // std::cout << "Detected VBLANK interrupt" << std::endl;
+        std::cout << "Detected VBLANK interrupt" << std::endl;
 #endif
         processInterrupt(InterruptType::INT_VBLANK);
         return true;
@@ -49,7 +51,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected TIMER interrupt" << std::endl;
 #endif
-        // processInterrupt(InterruptType::INT_TIMER);
+        processInterrupt(InterruptType::INT_TIMER);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_SERIAL))
@@ -83,14 +85,7 @@ bool Interrupts::checkInterrupt(InterruptType type)
 void Interrupts::processInterrupt(InterruptType type)
 {
     resetInterrupt(type);
-    // ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
-    // ctx.cpu().pushToQueue({CPUMicroOpType::INTERNAL});             // 4
-    // ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_HIGH_FROM_PC}); // 4
-    // ctx.cpu().pushToQueue({CPUMicroOpType::PUSH_SP_LOW_FROM_PC});  // 4
-    // ctx.cpu().pushToQueue({
-    //     .type = CPUMicroOpType::WRITE_INTERRUPT_TO_PC,
-    //     .intType = type,
-    // }); // 4
+    ctx.cpu().processInterrupt(getAddressFromType(type));
     setIME(false);
 }
 
@@ -124,4 +119,14 @@ u16 Interrupts::getAddressFromType(InterruptType type)
         return 0x40;
     }
     throw std::invalid_argument(std::string("Interrupts::getAddressFromType -> Invalid type " + type));
+}
+
+void Interrupts::write(u16 address, u8 value)
+{
+    ctx.mem().simpleWrite(address, value);
+}
+
+u8 &Interrupts::read(u16 address)
+{
+    return ctx.mem().simpleRead(address);
 }

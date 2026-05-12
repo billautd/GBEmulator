@@ -20,7 +20,10 @@ private:
 	u64 cycles = 0;
 	int currentTCycles = 0;
 	std::queue<CPUMicroOp> queue = {};
+	u16 startInstrPC;
 	bool instructionJustFinished = false;
+
+	bool halted = false;
 
 	void fetchDecodeOp();
 	void executeMicroOps();
@@ -46,9 +49,13 @@ public:
 
 	Interrupts &getInterrupts() { return interrupts; }
 
+	void setHalted(bool halted) { this->halted = halted; }
+	bool isHalted() { return halted; }
+
 	void runOp(u8 code);
 
 	bool isInstructionJustFinished() { return instructionJustFinished; }
+	void processInterrupt(u16 address);
 	void pushToQueue(const CPUMicroOp &op) { queue.push(op); }
 	std::queue<CPUMicroOp> &getQueue() { return queue; }
 	void clearQueue()
@@ -56,6 +63,8 @@ public:
 		std::queue<CPUMicroOp> empty;
 		std::swap(queue, empty);
 	};
+
+	void logInstr();
 
 	/************************************************/
 	/*              8-bit load instructions         */
