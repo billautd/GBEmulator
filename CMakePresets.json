@@ -2,9 +2,9 @@
   "version": 4,
   "configurePresets": [
     {
-      "name": "default",
-      "displayName": "GBEmulator",
-      "description": "Preset to use for GBEmulator",
+      "name": "windows",
+      "displayName": "GBEmulator_Windows",
+      "description": "Preset to use for GBEmulator on Windows",
       "binaryDir": "${sourceDir}/build",
       "generator": "MinGW Makefiles",
       "cacheVariables": {
@@ -13,6 +13,19 @@
         "CMAKE_CXX_STANDARD": "20",
         "CMAKE_PREFIX_PATH":"$env{MSYS_PATH}/mingw64",
         "CMAKE_BUILD_TYPE":"Debug"
+      }
+    },{
+      "name":"linux",
+      "displayName": "GBEmulator_Linux",
+      "description": "Preset to use for GBEmulator on Linux",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER":"gcc",
+        "CMAKE_CXX_COMPILER":"g++",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_BUILD_TYPE":"Debug",
+        "CMAKE_TOOLCHAIN_FILE":"$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET":"x64-linux-dynamic"
       }
     }
   ]

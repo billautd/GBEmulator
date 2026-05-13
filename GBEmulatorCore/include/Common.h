@@ -1,9 +1,17 @@
 #pragma once
 
-#ifdef CORE_EXPORTS
-#define CORE_API __declspec(dllexport)
+#if defined(_WIN32)
+	#ifdef CORE_EXPORTS
+		#define CORE_API __declspec(dllexport)
+	#else
+		#define CORE_API __declspec(dllimport)
+	#endif
 #else
-#define CORE_API __declspec(dllimport)
+    #ifdef CORE_EXPORTS
+        #define CORE_API __attribute__((visibility("default")))
+    #else
+        #define CORE_API
+    #endif
 #endif
 
 #include <format>

@@ -32,13 +32,13 @@ private:
     void updateMainWindow();
     void updateDebugWindow();
 
-    const static int TILE_SIZE = 8;
     const static int BLOCK_BLANK = 2;
 
 public:
     UI(Context &context);
     ~UI();
 
+    const static int TILE_SIZE = 8;
     const static int SCALE = 5;
 
     void init();

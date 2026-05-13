@@ -55,6 +55,7 @@ target_sources(GBEmulatorCore
 			../deps/Tracy/tracy-0.13.1/public/tracy/Tracy.hpp
 )
 target_include_directories(GBEmulatorCore PUBLIC include)
-target_link_libraries(GBEmulatorCore PUBLIC SDL3::SDL3)
-target_link_libraries(GBEmulatorCore PUBLIC SDL3_ttf::SDL3_ttf)
-target_link_libraries(GBEmulatorCore PUBLIC Tracy::TracyClient)
+target_link_libraries(GBEmulatorCore PUBLIC 
+										SDL3::SDL3
+										SDL3_ttf::SDL3_ttf
+										Tracy::TracyClient)
