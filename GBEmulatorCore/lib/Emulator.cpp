@@ -44,6 +44,8 @@ void Emulator::runEmulator(const char *romPath)
 			;
 
 		ctx.ui().setFPS(1'000'000'000.0f / (Common::getTicks() - ticksStart));
+		if (ctx.ppu().getFrame() % 120 == 0)
+			std::cout << "FPS : " << ctx.ui().getFPS() << std::endl;
 
 		FrameMark;
 	}

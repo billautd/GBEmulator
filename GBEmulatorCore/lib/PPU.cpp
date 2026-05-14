@@ -104,11 +104,11 @@ void PPU::drawPixels()
         {
         case FIFOFetcherState::TILE:
         {
-
             // Get X and Y coordinate relating to where we are in the tilemap
             currentFIFOTileMapX = ((getSCX() + currentFIFOX) & 0xFF) / 8;
             currentFIFOTileMapY = ((getSCY() + getLY()) & 0xFF) / 8;
             currentFIFOTileY = (getSCY() + getLY()) & 7;
+            currentFIFOTileAddress = 0x8000 + 16 * ctx.mem().readMem(getTileMapBase() + currentFIFOTileMapY * 32 + currentFIFOTileMapX) + 2 * currentFIFOTileY;
             currentFIFOFetcherState = FIFOFetcherState::TILE_LOW;
             // Takes 2 dots
             fifoDelay = 1;
@@ -117,8 +117,7 @@ void PPU::drawPixels()
         case FIFOFetcherState::TILE_LOW:
         {
             // Tile map contains id of tile in tile data (with 0x8000 or 0x8800 addressing)
-            u16 tileAddress = 0x8000 + 16 * ctx.mem().readMem(getTileMapBase() + currentFIFOTileMapY * 32 + currentFIFOTileMapX) + 2 * currentFIFOTileY;
-            currentFIFOTileLow = ctx.mem().readMem(tileAddress);
+            currentFIFOTileLow = ctx.mem().readMem(currentFIFOTileAddress);
             currentFIFOFetcherState = FIFOFetcherState::TILE_HIGH;
             // Takes 2 dots
             fifoDelay = 1;
@@ -127,8 +126,7 @@ void PPU::drawPixels()
         case FIFOFetcherState::TILE_HIGH:
         {
             // Tile map contains id of tile in tile data (with 0x8000 or 0x8800 addressing)
-            u16 tileAddress = 0x8000 + 16 * ctx.mem().readMem(getTileMapBase() + currentFIFOTileMapY * 32 + currentFIFOTileMapX) + 2 * currentFIFOTileY + 1;
-            currentFIFOTileHigh = ctx.mem().readMem(tileAddress);
+            currentFIFOTileHigh = ctx.mem().readMem(currentFIFOTileAddress + 1);
             currentFIFOFetcherState = FIFOFetcherState::SLEEP;
             // Takes 2 dots
             fifoDelay = 1;
@@ -300,36 +298,4 @@ void PPU::setMode(PPUModes mode)
             (mode == PPUModes::OAM_SCAN && getLCDStatus(LCDStatuses::MODE_2)))
             ctx.cpu().getInterrupts().requestInterrupt(InterruptType::INT_LCD);
     }
-}
-
-void PPU::vram_write(u16 address, u8 value)
-{
-    ctx.mem().simpleWrite(address, value);
-}
-
-u8 &PPU::vram_read(u16 address)
-{
-    return ctx.mem().simpleRead(address);
-}
-
-void PPU::oam_write(u16 address, u8 value)
-{
-    if (ctx.dma().isRunning())
-        return;
-    ctx.mem().simpleWrite(address, value);
-}
-
-u8 &PPU::oam_read(u16 address)
-{
-    return ctx.mem().simpleRead(address);
-}
-
-void PPU::lcd_write(u16 address, u8 value)
-{
-    ctx.mem().simpleWrite(address, value);
-}
-
-u8 &PPU::lcd_read(u16 address)
-{
-    return ctx.mem().simpleRead(address);
 }

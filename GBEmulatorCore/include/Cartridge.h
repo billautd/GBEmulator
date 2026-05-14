@@ -49,7 +49,4 @@ public:
 
 	void init(const char *path);
 	u8 getHeaderChecksum() { return headerChecksum[0]; }
-
-	void write(u16 address, u8 value);
-	u8 &read(u16 address);
 };

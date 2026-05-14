@@ -85,7 +85,6 @@ void UI::updateMainWindow()
 
 void UI::updateDebugWindow()
 {
-
     // SDL_Rect rect;
     for (int tileX = 0; tileX < 16; tileX++)
     {

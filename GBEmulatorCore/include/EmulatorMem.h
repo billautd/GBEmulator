@@ -52,12 +52,6 @@ public:
 
     void logMem();
 
-    // Simple read methods, to abstract memory container type
-    void simpleWrite(u16 address, u8 value);
-    u8 &simpleRead(u16 address);
-
-    // Redirects to each object to write mem
     void writeMem(u16 address, u8 value);
-    // Redirects to each object to read mem
-    u8 readMem(u16 address);
+    u8 &readMem(u16 address);
 };

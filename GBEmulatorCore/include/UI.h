@@ -46,6 +46,7 @@ public:
     void update();
     void destroy();
 
+    float getFPS() { return fps; }
     void setFPS(float fps) { this->fps = fps; }
 
     SDL_Window *getMainWindow() { return mainWindow; }

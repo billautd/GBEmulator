@@ -16,7 +16,6 @@ void Timer::init()
 void Timer::tick()
 {
     // Update TIMA clock frequency
-    setTIMAFrequency();
     divSubDivision++;
 
     // Check if TIMA increment is enabled
@@ -90,18 +89,4 @@ void Timer::setTIMA(u8 tima)
 u8 Timer::getTMA()
 {
     return ctx.mem().readMem(TMA);
-}
-
-void Timer::write(u16 address, u8 value)
-{
-    // Writing DIV sets it to 0
-    if (address == DIV)
-        ctx.mem().simpleWrite(address, 0);
-    else
-        ctx.mem().simpleWrite(address, value);
-}
-
-u8 &Timer::read(u16 address)
-{
-    return ctx.mem().simpleRead(address);
 }

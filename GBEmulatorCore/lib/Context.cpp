@@ -40,13 +40,5 @@ void Context::tick(u64 inc)
 		joypad().tick();
 		dma().tick();
 		timer().tick();
-
-		if (mem().readMem(0xFF02) == 0x81)
-		{
-			oss << mem().readMem(0xFF01);
-			std::cout << oss.str();
-			std::cerr << oss.str();
-			mem().writeMem(0xFF02, 0);
-		}
 	}
 }

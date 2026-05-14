@@ -81,117 +81,43 @@ void EmulatorMem::logMem()
     }
 }
 
-void EmulatorMem::simpleWrite(u16 address, u8 value)
-{
-    data[address] = value;
-}
-
-u8 &EmulatorMem::simpleRead(u16 address)
-{
-    return data[address];
-}
-
 void EmulatorMem::writeMem(u16 address, u8 value)
 {
-    if (address >= 0x0000 && address <= 0x7FFF)
-        ctx.cartridge().write(address, value);
-    else if (address >= 0x8000 && address <= 0x9FFF)
-        ctx.ppu().vram_write(address, value);
-    else if (address >= 0xA000 && address <= 0xBFFF)
-        ctx.cartridge().write(address, value);
-    else if (address >= 0xC000 && address <= 0xDFFF)
-        simpleWrite(address, value);
-    else if (address >= 0xE000 && address <= 0xFDFF)
-    {
-        // Echo RAM -> Nothing
-    }
+    /*******************************/
+    /*   ADDRESS PRE-PROCESSING    */
+    /*******************************/
+    // Reserved
+    if (address >= 0xE000 && address <= 0xFDFF)
+        return;
     else if (address >= 0xFE00 && address <= 0xFE9F)
-        ctx.ppu().oam_write(address, value);
+    {
+        if (ctx.dma().isRunning())
+            return;
+    }
+    // Reserved
     else if (address >= 0xFEA0 && address <= 0xFEFF)
+        return;
+    // Writing to DIV sets it to 0
+    else if (address == Timer::DIV)
     {
-        // Reserved -> Nothing
+        data[address] = 0;
+        return;
     }
-    else if (address == Joypad::JOYPAD)
-        ctx.joypad().write(address, value);
-    // Serial
-    else if (address == 0xFF01 || address == 0xFF02)
-        simpleWrite(address, value);
-    else if (address >= 0xFF03 && address <= 0xFF07)
-        ctx.timer().write(address, value);
-    else if (address == Interrupts::IE)
-        ctx.cpu().getInterrupts().write(address, value);
-    // Audio
-    else if (address >= 0xFF10 && address <= 0xFF26)
-        simpleWrite(address, value);
-    // Audiose
-    else if (address >= 0xFF30 && address <= 0xFF3F)
-        simpleWrite(address, value);
-    else if (address == DMA::DMA_ADDR)
-        ctx.dma().write(address, value);
-    else if (address >= 0xFF40 && address <= 0xFF4B)
-        ctx.ppu().lcd_write(address, value);
-    // HRAM
-    else if (address >= 0xFF80 && address <= 0xFFFE)
-        simpleWrite(address, value);
-    else if (address == Interrupts::IF)
-        ctx.cpu().getInterrupts().write(address, value);
-    else
-    {
-        // std::cerr << "Unrecognized write at address " << Common::toHexStr(address) << std::endl;
-        simpleWrite(address, value);
-    }
+    /*******************************/
+    /*            WRITE            */
+    /*******************************/
+    data[address] = value;
+    /*******************************/
+    /*   ADDRESS POST-PROCESSING   */
+    /*******************************/
+    // Start DMA transfer
+    if (address == DMA::DMA_ADDR)
+        ctx.dma().start();
+    if (address == Timer::TAC)
+        ctx.timer().setTIMAFrequency();
 }
 
-u8 EmulatorMem::readMem(u16 address)
+u8 &EmulatorMem::readMem(u16 address)
 {
-    if (address >= 0x0000 && address <= 0x7FFF)
-        return ctx.cartridge().read(address);
-    else if (address >= 0x8000 && address <= 0x9FFF)
-        return ctx.ppu().vram_read(address);
-    else if (address >= 0xA000 && address <= 0xBFFF)
-        return ctx.cartridge().read(address);
-    else if (address >= 0xC000 && address <= 0xDFFF)
-        return simpleRead(address);
-    else if (address >= 0xE000 && address <= 0xFDFF)
-    {
-        // Echo RAM -> Nothing
-        return simpleRead(address);
-    }
-    else if (address >= 0xFE00 && address <= 0xFE9F)
-        return ctx.ppu().oam_read(address);
-    else if (address >= 0xFE00 && address <= 0xFEFF)
-    {
-        // Reserved -> Nothing
-        return simpleRead(address);
-    }
-    else if (address == 0xFF00)
-        return ctx.joypad().read(address);
-    // Serial
-    else if (address == 0xFF01 || address == 0xFF02)
-        return simpleRead(address);
-    else if (address >= 0xFF04 && address <= 0xFF07)
-        return ctx.timer().read(address);
-    else if (address == Interrupts::IE)
-        return ctx.cpu().getInterrupts().read(address);
-    // Audio
-    else if (address >= 0xFF10 && address <= 0xFF26)
-        return simpleRead(address);
-    // Audio
-    else if (address >= 0xFF30 && address <= 0xFF3F)
-        return simpleRead(address);
-    else if (address == DMA::DMA_ADDR)
-        return ctx.dma().read(address);
-    else if (address >= 0xFF40 && address <= 0xFF4B)
-        return ctx.ppu().lcd_read(address);
-    // HRAM
-    else if (address >= 0xFF80 && address <= 0xFFFE)
-        return simpleRead(address);
-    else if (address == Interrupts::IF)
-        return ctx.cpu().getInterrupts().read(address);
-    else
-    {
-        // std::cerr << "Unrecognized read at address " << Common::toHexStr(address) << std::endl;
-        // return simpleRead(address);
-        return 0;
-    }
+    return data[address];
 }

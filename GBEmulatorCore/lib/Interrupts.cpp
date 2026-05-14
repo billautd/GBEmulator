@@ -120,13 +120,3 @@ u16 Interrupts::getAddressFromType(InterruptType type)
     }
     throw std::invalid_argument(std::string("Interrupts::getAddressFromType -> Invalid type " + (int)type));
 }
-
-void Interrupts::write(u16 address, u8 value)
-{
-    ctx.mem().simpleWrite(address, value);
-}
-
-u8 &Interrupts::read(u16 address)
-{
-    return ctx.mem().simpleRead(address);
-}

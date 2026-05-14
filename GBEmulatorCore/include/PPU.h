@@ -65,6 +65,7 @@ private:
     int currentFIFOTileY;
     u16 currentFIFOTileMapX;
     u16 currentFIFOTileMapY;
+    u16 currentFIFOTileAddress;
     u8 currentFIFOTileLow;
     u8 currentFIFOTileHigh;
     int fifoDelay = 0;
@@ -138,11 +139,4 @@ public:
         std::queue<Pixel> empty;
         std::swap(fifo, empty);
     }
-
-    void vram_write(u16 address, u8 value);
-    u8 &vram_read(u16 address);
-    void oam_write(u16 address, u8 value);
-    u8 &oam_read(u16 address);
-    void lcd_write(u16 address, u8 value);
-    u8 &lcd_read(u16 address);
 };

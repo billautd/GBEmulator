@@ -109,13 +109,3 @@ void Cartridge::init(const char *path)
 	}
 	std::cout << std::endl;
 }
-
-void Cartridge::write(u16 address, u8 value)
-{
-	ctx.mem().simpleWrite(address, value);
-}
-
-u8 &Cartridge::read(u16 address)
-{
-	return ctx.mem().simpleRead(address);
-}
