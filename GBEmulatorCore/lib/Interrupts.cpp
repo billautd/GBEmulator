@@ -43,7 +43,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected LCD interrupt PC " << ctx.regs().pc << std::endl;
 #endif
-        // processInterrupt(InterruptType::INT_LCD);
+        processInterrupt(InterruptType::INT_LCD);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_TIMER))
@@ -59,7 +59,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected SERIAL interrupt" << std::endl;
 #endif
-        // processInterrupt(InterruptType::INT_SERIAL);
+        processInterrupt(InterruptType::INT_SERIAL);
         return true;
     }
     else if (checkInterrupt(InterruptType::INT_JOYPAD))
@@ -67,7 +67,7 @@ bool Interrupts::checkInterrupts()
 #if INTERRUPTS_DEBUG
         std::cout << "Detected JOYPAD interrupt" << std::endl;
 #endif
-        // processInterrupt(InterruptType::INT_JOYPAD);
+        processInterrupt(InterruptType::INT_JOYPAD);
         return true;
     }
     return false;
@@ -77,8 +77,8 @@ bool Interrupts::checkInterrupt(InterruptType type)
 {
     if (!isIME())
         return false;
-    bool isIE = ctx.mem().readMem(IE) & (0b1 << type);
-    bool isIF = ctx.mem().readMem(IF) & (0b1 << type);
+    bool isIE = ctx.mem().readMem(IE) & (0b1 << (int)type);
+    bool isIF = ctx.mem().readMem(IF) & (0b1 << (int)type);
     return isIE && isIF;
 }
 
@@ -92,7 +92,7 @@ void Interrupts::processInterrupt(InterruptType type)
 void Interrupts::requestInterrupt(InterruptType type)
 {
     u8 ifValue = ctx.mem().readMem(IF);
-    u8 newValue = ctx.mem().readMem(IF) | (0b1 << type);
+    u8 newValue = ctx.mem().readMem(IF) | (0b1 << (int)type);
     ctx.mem().writeMem(IF, newValue);
 }
 
@@ -118,7 +118,7 @@ u16 Interrupts::getAddressFromType(InterruptType type)
     case InterruptType::INT_VBLANK:
         return 0x40;
     }
-    throw std::invalid_argument(std::string("Interrupts::getAddressFromType -> Invalid type " + type));
+    throw std::invalid_argument(std::string("Interrupts::getAddressFromType -> Invalid type " + (int)type));
 }
 
 void Interrupts::write(u16 address, u8 value)

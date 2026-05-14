@@ -51,7 +51,7 @@ void Timer::tick()
 void Timer::setTIMAFrequency()
 {
     u8 tac = getTAC();
-    u8 clockType = (Common::getBit(tac, 1) << 1) | Common::getBit(tac, 0);
+    ClockType clockType = (ClockType)((Common::getBit(tac, 1) << 1) | Common::getBit(tac, 0));
     switch (clockType)
     {
     case ClockType::CLOCK_00:
@@ -67,7 +67,7 @@ void Timer::setTIMAFrequency()
         timaFrequency = 64 * 4;
         break;
     default:
-        std::cerr << "Incorrect clock type " << clockType << std::endl;
+        std::cerr << "Incorrect clock type " << (int)clockType << std::endl;
         ctx.setRunning(false);
         break;
     }

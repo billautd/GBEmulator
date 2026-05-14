@@ -29,10 +29,10 @@ void UI::init()
 
 void UI::initMainWindow()
 {
-    SDL_CreateWindowAndRenderer("GBEmulator", 600, 800, 0, &mainWindow, &mainRenderer);
+    SDL_CreateWindowAndRenderer("GBEmulator", 160 * UI::SCALE, 144 * UI::SCALE, 0, &mainWindow, &mainRenderer);
     SDL_SetWindowPosition(mainWindow, 400, 400);
-    int mainSurfaceWidth = UI::SCALE * (16 * UI::TILE_SIZE);
-    int mainSurfaceHeight = UI::SCALE * (24 * UI::TILE_SIZE);
+    int mainSurfaceWidth = UI::SCALE * (20 * UI::TILE_SIZE);
+    int mainSurfaceHeight = UI::SCALE * (18 * UI::TILE_SIZE);
     mainSurface = SDL_CreateSurface(mainSurfaceWidth, mainSurfaceHeight, SDL_PIXELFORMAT_RGBA8888);
     mainTexture = SDL_CreateTexture(mainRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
                                     mainSurfaceWidth, mainSurfaceHeight);
@@ -85,8 +85,6 @@ void UI::updateMainWindow()
 
 void UI::updateDebugWindow()
 {
-    SDL_ClearSurface(debugSurface, 0, 0, 0, 0);
-    SDL_ClearSurface(fpsTextSurface, 0, 0, 0, 0);
 
     // SDL_Rect rect;
     for (int tileX = 0; tileX < 16; tileX++)
@@ -108,9 +106,9 @@ void UI::updateDebugWindow()
 
                     int x = tileX * (UI::TILE_SIZE + UI::BLOCK_BLANK) + 7 - bit;
                     int y = 10 + tileY * (UI::TILE_SIZE + UI::BLOCK_BLANK) + block * UI::BLOCK_BLANK + i / 2;
-                    u8 color = (color1 << 1) | color2;
+                    u8 colorIndex = (color1 << 1) | color2;
 
-                    ctx.ppu().createPixel(x, y, color, debugSurface);
+                    ctx.ppu().drawPixel({x, y, colorIndex}, debugSurface);
                 }
             }
         }
@@ -120,6 +118,8 @@ void UI::updateDebugWindow()
     SDL_RenderClear(getDebugRenderer());
     SDL_RenderTexture(getDebugRenderer(), debugTexture, nullptr, nullptr);
     SDL_RenderPresent(getDebugRenderer());
+    SDL_ClearSurface(fpsTextSurface, 0, 0, 0, 0);
+    SDL_ClearSurface(debugSurface, 0, 0, 0, 0);
 }
 
 void UI::destroy()

@@ -2,7 +2,7 @@
 
 #include <Common.h>
 
-enum ClockType
+enum class ClockType
 {
     CLOCK_00 = 0,
     CLOCK_01 = 1,

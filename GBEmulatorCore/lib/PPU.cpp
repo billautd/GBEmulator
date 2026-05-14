@@ -25,7 +25,7 @@ void PPU::tick()
 {
     cycles++;
     lineTicks++;
-    u8 mode = getMode();
+    PPUModes mode = getMode();
     switch (mode)
     {
     case PPUModes::HBLANK:
@@ -56,10 +56,12 @@ void PPU::hblank()
     {
         lineTicks = 0;
         incrementLY();
-        if (getLY() > 143)
+        if (getLY() >= YRES)
         {
             setMode(PPUModes::VBLANK);
             ctx.cpu().getInterrupts().requestInterrupt(InterruptType::INT_VBLANK);
+            if (getLCDStatus(LCDStatuses::MODE_1))
+                ctx.cpu().getInterrupts().requestInterrupt(InterruptType::INT_LCD);
         }
         else
             setMode(PPUModes::OAM_SCAN);
@@ -83,39 +85,114 @@ void PPU::vblank()
 
 void PPU::oamScan()
 {
-    /** Do one OAM scan every other dot, to space out within 80 dots
-     * Line tick 0 == 0xFE00-0xFE03
-     * Line tick 2 == 0xFE04 - 0xFE07
-     *...
-     * Line tick 78 == 0xFE9C - 0xFE9F
-     * Line tick n = (0xFE00 + lineTick * 2) - (0xFE03 + lineTick * 2)
-     * if (lineTicks % 2 == 0)
-     * {
-     *     u16 addr = 0xFE00 + (lineTicks / 2) * 4;
-     *     u8 yPos = ctx.mem().readMem(addr);
-     *     if (getLY() >= ((int)yPos - 16) && getLY() < ((int)yPos - 8))
-     *     {
-     *         u8 xPos = ctx.mem().readMem(addr + 1);
-     *         u8 tileIndex = ctx.mem().readMem(addr + 2);
-     *         u8 flags = ctx.mem().readMem(addr + 3);
-     *         oamScanResult.emplace_back(Sprite{xPos, yPos, tileIndex, flags});
-     *     }
-     */
-    if (lineTicks >= 80)
+    if (lineTicks >= OAM_SCAN_TICKS)
     {
         setMode(PPUModes::DRAWING_PIXELS);
+        currentFIFOFetcherState = FIFOFetcherState::TILE;
     }
 }
 
 void PPU::drawPixels()
 {
-    if (lineTicks >= 160 + 80)
+    if (fifoDelay > 0)
     {
+        fifoDelay--;
+    }
+    else if (!renderReady)
+    {
+        switch (currentFIFOFetcherState)
+        {
+        case FIFOFetcherState::TILE:
+        {
+
+            // Get X and Y coordinate relating to where we are in the tilemap
+            currentFIFOTileMapX = ((getSCX() + currentFIFOX) & 0xFF) / 8;
+            currentFIFOTileMapY = ((getSCY() + getLY()) & 0xFF) / 8;
+            currentFIFOTileY = (getSCY() + getLY()) & 7;
+            currentFIFOFetcherState = FIFOFetcherState::TILE_LOW;
+            // Takes 2 dots
+            fifoDelay = 1;
+            break;
+        }
+        case FIFOFetcherState::TILE_LOW:
+        {
+            // Tile map contains id of tile in tile data (with 0x8000 or 0x8800 addressing)
+            u16 tileAddress = 0x8000 + 16 * ctx.mem().readMem(getTileMapBase() + currentFIFOTileMapY * 32 + currentFIFOTileMapX) + 2 * currentFIFOTileY;
+            currentFIFOTileLow = ctx.mem().readMem(tileAddress);
+            currentFIFOFetcherState = FIFOFetcherState::TILE_HIGH;
+            // Takes 2 dots
+            fifoDelay = 1;
+            break;
+        }
+        case FIFOFetcherState::TILE_HIGH:
+        {
+            // Tile map contains id of tile in tile data (with 0x8000 or 0x8800 addressing)
+            u16 tileAddress = 0x8000 + 16 * ctx.mem().readMem(getTileMapBase() + currentFIFOTileMapY * 32 + currentFIFOTileMapX) + 2 * currentFIFOTileY + 1;
+            currentFIFOTileHigh = ctx.mem().readMem(tileAddress);
+            currentFIFOFetcherState = FIFOFetcherState::SLEEP;
+            // Takes 2 dots
+            fifoDelay = 1;
+            break;
+        }
+        case FIFOFetcherState::SLEEP:
+        {
+            fifoDelay = 2;
+            currentFIFOFetcherState = FIFOFetcherState::PUSH;
+            break;
+        }
+        case FIFOFetcherState::PUSH:
+        {
+            if (fifo.empty())
+            {
+                for (int bit = 7; bit >= 0; bit--)
+                {
+                    u8 color1 = (currentFIFOTileLow >> bit) & 1;
+                    u8 color2 = (currentFIFOTileHigh >> bit) & 1;
+
+                    int x = currentFIFOX + 7 - bit;
+                    int y = getLY();
+                    u8 colorIndex = (color1 << 1) | color2;
+
+                    fifo.push({x, y, colorIndex});
+                }
+                currentFIFOX += 8;
+                renderReady = true;
+            }
+        }
+            currentFIFOFetcherState = FIFOFetcherState::TILE;
+            break;
+        }
+    }
+    else
+    {
+        if (!fifo.empty())
+        {
+            Pixel pixel = fifo.front();
+            fifo.pop();
+            drawPixel(pixel, ctx.ui().getMainSurface());
+        }
+        if (fifo.empty())
+        {
+            renderReady = false;
+        }
+    }
+    if (currentFIFOX >= XRES)
+    {
+        clearFIFO();
+        currentFIFOX = 0;
         setMode(PPUModes::HBLANK);
+        if (getLCDStatus(LCDStatuses::MODE_0))
+            ctx.cpu().getInterrupts().requestInterrupt(InterruptType::INT_LCD);
     }
 }
 
-void PPU::createPixel(int x, int y, u8 color, SDL_Surface *surface)
+u16 PPU::getTileMapBase()
+{
+    // TODO : Do condition for fetching at 0x9C00
+    return 0x9800;
+}
+
+void PPU::drawPixel(const Pixel &pixel, SDL_Surface *surface)
 {
     if (surface == nullptr)
     {
@@ -123,11 +200,22 @@ void PPU::createPixel(int x, int y, u8 color, SDL_Surface *surface)
         return;
     }
     SDL_Rect rect;
-    rect.x = UI::SCALE * x;
-    rect.y = UI::SCALE * y;
+    rect.x = UI::SCALE * pixel.x;
+    rect.y = UI::SCALE * pixel.y;
     rect.w = UI::SCALE;
     rect.h = UI::SCALE;
-    SDL_FillSurfaceRect(surface, &rect, colors[color]);
+    // TODO : Only reads BG palette, also check OBP0 and OBP1 for sprites
+    SDL_FillSurfaceRect(surface, &rect, colors[(getBGP() >> (pixel.colorIndex * 2)) & 0b11]);
+}
+
+u8 PPU::getSCX()
+{
+    return ctx.mem().readMem(SCX);
+}
+
+u8 PPU::getSCY()
+{
+    return ctx.mem().readMem(SCY);
 }
 
 u8 PPU::getLY()
@@ -146,6 +234,7 @@ void PPU::incrementLY()
 
     if (getLY() == getLYC())
     {
+        // Set LY == LYC bit
         ctx.mem().writeMem(STAT, Common::setBit(ctx.mem().readMem(STAT), 2));
         if (getLCDStatus(LCDStatuses::LYC_INT))
             ctx.cpu().getInterrupts().requestInterrupt(InterruptType::INT_LCD);
@@ -159,14 +248,19 @@ u8 PPU::getLYC()
     return ctx.mem().readMem(LYC);
 }
 
+u8 PPU::getBGP()
+{
+    return ctx.mem().readMem(BGP);
+}
+
 bool PPU::getLCDStatus(LCDStatuses status)
 {
-    return Common::getBit(ctx.mem().readMem(STAT), status);
+    return Common::getBit(ctx.mem().readMem(STAT), (int)status);
 }
 
 bool PPU::getLCDControl(LCDControls control)
 {
-    return Common::getBit(ctx.mem().readMem(LCDC), control);
+    return Common::getBit(ctx.mem().readMem(LCDC), (int)control);
 }
 
 u8 PPU::getWX()
@@ -179,16 +273,23 @@ u8 PPU::getWY()
     return ctx.mem().readMem(WY);
 }
 
-u8 PPU::getMode()
+bool PPU::isWindowVisible()
 {
-    return ctx.mem().readMem(STAT) & 0b11;
+    return getLCDControl(LCDControls::WINDOW_ENABLE) &&
+           getWX() >= 0 && getWX() <= XRES &&
+           getWY() >= 0 && getWY() <= YRES;
 }
 
-void PPU::setMode(u8 mode)
+PPUModes PPU::getMode()
+{
+    return (PPUModes)(ctx.mem().readMem(STAT) & 0b11);
+}
+
+void PPU::setMode(PPUModes mode)
 {
     // Reset last 2 bits and set new bits
-    u8 previousMode = getMode();
-    ctx.mem().writeMem(STAT, (ctx.mem().readMem(STAT) & 0b11111100) + mode);
+    PPUModes previousMode = getMode();
+    ctx.mem().writeMem(STAT, (ctx.mem().readMem(STAT) & 0b11111100) + (int)mode);
 
     // Request interrupt if mode changed and interrupt bit enabled
     bool modeChanged = previousMode != mode;

@@ -2,7 +2,7 @@
 
 #include <Common.h>
 
-enum InterruptType
+enum class InterruptType
 {
     INT_VBLANK,
     INT_LCD,
